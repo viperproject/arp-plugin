@@ -1,0 +1,36 @@
+field map : Int
+field left : Ref
+field right : Ref
+
+predicate expr(self: Ref)
+{
+    acc(self.left, 1/2) && acc(self.right, 1/2) &&
+    (self.left != null ==> expr(self.left)) &&
+    (self.right != null ==> expr(self.right))
+}
+
+function add(a: Int, b: Int) : Int
+{
+    a + b
+}
+
+method eval(self: Ref, s: Ref) returns (res: Int)
+  requires acc(s.map, rd) && s.map != 0
+  requires expr(self)
+  ensures acc(s.map, rd)
+  ensures expr(self)
+{
+    unfold expr(self)
+
+    var l: Int := 0
+    var r: Int := 0
+    if (self.left != null) {
+        l := eval(self.left, s)
+    }
+    if (self.right != null) {
+        r := eval(self.right, s)
+    }
+    res := add(l, r)
+
+    fold expr(self)
+}

@@ -1,0 +1,34 @@
+field g: Int
+field h: Int
+field f: Int
+
+method foo(x: Ref) returns()
+  requires acc(x.g, write) && acc(x.h, rd)
+  ensures acc(x.g, write) && acc(x.h, rd) && x.g == x.h + 1
+{
+    x.g := x.h + 1
+}
+
+method bar(x: Ref) returns()
+  requires acc(x.g, write) && acc(x.h, rdc(1))
+  ensures acc(x.g, write) && acc(x.h, rdc(1)) && x.g == x.h + 1
+{
+    x.g := x.h + 1
+}
+
+method client(x: Ref) returns()
+  requires acc(x.g, write) && acc(x.h, write)
+  ensures acc(x.g, write) && acc(x.h, write)
+{
+    x.h := 5
+    x.g := 2
+    foo(x)
+    assert (x.g == 6)
+    assert (x.h == 5)
+
+
+    x.g := 2
+    bar(x)
+    assert (x.g == 6)
+    assert (x.h == 5)
+}

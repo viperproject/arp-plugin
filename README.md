@@ -1,5 +1,3 @@
-=====================
-ARP Plugin for Silver
-=====================
+# ARP Plugin for Silver
 
-Plugin to add Abstract Read Permission support to SIlver.
+Plugin to add Abstract Read Permission support to Silver.

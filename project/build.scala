@@ -113,8 +113,12 @@ object ARPBuild extends Build {
 
   def isBuildServer = sys.env.contains("BUILD_TAG") /* Should only be defined on the build server */
 
-  def internalDep = if (isBuildServer) Nil else Seq(dependencies.silSrc % "compile->compile;test->test",
-    dependencies.siliconSrc % "compile->compile;test->test", dependencies.carbonSrc % "compile->compile;test->test")
+  def internalDep = if (isBuildServer) Nil else Seq(
+    // only one of silicon/carbon can be active at the same time!
+    dependencies.siliconSrc % "compile->compile;test->test",
+    // dependencies.carbonSrc % "compile->compile;test->test",
+    dependencies.silSrc % "compile->compile;test->test"
+  )
 
   def externalDep = (
        Seq(dependencies.jgrapht, dependencies.commonsIO, dependencies.commonsPool, dependencies.scallop)

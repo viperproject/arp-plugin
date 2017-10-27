@@ -1,0 +1,55 @@
+field g: Int
+field h: Int
+field f: Int
+
+method foo(x: Ref) returns()
+  requires acc(x.g, write) && acc(x.h, rd)
+  ensures acc(x.g, write) && acc(x.h, rd) && x.g == x.h + 1
+{
+    x.g := x.h + 1
+}
+
+method bar(x: Ref) returns()
+  requires acc(x.g, write) && acc(x.h, rdc(1))
+  ensures acc(x.g, write) && acc(x.h, rdc(1)) && x.g == x.h + 1
+{
+    x.g := x.h + 1
+}
+
+method foobar(x: Ref) returns()
+  requires acc(x.g, write)
+  ensures acc(x.g, write) && x.g == old(x.g) + 1
+{
+    x.g := x.g + 1
+}
+
+method client2(x: Ref) returns()
+  requires acc(x.g, rd)
+  ensures acc(x.g, rd)
+{
+    foo(x)
+}
+
+method client(x: Ref) returns()
+  requires acc(x.g, write) && acc(x.h, write)
+  ensures acc(x.g, write) && acc(x.h, write)
+{
+    assert acc(x.h, rd)
+
+    x.h := 5
+    x.g := 2
+    foo(x)
+    assert (x.g == 6)
+    assert (x.h == 5)
+
+    x.g := 2
+    bar(x)
+    assert (x.g == 6)
+    assert (x.h == 5)
+
+    x.g := 2
+    label lab
+
+    foobar(x)
+    assert (x.g == 3 && x.g == old[lab](x.g) + 1)
+}

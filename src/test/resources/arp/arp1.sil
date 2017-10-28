@@ -6,7 +6,11 @@ method foo(x: Ref) returns()
   requires acc(x.g, write) && acc(x.h, rd)
   ensures acc(x.g, write) && acc(x.h, rd) && x.g == x.h + 1
 {
-    x.g := x.h + 1
+    while (x.g <= x.h)
+      invariant acc(x.g, write) && acc(x.h, rd)
+    {
+        x.g := x.h + 1
+    }
 }
 
 method bar(x: Ref) returns()

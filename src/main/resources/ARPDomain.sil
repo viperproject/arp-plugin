@@ -1,0 +1,43 @@
+domain ARPLog {
+
+    // http://viper.ethz.ch/examples/encoding-adts.html
+
+    // Constructors
+    function ARPLogNil(): ARPLog
+
+    function ARPLogCons(ref: Ref, fieldId: Int, permission: Perm, level: Int): ARPLog
+
+    // Deconstructors
+    // TODO: Figure out how to handle tuple as list elements
+    function ARPLogHead_Cons(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+    function ARPLogTail_Cons(ref: Ref, fieldId: Int, level: Int, log: ARPLog): ARPLog
+
+    // Constructor Types
+
+    function ARPLogType(log: ARPLog): Int
+    unique function ARPLogType_Nil(): Int
+    unique function ARPLogType_Cons(): Int
+
+    // Functions
+    function ARPLogSum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+
+    // Axioms
+    // TODO: Add axioms
+
+}
+
+function rd(): Perm
+  requires false
+
+function rdc(): Perm
+  requires false
+
+function globalRd(): Perm
+  ensures none < result && result <= write
+
+function epsilonRd(): Perm
+  ensures none < result && result <= write
+
+method ARPSmokeTest() returns() {
+    assert false
+}

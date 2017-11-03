@@ -3,32 +3,95 @@ domain ARPLog {
     // http://viper.ethz.ch/examples/encoding-adts.html
 
     // Constructors
-    function ARPLogNil(): ARPLog
 
-    function ARPLogCons(ref: Ref, fieldId: Int, permission: Perm, level: Int): ARPLog
+    function ARPLog_Nil(): ARPLog
+    function ARPLog_Cons(ref: Ref, fieldId: Int, permission: Perm, level: Int, log: ARPLog): ARPLog
 
     // Deconstructors
-    // TODO: Figure out how to handle tuple as list elements
-    function ARPLogHead_Cons(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
-    function ARPLogTail_Cons(ref: Ref, fieldId: Int, level: Int, log: ARPLog): ARPLog
+
+    function ARPLog_head_ref_Cons(log: ARPLog): Ref
+    function ARPLog_head_fieldId_Cons(log: ARPLog): Int
+    function ARPLog_head_permission_Cons(log: ARPLog): Perm
+    function ARPLog_head_level_Cons(log: ARPLog): Int
+    function ARPLog_tail_Cons(log: ARPLog): ARPLog
 
     // Constructor Types
 
-    function ARPLogType(log: ARPLog): Int
-    unique function ARPLogType_Nil(): Int
-    unique function ARPLogType_Cons(): Int
+    function ARPLog_type(log: ARPLog): Int
+    unique function ARPLog_type_Nil(): Int
+    unique function ARPLog_type_Cons(): Int
+
+    function ARPLog_is_Nil(log: ARPLog): Bool
+    function ARPLog_is_Cons(log: ARPLog): Bool
 
     // Functions
-    function ARPLogSum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+
+    function ARPLog_sum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
 
     // Axioms
-    // TODO: Add axioms
 
+    axiom destruct_over_construct_Cons {
+        forall head_ref: Ref, head_fieldId: Int, head_permission: Perm, head_level: Int, tail: ARPLog :: { ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail) }
+            ARPLog_head_ref_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_ref
+         && ARPLog_head_fieldId_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_fieldId
+         && ARPLog_head_permission_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_permission
+         && ARPLog_head_level_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_level
+         && ARPLog_tail_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == tail
+    }
+
+    axiom construct_over_destruct_Cons {
+        forall log: ARPLog :: { ARPLog_head_ref_Cons(log) } { ARPLog_head_fieldId_Cons(log) } { ARPLog_head_permission_Cons(log) } { ARPLog_head_level_Cons(log) } { ARPLog_tail_Cons(log) }
+            ARPLog_is_Cons(log) ==> log == ARPLog_Cons(ARPLog_head_ref_Cons(log), ARPLog_head_fieldId_Cons(log), ARPLog_head_permission_Cons(log), ARPLog_head_level_Cons(log), ARPLog_tail_Cons(log))
+    }
+
+    axiom type_of_Nil {
+        ARPLog_type(ARPLog_Nil()) == ARPLog_type_Nil()
+    }
+
+    axiom type_of_Cons {
+        forall head_ref: Ref, head_fieldId: Int, head_permission: Perm, head_level: Int, tail: ARPLog ::
+            ARPLog_type(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == ARPLog_type_Cons()
+    }
+
+    axiom type_existence {
+        forall log: ARPLog ::
+            ARPLog_type(log) == ARPLog_type_Nil()
+         || ARPLog_type(log) == ARPLog_type_Cons()
+    }
+
+    axiom type_is_Nil {
+        forall log: ARPLog :: ARPLog_type(log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(log)
+    }
+
+    axiom type_is_Cons {
+        forall log: ARPLog :: ARPLog_type(log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(log)
+    }
+
+    axiom sum_of_log {
+        forall ref: Ref, fieldId: Int, level: Int, log: ARPLog :: { ARPLog_sum(ref, fieldId, level, log) }
+            ARPLog_is_Nil(log) ==> ARPLog_sum(ref, fieldId, level, log) == none
+         && ARPLog_is_Cons(log) ==>
+                ARPLog_sum(ref, fieldId, level, log) ==
+                (
+                    ARPLog_sum(ref, fieldId, level, ARPLog_tail_Cons(log)) +
+                    (
+                        (
+                            ARPLog_head_ref_Cons(log) == ref
+                         && ARPLog_head_fieldId_Cons(log) == fieldId
+                         && ARPLog_head_level_Cons(log) > level
+                        ) ?
+                        (ARPLog_head_permission_Cons(log)) :
+                        (none)
+                    )
+                )
+    }
 }
 
+// requires false to make sure all references to rd are transformed
 function rd(): Perm
   requires false
 
+// requires false to make sure all references to rdc are transformed
 function rdc(): Perm
   requires false
 

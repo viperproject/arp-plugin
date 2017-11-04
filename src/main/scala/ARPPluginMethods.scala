@@ -19,7 +19,7 @@ object ARPPluginMethods {
     val methodRdName = ARPPluginUtils.getNewNameFor(m, "_rd")
     val methodLabelName = ARPPluginUtils.getNewName + "_label"
     val rdArg = LocalVarDecl(methodRdName, Perm)(m.pos, m.info)
-    val arpLogDomain = ARPPluginUtils.getDomain(input, "ARPLog").get
+    val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginUtils.getARPLogDomainName).get
     val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
     val arpLogNil = ARPPluginUtils.getDomainFunction(arpLogDomain, "ARPLog_Nil").get
     Method(
@@ -37,11 +37,11 @@ object ARPPluginMethods {
             )(b.pos, b.info, b.errT + NodeTrafo(b)),
             Inhale(ARPPluginUtils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
           )
-            ++ m.pres.map(p => Inhale(ARPPluginUtils.rewriteRd(methodRdName)(p))(p.pos, p.info, p.errT + NodeTrafo(p)))
+            ++ m.pres.map(p => Inhale(p)(p.pos, p.info, p.errT + NodeTrafo(p)))
             ++ Seq(Label(methodLabelName, Seq())(m.pos, m.info))
             ++ b.ss
             ++ m.posts.map(p => Exhale(
-            ARPPluginUtils.rewriteOldExpr(methodLabelName)(ARPPluginUtils.rewriteRd(methodRdName)(p))
+            ARPPluginUtils.rewriteOldExpr(methodLabelName)(p)
           )(p.pos, p.info, p.errT + NodeTrafo(p) + ErrTrafo({
             case ExhaleFailed(_, reason, cached) =>
               PostconditionViolated(p, m, reason, cached)
@@ -68,13 +68,13 @@ object ARPPluginMethods {
             Inhale(ARPPluginUtils.constrainRdExp(methodRdName)(m.pos, m.info, newErrTrafo))(m.pos, m.info, newErrTrafo)
           ) ++
             method.pres.map(p => Exhale(
-              ARPPluginUtils.rewriteRd(methodRdName)(ARPPluginUtils.rewriteOldExpr(labelName)(p))
+              ARPPluginUtils.rewriteOldExpr(labelName)(p)
             )(p.pos, p.info, p.errT + NodeTrafo(p) + ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 PreconditionInCallFalse(m, reason, cached)
             }))) ++
             method.posts.map(p => Inhale(
-              ARPPluginUtils.rewriteRd(methodRdName)(ARPPluginUtils.rewriteOldExpr(labelName, onlyOld = true)(p))
+              ARPPluginUtils.rewriteOldExpr(labelName, onlyOld = true)(p)
             )(p.pos, p.info, p.errT + NodeTrafo(p))),
           Seq(
             Label(labelName, Seq())(m.pos, m.info),

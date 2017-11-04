@@ -22,6 +22,10 @@ object ARPPluginUtils {
     program.methods.find(m => m.name == method)
   }
 
+  def getFunction(program: Program, function: String): Option[Function] = {
+    program.functions.find(f => f.name == function)
+  }
+
   def getDomain(program: Program, domain: String): Option[Domain] = {
     program.domains.find(d => d.name == domain)
   }
@@ -31,6 +35,10 @@ object ARPPluginUtils {
   }
 
   def getARPLogName: String = "ARPPlugin_pl"
+
+  def getARPLogDomainName: String = "ARPLog"
+
+  def getFieldFunctionDomainName: String = "ARPPlugin_field_functions"
 
   def getName(suffix: String): String = "ARPPlugin_NAME_" + suffix
 
@@ -68,7 +76,7 @@ object ARPPluginUtils {
         NoPerm()(pos, info, errT),
         LocalVar(methodRdName)(Perm, pos, info, errT)
       )(pos, info, errT),
-      PermLeCmp(
+      PermLtCmp(
         LocalVar(methodRdName)(Perm, pos, info, errT),
         FullPerm()(pos, info, errT)
       )(pos, info, errT)

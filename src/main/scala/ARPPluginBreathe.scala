@@ -53,25 +53,25 @@ object ARPPluginBreathe {
     // * init stuff * //
     // ************** //
 
-    val normalized = normalizeExpression(fieldAccessPredicate.perm)
+    val normalized = ARPPluginNormalize.normalizeExpression(fieldAccessPredicate.perm)
     val fieldAccess = fieldAccessPredicate.loc
     val field = fieldAccess.field
-    val fieldFunctionName = ARPPluginUtils.getNewNameForWithSuffix(field)
+    val fieldFunctionName = ARPPluginNaming.getNameFor(field)
     val rcv = fieldAccess.rcv
 
-    val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginUtils.getARPLogDomainName).get
+    val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.logDomainName).get
     val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
-    val arpLogCons = ARPPluginUtils.getDomainFunction(arpLogDomain, "ARPLog_Cons").get
-    val arpLogSum = ARPPluginUtils.getDomainFunction(arpLogDomain, "ARPLog_sum").get
+    val arpLogCons = ARPPluginUtils.getDomainFunction(arpLogDomain, ARPPluginNaming.logDomainCons).get
+    val arpLogSum = ARPPluginUtils.getDomainFunction(arpLogDomain, ARPPluginNaming.logDomainSum).get
 
-    val arpFieldFunctionDomain = ARPPluginUtils.getDomain(input, ARPPluginUtils.getFieldFunctionDomainName).get
+    val arpFieldFunctionDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.fieldFunctionDomainName).get
     val arpFieldFunction = ARPPluginUtils.getDomainFunction(arpFieldFunctionDomain, fieldFunctionName).get
 
-    val arpLog = LocalVar(ARPPluginUtils.getARPLogName)(arpLogType, breath.pos, breath.info)
+    val arpLog = LocalVar(ARPPluginNaming.logName)(arpLogType, breath.pos, breath.info)
     val zeroLit = IntLit(0)(breath.pos, breath.info)
     val noPermLit = NoPerm()(breath.pos, breath.info)
     val emptySeqn = Seqn(Seq(), Seq())(breath.pos, breath.info)
-    val epsilonRd = FuncApp(ARPPluginUtils.getFunction(input, "epsilonRd").get, Seq())(breath.pos, breath.info)
+    val epsilonRd = FuncApp(ARPPluginUtils.getFunction(input, ARPPluginNaming.rdEpsilonName).get, Seq())(breath.pos, breath.info)
     val currentPerm = CurrentPerm(fieldAccess)(breath.pos, breath.info)
     val localRd = LocalVar(ctx.c)(Perm, breath.pos, breath.info)
 
@@ -522,15 +522,4 @@ object ARPPluginBreathe {
     }
   }
 
-  def normalizeExpression(exp: Exp): NormalizedExpression = {
-//    NormalizedExpression(Some(LocalVar("q")(Perm)), Some(LocalVar("prd")(Perm)), Some(LocalVar("n")(Perm)), Some(LocalVar("n_rd")(Perm)), None)
-    NormalizedExpression(Some(perm(0, 1)), Some(IntLit(0)()), Some(IntLit(0)()), Some(IntLit(0)()), None)
-  }
-
-  def perm(a: Int, b: Int): FractionalPerm = {
-    FractionalPerm(IntLit(a)(), IntLit(b)())()
-  }
-
 }
-
-case class NormalizedExpression(const: Option[Exp], predicate: Option[Exp], counting: Option[Exp], read: Option[Exp], wildcard: Option[Exp])

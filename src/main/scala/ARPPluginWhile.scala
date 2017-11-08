@@ -12,11 +12,13 @@ import viper.silver.verifier.errors.{ExhaleFailed, LoopInvariantNotEstablished, 
 
 object ARPPluginWhile {
 
+  // TODO: Move condition into loop
+
   def handleWhile(input: Program, w: While, ctx: ContextC[Node, String]): Node = {
     if (w.invs.isEmpty) {
       w
     } else {
-      val whileRdName = ARPPluginUtils.getNewNameFor(w, "_rd")
+      val whileRdName = ARPPluginNaming.getNameFor(w, suffix = "while_rd")
       val newErrTrafo = w.errT + NodeTrafo(w)
       val whilePrime = While(w.cond, Seq(),
         Seqn(

@@ -15,16 +15,14 @@ import viper.silver.verifier._
 
 class ARPPlugin extends SilverPlugin {
 
-  val ARP_DOMAIN_FILE = "/ARPDomain.sil"
-
   var _errors: Seq[AbstractError] = Seq[AbstractError]()
 
   override def beforeResolve(input: PProgram): PProgram = {
 
-    val rdFunction = PFunction(PIdnDef("rd"), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
+    val rdFunction = PFunction(PIdnDef(ARPPluginNaming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
     val argument = Seq(PFormalArgDecl(PIdnDef("x"), TypeHelper.Int))
-    val epsilonFunction = PFunction(PIdnDef("rdc"), argument, TypeHelper.Perm, Seq(), Seq(), None, None)
+    val epsilonFunction = PFunction(PIdnDef(ARPPluginNaming.rdCountingName), argument, TypeHelper.Perm, Seq(), Seq(), None, None)
 
     // inject functions for rd() and rdc()
     val inputWithFunctions = PProgram(
@@ -40,7 +38,7 @@ class ARPPlugin extends SilverPlugin {
 
     // replace all rd with rd()
     val rdRewriter = StrategyBuilder.Slim[PNode]({
-      case PIdnUse("rd") => PCall(PIdnUse("rd"), Seq(), None)
+      case PIdnUse(ARPPluginNaming.rdName) => PCall(PIdnUse(ARPPluginNaming.rdName), Seq(), None)
     }, Traverse.BottomUp)
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
@@ -49,7 +47,9 @@ class ARPPlugin extends SilverPlugin {
   }
 
   override def beforeVerify(input: Program): Program = {
-    val enhancedInput = addFieldFunctions(addARPDomain(input))
+    val inputWithARPDomain = addARPDomain(input)
+    ARPPluginNaming.init(ARPPluginNaming.collectUsedNames(inputWithARPDomain))
+    val enhancedInput = addFieldFunctions(inputWithARPDomain)
 
     val arpRewriter = StrategyBuilder.Context[Node, String](
       {
@@ -69,9 +69,10 @@ class ARPPlugin extends SilverPlugin {
       "", // default context
       {
         case (m@Method(name, _, _, _, _, _), _) =>
-          ARPPluginUtils.getNewNameFor(m, "_rd")
+          ARPPluginNaming.getNameFor(m, suffix = "rd")
         case (w@While(_, _, _), _) =>
-          ARPPluginUtils.getNewNameFor(w, "_rd")
+          // TODO: reuse previous rd name
+          ARPPluginNaming.getNameFor(w, suffix = "rd")
       }
     )
 
@@ -106,12 +107,12 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def addARPDomain(input: Program): Program = {
-    val arpDomainFile = loadSilFile(ARP_DOMAIN_FILE)
+    val arpDomainFile = loadSilFile(ARPPluginNaming.arpDomainFile)
 
     val newProgram = Program(
       input.domains ++ arpDomainFile.domains,
       input.fields ++ arpDomainFile.fields,
-      input.functions.filterNot(f => f.name == "rd" || f.name == "rdc") ++ arpDomainFile.functions,
+      input.functions.filterNot(f => f.name == ARPPluginNaming.rdName || f.name == ARPPluginNaming.rdCountingName) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
       input.methods ++ arpDomainFile.methods
     )(input.pos, input.info, input.errT + NodeTrafo(input))
@@ -123,11 +124,11 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def addFieldFunctions(input: Program): Program = {
-    val domainName = "ARPPlugin_field_functions"
+    val domainName = ARPPluginNaming.fieldFunctionDomainName
     val fieldDomain = Domain(
       domainName,
       input.fields.map(f => DomainFunc(
-        ARPPluginUtils.getNewNameFor(f, "_field_" + f.name),
+        ARPPluginNaming.getNameFor(f, prefix = "field", suffix = f.name),
         Seq(), Int, unique = true
       )(input.pos, input.info, domainName, input.errT)),
       Seq(),
@@ -155,7 +156,7 @@ class ARPPlugin extends SilverPlugin {
     input.fields.filter(f => inputPrime.fields.exists(ff => ff.name == f.name)).foreach(f => {
       _errors :+= TypecheckerError(s"Duplicate field '${f.name}'", f.pos)
     })
-    input.functions.filterNot(f => f.name == "rd" || f.name == "rdc")
+    input.functions.filterNot(f => f.name == ARPPluginNaming.rdName || f.name == ARPPluginNaming.rdCountingName)
       .filter(f => inputPrime.functions.exists(ff => ff.name == f.name)).foreach(f => {
       _errors :+= TypecheckerError(s"Duplicate function '${f.name}'", f.pos)
     })

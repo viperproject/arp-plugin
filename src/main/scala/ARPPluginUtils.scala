@@ -13,11 +13,6 @@ import scala.collection.immutable.HashMap
 
 object ARPPluginUtils {
 
-  var newNameMap = new HashMap[Node, String]
-  var newNameSuffix = new HashMap[Node, String]
-
-  var nameIndex = 0
-
   def getMethod(program: Program, method: String): Option[Method] = {
     program.methods.find(m => m.name == method)
   }
@@ -30,44 +25,8 @@ object ARPPluginUtils {
     program.domains.find(d => d.name == domain)
   }
 
-  def getDomainFunction(domain: Domain, function: String): Option[DomainFunc] ={
+  def getDomainFunction(domain: Domain, function: String): Option[DomainFunc] = {
     domain.functions.find(f => f.name == function)
-  }
-
-  def getARPLogName: String = "ARPPlugin_pl"
-
-  def getARPLogDomainName: String = "ARPLog"
-
-  def getFieldFunctionDomainName: String = "ARPPlugin_field_functions"
-
-  def getName(suffix: String): String = "ARPPlugin_NAME_" + suffix
-
-  def getLastNewName: String = getName(nameIndex.toString)
-
-  def getNewName: String = {
-    nameIndex += 1
-    // TODO: figure out a way to generate unique names (i.e. don't just hope no one else uses the name)
-    // TODO: use the same name for whiles of the same scope
-    getName(nameIndex.toString)
-  }
-
-  def getNewNameFor(node: Node, suffix: String = ""): String = {
-    if (newNameMap.contains(node)) {
-      newNameMap(node) + suffix
-    } else {
-      val newName = getNewName
-      newNameMap += node -> newName
-      newNameSuffix += node -> suffix
-      newName + suffix
-    }
-  }
-
-  def getNewNameForWithSuffix(node: Node): String = {
-    if (newNameMap.contains(node)) {
-      newNameMap(node) + newNameSuffix(node)
-    } else {
-      getNewNameFor(node, "_no_suffix_found")
-    }
   }
 
   def constrainRdExp(methodRdName: String)(pos: Position = NoPosition, info: Info = NoInfo, errT: ErrorTrafo = NoTrafos): Exp =
@@ -98,11 +57,11 @@ object ARPPluginUtils {
 
   def rewriteRd(contextRdName: String)(node: Exp): Exp = {
     StrategyBuilder.Slim[Node]({
-      case f@FuncApp("rd", Seq()) => LocalVar(contextRdName)(Perm, f.pos, f.info, f.errT + NodeTrafo(f))
-      case f@FuncApp("rdc", Seq(arg: Exp)) =>
+      case f@FuncApp(ARPPluginNaming.rdName, Seq()) => LocalVar(contextRdName)(Perm, f.pos, f.info, f.errT + NodeTrafo(f))
+      case f@FuncApp(ARPPluginNaming.rdCountingName, Seq(arg: Exp)) =>
         PermMul(
           arg,
-          FuncApp("epsilonRd", Seq())(f.pos, f.info, f.typ, f.formalArgs, f.errT)
+          FuncApp(ARPPluginNaming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, f.errT)
         )(f.pos, f.info, f.errT + NodeTrafo(f))
     }).execute[Exp](node)
   }

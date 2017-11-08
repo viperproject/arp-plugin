@@ -35,6 +35,7 @@ object ARPBuild extends Build {
            baseSettings
         ++ Seq(
               name := "ARP",
+              mainClass in Compile := Some("viper.silicon.SiliconRunner"),
               mainClass in assembly := Some("viper.silicon.SiliconRunner"),
               jarName in assembly := "silicon-arp.jar",
               test in assembly := {},

@@ -523,7 +523,8 @@ object ARPPluginBreathe {
   }
 
   def normalizeExpression(exp: Exp): NormalizedExpression = {
-    NormalizedExpression(Some(LocalVar("q")(Perm)), Some(LocalVar("prd")(Perm)), Some(LocalVar("n")(Perm)), Some(LocalVar("n_rd")(Perm)), None)
+//    NormalizedExpression(Some(LocalVar("q")(Perm)), Some(LocalVar("prd")(Perm)), Some(LocalVar("n")(Perm)), Some(LocalVar("n_rd")(Perm)), None)
+    NormalizedExpression(Some(perm(0, 1)), Some(IntLit(0)()), Some(IntLit(0)()), Some(IntLit(0)()), None)
   }
 
   def perm(a: Int, b: Int): FractionalPerm = {

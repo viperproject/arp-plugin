@@ -17,7 +17,8 @@ object ARPPluginMethods {
   // desugar method contracts into explicit inhales/exhales
   def handleMethod(input: Program, m: Method, ctx: ContextC[Node, String]): Node = {
     val methodRdName = ARPPluginNaming.getNameFor(m, m.name, "rd")
-    val methodLabelName = ARPPluginNaming.getNewName(m.name, "start_label")
+    val methodStartLabelName = ARPPluginNaming.getNewName(m.name, "start_label")
+    val methodEndLabelName = ARPPluginNaming.getNewName(m.name, "end_label")
     val rdArg = LocalVarDecl(methodRdName, Perm)(m.pos, m.info)
     val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.logDomainName).get
     val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
@@ -40,23 +41,29 @@ object ARPPluginMethods {
             )(b.pos, b.info, b.errT + NodeTrafo(b)),
             // inhale rd constraints for rd argument
             Inhale(ARPPluginUtils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
-          )
+          ) ++
             // inhale preconditions
-            ++ m.pres.map(p => Inhale(p)(p.pos, p.info, p.errT + NodeTrafo(p)))
+            m.pres.map(p => Inhale(p)(p.pos, p.info, p.errT + NodeTrafo(p))) ++
             // start label
-            ++ Seq(Label(methodLabelName, Seq())(m.pos, m.info))
-            // method bodz
-            ++ b.ss
+            Seq(Label(methodStartLabelName, Seq())(m.pos, m.info)) ++
+            // method body
+            b.ss ++
+            Seq(
+              Label(methodEndLabelName, Seq())(m.pos, m.info)
+            ) ++
             // exhale postconditions
-            ++ m.posts.map(p => Exhale(
-            ARPPluginUtils.rewriteOldExpr(methodLabelName)(p)
-          )(p.pos, p.info, p.errT + NodeTrafo(p) + ErrTrafo({
-            case ExhaleFailed(_, reason, cached) =>
-              PostconditionViolated(p, m, reason, cached)
-          }))),
+            m.posts.map(p => Exhale(
+              ARPPluginUtils.rewriteOldExpr(methodEndLabelName, oldLabel = false)(
+                ARPPluginUtils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)(p)
+              )
+            )(p.pos, p.info, p.errT + NodeTrafo(p) + ErrTrafo({
+              case ExhaleFailed(_, reason, cached) =>
+                PostconditionViolated(p, m, reason, cached)
+            }))),
           // variable declarations
           b.scopedDecls ++ Seq(
-            Label(methodLabelName, Seq())(m.pos, m.info),
+            Label(methodStartLabelName, Seq())(m.pos, m.info),
+            Label(methodEndLabelName, Seq())(m.pos, m.info),
             LocalVarDecl(ARPPluginNaming.logName, arpLogType)(m.pos, m.info)
           )
         )(m.pos, m.info, m.errT + NodeTrafo(b))
@@ -87,7 +94,7 @@ object ARPPluginMethods {
             }))) ++
             // inhale postconditions
             method.posts.map(p => Inhale(
-              ARPPluginUtils.rewriteOldExpr(labelName, onlyOld = true)(p)
+              ARPPluginUtils.rewriteOldExpr(labelName, fieldAccess = false)(p)
             )(p.pos, p.info, p.errT + NodeTrafo(p))),
           // variable declarations
           Seq(

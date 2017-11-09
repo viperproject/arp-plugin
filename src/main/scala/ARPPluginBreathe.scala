@@ -11,32 +11,51 @@ import viper.silver.ast._
 
 object ARPPluginBreathe {
 
-  // TODO: Add label before not yet split inhales/exhales
   // TODO: Adjust log levels
-  // TODO: Normalize expressions
   // TODO: Adjust sum levels
-  // TODO: Only output if when option is defined
-  // TODO: Handle wildcards
 
   def handleInhale(input: Program, inhale: Inhale, ctx: ContextC[Node, String]): Node = {
     val i = Inhale(ARPPluginUtils.rewriteRd(ctx.c)(inhale.exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale))
     ctx.noRec(i)
-    i
+    Seqn(
+      Seq(i) ++
+        splitBreathing(i.exp).map({
+          case accessPredicate: FieldAccessPredicate =>
+            val normalized = ARPPluginNormalize.normalizeExpression(accessPredicate.perm)
+            Some(generateLogUpdate(input, accessPredicate, normalized, minus = false, ctx))
+          case _ =>
+            None
+        }).filter(_.isDefined).flatMap(_.get),
+      Seq()
+    )(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale))
   }
 
   def handleExhale(input: Program, exhale: Exhale, ctx: ContextC[Node, String]): Node = {
+    val labelName = ARPPluginNaming.getNameFor(exhale, suffix = "exhale_label")
     Seqn(
+      Seq(Label(labelName, Seq())(exhale.pos, exhale.info)) ++
       splitBreathing(exhale.exp).map {
         case accessPredicate: FieldAccessPredicate =>
-          val e = Exhale(ARPPluginUtils.rewriteRd(ctx.c)(accessPredicate))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))
+          val normalized = ARPPluginNormalize.normalizeExpression(accessPredicate.perm)
+          val e = Exhale(
+            ARPPluginUtils.rewriteOldExpr(labelName, oldLabel = false)(
+              ARPPluginUtils.rewriteRd(ctx.c)(accessPredicate)
+            )
+          )(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))
           ctx.noRec(e)
-          generateAssumption(input, e, accessPredicate, ctx)
+
+          Seqn(
+            generateAssumption(input, accessPredicate, normalized, ctx) ++
+              Seq(e) ++
+              generateLogUpdate(input, accessPredicate, normalized, minus = true, ctx),
+            Seq()
+          )(exhale.pos, exhale.info)
         case default =>
           val e = Exhale(ARPPluginUtils.rewriteRd(ctx.c)(default))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))
           ctx.noRec(e)
           e
       },
-      Seq()
+      Seq(Label(labelName, Seq())(exhale.pos, exhale.info))
     )(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))
   }
 
@@ -47,66 +66,50 @@ object ARPPluginBreathe {
     }
   }
 
-  def generateAssumption(input: Program, breath: Stmt, fieldAccessPredicate: FieldAccessPredicate, ctx: ContextC[Node, String]): Stmt = {
+  def generateAssumption(input: Program, accessPredicate: FieldAccessPredicate, normalized: NormalizedExpression, ctx: ContextC[Node, String]): Seq[Stmt] = {
 
     // ************** //
     // * init stuff * //
     // ************** //
 
-    val normalized = ARPPluginNormalize.normalizeExpression(fieldAccessPredicate.perm)
-    val fieldAccess = fieldAccessPredicate.loc
+    // FieldAcces
+    val fieldAccess = accessPredicate.loc
     val field = fieldAccess.field
     val fieldFunctionName = ARPPluginNaming.getNameFor(field)
     val rcv = fieldAccess.rcv
-
-    val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.logDomainName).get
-    val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
-    val arpLogCons = ARPPluginUtils.getDomainFunction(arpLogDomain, ARPPluginNaming.logDomainCons).get
-    val arpLogSum = ARPPluginUtils.getDomainFunction(arpLogDomain, ARPPluginNaming.logDomainSum).get
-
     val arpFieldFunctionDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.fieldFunctionDomainName).get
     val arpFieldFunction = ARPPluginUtils.getDomainFunction(arpFieldFunctionDomain, fieldFunctionName).get
 
-    val arpLog = LocalVar(ARPPluginNaming.logName)(arpLogType, breath.pos, breath.info)
-    val zeroLit = IntLit(0)(breath.pos, breath.info)
-    val noPermLit = NoPerm()(breath.pos, breath.info)
-    val emptySeqn = Seqn(Seq(), Seq())(breath.pos, breath.info)
-    val epsilonRd = FuncApp(ARPPluginUtils.getFunction(input, ARPPluginNaming.rdEpsilonName).get, Seq())(breath.pos, breath.info)
-    val currentPerm = CurrentPerm(fieldAccess)(breath.pos, breath.info)
-    val localRd = LocalVar(ctx.c)(Perm, breath.pos, breath.info)
+    // ARPLog
+    val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.logDomainName).get
+    val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
+    val arpLogSum = ARPPluginUtils.getDomainFunction(arpLogDomain, ARPPluginNaming.logDomainSum).get
+    val arpLog = LocalVar(ARPPluginNaming.logName)(arpLogType, accessPredicate.pos, accessPredicate.info)
+
+    // Helpers
+    val zeroLit = IntLit(0)(accessPredicate.pos, accessPredicate.info)
+    val noPermLit = NoPerm()(accessPredicate.pos, accessPredicate.info)
+    val emptySeqn = Seqn(Seq(), Seq())(accessPredicate.pos, accessPredicate.info)
+    val epsilonRd = FuncApp(ARPPluginUtils.getFunction(input, ARPPluginNaming.rdEpsilonName).get, Seq())(accessPredicate.pos, accessPredicate.info)
+    val currentPerm = CurrentPerm(fieldAccess)(accessPredicate.pos, accessPredicate.info)
+    val localRd = LocalVar(ctx.c)(Perm, accessPredicate.pos, accessPredicate.info)
 
     def getSumCall(level: Int): DomainFuncApp = DomainFuncApp(
       arpLogSum,
       Seq(
         rcv,
-        DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(breath.pos, breath.info),
-        IntLit(level)(breath.pos, breath.info),
+        DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(accessPredicate.pos, accessPredicate.info),
+        IntLit(level)(accessPredicate.pos, accessPredicate.info),
         arpLog
       ),
       Map[TypeVar, Type]() /* TODO: What's the deal with this? */
-    )(breath.pos, breath.info)
-
-    def getConsCall(level: Int, permission: Exp, minus: Boolean): LocalVarAssign ={
-      LocalVarAssign(
-        arpLog,
-        DomainFuncApp(
-          arpLogCons, Seq(
-            rcv,
-            DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(breath.pos, breath.info),
-            if (minus) Minus(permission)(breath.pos, breath.info) else permission,
-            IntLit(level)(breath.pos, breath.info),
-            arpLog
-          ),
-          Map[TypeVar, Type]() /* TODO: What's the deal with this? */
-        )(breath.pos, breath.info)
-      )(breath.pos, breath.info)
-    }
+    )(accessPredicate.pos, accessPredicate.info)
 
     if (normalized.wildcard.isDefined) {
       // ************* //
       // * wildcards * //
       // ************* //
-      breath
+      Seq()
     } else {
       // ************************** //
       // * no counting permission * //
@@ -123,14 +126,14 @@ object ARPPluginBreathe {
                 PermMul(
                   normalized.read.get,
                   localRd
-                )(breath.pos, breath.info)
-              )(breath.pos, breath.info),
+                )(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info),
               currentPerm
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n == 0 && (0 < n_rd && none < sum()) && (!(0 < q && q < sum()))
       val countingEq0RdGt0ConstNok = Seqn(
@@ -141,13 +144,13 @@ object ARPPluginBreathe {
               PermMul(
                 normalized.read.get,
                 localRd
-              )(breath.pos, breath.info),
+              )(accessPredicate.pos, accessPredicate.info),
               currentPerm
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n == 0 && (0 < n_rd && none < sum())
       val countingEq0RdGt0 = if (normalized.const.isDefined) {
@@ -155,17 +158,17 @@ object ARPPluginBreathe {
           Seq(
             If(
               And(
-                LtCmp(zeroLit, normalized.const.get)(breath.pos, breath.info),
-                PermLtCmp(normalized.const.get, getSumCall(-1))(breath.pos, breath.info)
-              )(breath.pos, breath.info),
+                LtCmp(zeroLit, normalized.const.get)(accessPredicate.pos, accessPredicate.info),
+                PermLtCmp(normalized.const.get, getSumCall(-1))(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info),
               // if (0 < q && q < sum())
               countingEq0RdGt0ConstOk,
               // else
               countingEq0RdGt0ConstNok
-            )(breath.pos, breath.info)
+            )(accessPredicate.pos, accessPredicate.info)
           ),
           Seq()
-        )(breath.pos, breath.info)
+        )(accessPredicate.pos, accessPredicate.info)
       } else {
         countingEq0RdGt0ConstNok
       }
@@ -182,13 +185,13 @@ object ARPPluginBreathe {
                 PermMul(
                   normalized.read.get,
                   localRd
-                )(breath.pos, breath.info)
-              )(breath.pos, breath.info)
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+                )(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n == 0
       val countingEq0 = if (normalized.read.isDefined) {
@@ -196,29 +199,29 @@ object ARPPluginBreathe {
           Seq(
             If(
               And(
-                LtCmp(zeroLit, normalized.read.get)(breath.pos, breath.info),
-                PermLtCmp(noPermLit, getSumCall(-1))(breath.pos, breath.info)
-              )(breath.pos, breath.info),
+                LtCmp(zeroLit, normalized.read.get)(accessPredicate.pos, accessPredicate.info),
+                PermLtCmp(noPermLit, getSumCall(-1))(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info),
               // if (0 < n_rd && none < sum())
               countingEq0RdGt0,
               Seqn(
                 Seq(
                   If(
                     And(
-                      LtCmp(normalized.read.get, zeroLit)(breath.pos, breath.info),
-                      PermLtCmp(noPermLit, normalized.const.get)(breath.pos, breath.info)
-                    )(breath.pos, breath.info),
+                      LtCmp(normalized.read.get, zeroLit)(accessPredicate.pos, accessPredicate.info),
+                      PermLtCmp(noPermLit, normalized.const.get)(accessPredicate.pos, accessPredicate.info)
+                    )(accessPredicate.pos, accessPredicate.info),
                     // if (n_rd < 0 && 0 < q)
                     countingEq0RdLt0,
                     emptySeqn
-                  )(breath.pos, breath.info)
+                  )(accessPredicate.pos, accessPredicate.info)
                 ),
                 Seq()
-              )(breath.pos, breath.info)
-            )(breath.pos, breath.info)
+              )(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info)
           ),
           Seq()
-        )(breath.pos, breath.info)
+        )(accessPredicate.pos, accessPredicate.info)
       } else {
         emptySeqn
       }
@@ -235,13 +238,13 @@ object ARPPluginBreathe {
               PermMul(
                 normalized.counting.get,
                 epsilonRd
-              )(breath.pos, breath.info),
+              )(accessPredicate.pos, accessPredicate.info),
               currentPerm
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n > 0 && (none < sum()) && (0 < n_rd && none < sum()) && (0 < q && q < sum())
       val countingGt0SumOkRdGt0ConstOk = Seqn(
@@ -254,19 +257,19 @@ object ARPPluginBreathe {
                   PermMul(
                     normalized.read.get,
                     localRd
-                  )(breath.pos, breath.info),
+                  )(accessPredicate.pos, accessPredicate.info),
                   PermMul(
                     normalized.counting.get,
                     epsilonRd
-                  )(breath.pos, breath.info)
-                )(breath.pos, breath.info)
-              )(breath.pos, breath.info),
+                  )(accessPredicate.pos, accessPredicate.info)
+                )(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info),
               currentPerm
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n > 0 && (none < sum()) && (0 < n_rd && none < sum()) && (!(0 < q && q < sum()))
       val countingGt0SumOkRdGt0ConstNok = Seqn(
@@ -277,66 +280,66 @@ object ARPPluginBreathe {
                 PermMul(
                   normalized.read.get,
                   localRd
-                )(breath.pos, breath.info),
+                )(accessPredicate.pos, accessPredicate.info),
                 PermMul(
                   normalized.counting.get,
                   epsilonRd
-                )(breath.pos, breath.info)
-              )(breath.pos, breath.info),
+                )(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info),
               currentPerm
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n > 0 && (none < sum()) && (0 < n_rd && none < sum())
       val countingGt0SumOkRdGt0 = Seqn(
         Seq(
           If(
             And(
-              PermLtCmp(noPermLit, normalized.const.get)(breath.pos, breath.info),
-              PermLtCmp(normalized.const.get, getSumCall(-1))(breath.pos, breath.info)
-            )(breath.pos, breath.info),
+              PermLtCmp(noPermLit, normalized.const.get)(accessPredicate.pos, accessPredicate.info),
+              PermLtCmp(normalized.const.get, getSumCall(-1))(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info),
             // if (0 < q && q < sum())
             countingGt0SumOkRdGt0ConstOk,
             // else
             countingGt0SumOkRdGt0ConstNok
-          )(breath.pos, breath.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n > 0 && (none < sum())
       val countingGt0SumOk = Seqn(
         Seq(
           If(
             And(
-              LtCmp(zeroLit, normalized.read.get)(breath.pos, breath.info),
-              PermLtCmp(noPermLit, getSumCall(-1))(breath.pos, breath.info)
-            )(breath.pos, breath.info),
+              LtCmp(zeroLit, normalized.read.get)(accessPredicate.pos, accessPredicate.info),
+              PermLtCmp(noPermLit, getSumCall(-1))(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info),
             // if (0 < n_rd && none < sum())
             countingGt0SumOkRdGt0,
             // else
             countingGt0SumOkRdLe0
-          )(breath.pos, breath.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n > 0
       val countingGt0 = Seqn(
         Seq(
           If(
-            PermLtCmp(noPermLit, getSumCall(-1))(breath.pos, breath.info),
+            PermLtCmp(noPermLit, getSumCall(-1))(accessPredicate.pos, accessPredicate.info),
             // if (none < sum())
             countingGt0SumOk,
             // else
             emptySeqn
-          )(breath.pos, breath.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // ******************************** //
       // * negative counting permission * //
@@ -352,17 +355,17 @@ object ARPPluginBreathe {
                 PermMul(
                   normalized.read.get,
                   localRd
-                )(breath.pos, breath.info),
+                )(accessPredicate.pos, accessPredicate.info),
                 PermMul(
                   normalized.counting.get,
                   epsilonRd
-                )(breath.pos, breath.info)
-              )(breath.pos, breath.info)
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+                )(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n < 0 && !(0 == q && 0 < n_rd) && (0 < q) && (0 < rd_n)
       val countingLt0ConstGt0RdGt0 = Seqn(
@@ -376,18 +379,18 @@ object ARPPluginBreathe {
                   PermMul(
                     normalized.read.get,
                     localRd
-                  )(breath.pos, breath.info),
+                  )(accessPredicate.pos, accessPredicate.info),
                   PermMul(
                     normalized.counting.get,
                     epsilonRd
-                  )(breath.pos, breath.info)
-                )(breath.pos, breath.info)
-              )(breath.pos, breath.info)
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+                  )(accessPredicate.pos, accessPredicate.info)
+                )(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n < 0 && !(0 == q && 0 < n_rd) && (0 < q) && (!(0 < rd_n))
       val countingLt0ConstGt0RdLe0 = Seqn(
@@ -400,126 +403,146 @@ object ARPPluginBreathe {
                 PermMul(
                   normalized.counting.get,
                   epsilonRd
-                )(breath.pos, breath.info)
-              )(breath.pos, breath.info)
-            )(breath.pos, breath.info)
-          )(breath.pos, breath.info)
+                )(accessPredicate.pos, accessPredicate.info)
+              )(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n < 0 && !(0 == q && 0 < n_rd) && (0 < q)
       val countingLt0ConstGt0 = Seqn(
         Seq(
           If(
-            LtCmp(zeroLit, normalized.read.get)(breath.pos, breath.info),
+            LtCmp(zeroLit, normalized.read.get)(accessPredicate.pos, accessPredicate.info),
             // if (0 < rd_n)
             countingLt0ConstGt0RdGt0,
             // else
             countingLt0ConstGt0RdLe0
-          )(breath.pos, breath.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n < 0 && !(0 == q && 0 < n_rd)
       val countingLt0MaybeConstGt0 = Seqn(
         Seq(
           If(
-            PermLtCmp(noPermLit, normalized.const.get)(breath.pos, breath.info),
+            PermLtCmp(noPermLit, normalized.const.get)(accessPredicate.pos, accessPredicate.info),
             // if (0 < q)
             countingLt0ConstGt0,
             // else
             emptySeqn
-          )(breath.pos, breath.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // n < 0
       val countingLt0 = Seqn(
         Seq(
           If(
             And(
-              EqCmp(zeroLit, normalized.const.get)(breath.pos, breath.info),
-              LtCmp(zeroLit, normalized.read.get)(breath.pos, breath.info)
-            )(breath.pos, breath.info),
+              EqCmp(zeroLit, normalized.const.get)(accessPredicate.pos, accessPredicate.info),
+              LtCmp(zeroLit, normalized.read.get)(accessPredicate.pos, accessPredicate.info)
+            )(accessPredicate.pos, accessPredicate.info),
             // if (0 == q && 0 < n_rd)
             countingLt0RdGt0,
             // else
             countingLt0MaybeConstGt0
-          )(breath.pos, breath.info)
+          )(accessPredicate.pos, accessPredicate.info)
         ),
         Seq()
-      )(breath.pos, breath.info)
+      )(accessPredicate.pos, accessPredicate.info)
 
       // ************* //
       // * merge ifs * //
       // ************* //
 
       var assumptionSeq = Seq[Stmt]()
-      var logSeq = Seq[Stmt]()
 
-      // TODO: Build huge if construct
       if (normalized.counting.isDefined) {
         // 0 != n
         val countingNeq0 = Seqn(
           Seq(
             If(
-              LtCmp(zeroLit, normalized.counting.get)(breath.pos, breath.info),
+              LtCmp(zeroLit, normalized.counting.get)(accessPredicate.pos, accessPredicate.info),
               // if (0 < n)
               countingGt0,
               // if (0 > n)
               countingLt0
-            )(breath.pos, breath.info)
+            )(accessPredicate.pos, accessPredicate.info)
           ),
           Seq()
-        )(breath.pos, breath.info)
+        )(accessPredicate.pos, accessPredicate.info)
 
         val countingIf = If(
-          EqCmp(zeroLit, normalized.counting.get)(breath.pos, breath.info),
+          EqCmp(zeroLit, normalized.counting.get)(accessPredicate.pos, accessPredicate.info),
           // if (0 == n)
           countingEq0,
           // if (0 != n)
           countingNeq0
-        )(breath.pos, breath.info)
+        )(accessPredicate.pos, accessPredicate.info)
 
         assumptionSeq ++= Seq(countingIf)
       } else {
         assumptionSeq ++= Seq(countingEq0)
       }
-
-      // ******************* //
-      // * log permissions * //
-      // ******************* //
-
-      if (normalized.const.isDefined) {
-        logSeq :+= getConsCall(-1, normalized.const.get, minus = true)
-      }
-      if (normalized.predicate.isDefined) {
-        logSeq :+= getConsCall(-1, normalized.predicate.get, minus = true)
-      }
-      if (normalized.counting.isDefined) {
-        logSeq :+= getConsCall(-1, normalized.counting.get, minus = true)
-      }
-      if (normalized.read.isDefined) {
-        logSeq :+= getConsCall(-1, normalized.read.get, minus = true)
-      }
-      if (normalized.wildcard.isDefined) {
-        logSeq :+= getConsCall(-1, normalized.wildcard.get, minus = true)
-      }
-
-      // **************** //
-      // * finish stuff * //
-      // **************** //
-
-      Seqn(
-        assumptionSeq
-          ++ Seq(breath)
-          ++ logSeq,
-        Seq()
-      )(breath.pos, breath.info)
+      assumptionSeq
     }
+  }
+
+  def generateLogUpdate(input: Program, fieldAccessPredicate: FieldAccessPredicate, normalized: NormalizedExpression, minus: Boolean, ctx: ContextC[Node, String]): Seq[Stmt] = {
+
+    // ARPLog
+    val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.logDomainName).get
+    val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
+    val arpLog = LocalVar(ARPPluginNaming.logName)(arpLogType, fieldAccessPredicate.pos, fieldAccessPredicate.info)
+    val arpLogCons = ARPPluginUtils.getDomainFunction(arpLogDomain, ARPPluginNaming.logDomainCons).get
+
+    // FieldAccess
+    val fieldAccess = fieldAccessPredicate.loc
+    val field = fieldAccess.field
+    val fieldFunctionName = ARPPluginNaming.getNameFor(field)
+    val rcv = fieldAccess.rcv
+    val arpFieldFunctionDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.fieldFunctionDomainName).get
+    val arpFieldFunction = ARPPluginUtils.getDomainFunction(arpFieldFunctionDomain, fieldFunctionName).get
+
+    def getConsCall(level: Int, permission: Exp): LocalVarAssign = {
+      LocalVarAssign(
+        arpLog,
+        DomainFuncApp(
+          arpLogCons, Seq(
+            rcv,
+            DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(fieldAccessPredicate.pos, fieldAccessPredicate.info),
+            if (minus) Minus(permission)(fieldAccessPredicate.pos, fieldAccessPredicate.info) else permission,
+            IntLit(level)(fieldAccessPredicate.pos, fieldAccessPredicate.info),
+            arpLog
+          ),
+          Map[TypeVar, Type]() /* TODO: What's the deal with this? */
+        )(fieldAccessPredicate.pos, fieldAccessPredicate.info)
+      )(fieldAccessPredicate.pos, fieldAccessPredicate.info)
+    }
+
+    var logSeq = Seq[Stmt]()
+
+    if (normalized.const.isDefined) {
+      logSeq :+= getConsCall(-1, normalized.const.get)
+    }
+    if (normalized.predicate.isDefined) {
+      logSeq :+= getConsCall(-1, normalized.predicate.get)
+    }
+    if (normalized.counting.isDefined) {
+      logSeq :+= getConsCall(-1, normalized.counting.get)
+    }
+    if (normalized.read.isDefined) {
+      logSeq :+= getConsCall(-1, normalized.read.get)
+    }
+    if (normalized.wildcard.isDefined) {
+      logSeq :+= getConsCall(-1, normalized.wildcard.get)
+    }
+    logSeq
   }
 
 }

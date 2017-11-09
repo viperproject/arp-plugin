@@ -12,18 +12,23 @@ import viper.silver.verifier.errors.{ExhaleFailed, LoopInvariantNotEstablished, 
 
 object ARPPluginWhile {
 
-  // TODO: Move condition into loop
-
   def handleWhile(input: Program, w: While, ctx: ContextC[Node, String]): Node = {
     if (w.invs.isEmpty) {
       w
     } else {
       val whileRdName = ARPPluginNaming.getNameFor(w, suffix = "while_rd")
+      val condName = ARPPluginNaming.getNameFor(w.cond, suffix = "while_cond")
       val newErrTrafo = w.errT + NodeTrafo(w)
-      val whilePrime = While(w.cond, Seq(),
+      val condVar = LocalVar(condName)(Bool, w.pos, w.info, newErrTrafo)
+
+      val whilePrime = While(condVar, Seq(),
         Seqn(
           w.invs.map(i => Inhale(i)(i.pos, i.info, i.errT + NodeTrafo(i))) ++
-            Seq(w.body) ++
+            Seq(
+              Inhale(w.cond)(w.pos, w.info, newErrTrafo),
+              w.body,
+              LocalVarAssign(condVar, w.cond)()
+            ) ++
             w.invs.map(i => Exhale(i)(i.pos, i.info, i.errT + NodeTrafo(i) + ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 LoopInvariantNotPreserved(i, reason, cached)
@@ -33,10 +38,10 @@ object ARPPluginWhile {
       )(w.pos, w.info, newErrTrafo)
 
       ctx.noRec(whilePrime)
-
       Seqn(
         Seq(
-          Inhale(ARPPluginUtils.constrainRdExp(whileRdName)(w.pos, w.info, newErrTrafo))(w.pos, w.info, newErrTrafo)
+          Inhale(ARPPluginUtils.constrainRdExp(whileRdName)(w.pos, w.info, newErrTrafo))(w.pos, w.info, newErrTrafo),
+          LocalVarAssign(condVar, w.cond)(w.pos, w.info, newErrTrafo)
         ) ++
           w.invs.map(i => Exhale(i)(i.pos, i.info, i.errT + NodeTrafo(i) + ErrTrafo({
             case ExhaleFailed(_, reason, cached) =>
@@ -45,8 +50,12 @@ object ARPPluginWhile {
           Seq(
             whilePrime
           ) ++
-          w.invs.map(i => Inhale(i)(i.pos, i.info, i.errT + NodeTrafo(i))),
-        Seq(LocalVarDecl(whileRdName, Perm)(w.pos, w.info, newErrTrafo))
+          w.invs.map(i => Inhale(i)(i.pos, i.info, i.errT + NodeTrafo(i))) ++
+          Seq(Inhale(Not(w.cond)(w.pos, w.info, newErrTrafo))(w.pos, w.info, newErrTrafo)),
+        Seq(
+          LocalVarDecl(whileRdName, Perm)(w.pos, w.info, newErrTrafo),
+          LocalVarDecl(condName, Bool)(w.pos, w.info, newErrTrafo)
+        )
       )(w.pos, w.info, newErrTrafo)
     }
   }

@@ -15,6 +15,14 @@ import viper.silver.verifier._
 
 class ARPPlugin extends SilverPlugin {
 
+  // TODO: Add tests
+  // TODO: Find nice way to report errors
+  // TODO: Normalize expressions
+  // TODO: Build huge if construct in a nicer way
+  // TODO: Only output if when option is defined
+  // TODO: Handle wildcards
+  // TODO: Handle implies and ternary
+
   var _errors: Seq[AbstractError] = Seq[AbstractError]()
 
   override def beforeResolve(input: PProgram): PProgram = {

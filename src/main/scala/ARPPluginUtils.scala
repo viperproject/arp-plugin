@@ -41,16 +41,13 @@ object ARPPluginUtils {
       )(pos, info, errT)
     )(pos, info, errT)
 
-  def rewriteOldExpr(labelName: String, onlyOld: Boolean = false)(node: Exp): Exp = {
+  def rewriteOldExpr(labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true)(node: Exp): Exp = {
     StrategyBuilder.Slim[Node]({
-      case o@Old(exp) => LabelledOld(exp, labelName)(o.pos, o.info, o.errT + NodeTrafo(o))
-      case f@FieldAccessPredicate(fa@FieldAccess(exp, field), perm) if !onlyOld =>
-        FieldAccessPredicate(
-          FieldAccess(
-            LabelledOld(exp, labelName)(f.pos, f.info, f.errT + NodeTrafo(exp)),
-            field
-          )(f.pos, f.info, f.errT + NodeTrafo(fa)),
-          perm
+      case o@Old(exp) if oldLabel => LabelledOld(exp, labelName)(o.pos, o.info, o.errT + NodeTrafo(o))
+      case f@FieldAccess(exp, field) if fieldAccess =>
+        FieldAccess(
+          LabelledOld(exp, labelName)(f.pos, f.info, f.errT + NodeTrafo(exp)),
+          field
         )(f.pos, f.info, f.errT + NodeTrafo(f))
     }).execute[Exp](node)
   }

@@ -41,7 +41,7 @@ object ARPPluginUtils {
       )(pos, info, errT)
     )(pos, info, errT)
 
-  def rewriteOldExpr(labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true)(node: Exp): Exp = {
+  def rewriteOldExpr[T <: Node](labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true)(node: T): T = {
     StrategyBuilder.Slim[Node]({
       case o@Old(exp) if oldLabel => LabelledOld(exp, labelName)(o.pos, o.info, o.errT + NodeTrafo(o))
       case f@FieldAccess(exp, field) if fieldAccess =>
@@ -49,10 +49,17 @@ object ARPPluginUtils {
           LabelledOld(exp, labelName)(f.pos, f.info, f.errT + NodeTrafo(exp)),
           field
         )(f.pos, f.info, f.errT + NodeTrafo(f))
-    }).execute[Exp](node)
+      case c@CurrentPerm(FieldAccess(rcv, field)) =>
+        CurrentPerm(
+          FieldAccess(
+            LabelledOld(rcv, labelName)(c.pos, c.info, c.errT + NodeTrafo(c)),
+            field
+          )(c.pos, c.info, c.errT + NodeTrafo(c))
+        )(c.pos, c.info, c.errT + NodeTrafo(c))
+    }).execute[T](node)
   }
 
-  def rewriteRd(contextRdName: String)(node: Exp): Exp = {
+  def rewriteRd[T <: Node](contextRdName: String)(node: T): T = {
     StrategyBuilder.Slim[Node]({
       case f@FuncApp(ARPPluginNaming.rdName, Seq()) => LocalVar(contextRdName)(Perm, f.pos, f.info, f.errT + NodeTrafo(f))
       case f@FuncApp(ARPPluginNaming.rdCountingName, Seq(arg: Exp)) =>
@@ -60,6 +67,6 @@ object ARPPluginUtils {
           arg,
           FuncApp(ARPPluginNaming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, f.errT)
         )(f.pos, f.info, f.errT + NodeTrafo(f))
-    }).execute[Exp](node)
+    }).execute[T](node)
   }
 }

@@ -24,6 +24,7 @@ object ARPPluginNaming {
   val logDomainSum = "ARPLog_sum"
   val rdName = "rd"
   val rdCountingName = "rdc"
+  val rdWildcardName = "rdw"
   val rdEpsilonName = "epsilonRd"
   val rdGlobalName = "epsilonRd"
   private var fieldFunctionDomainName_ = "ARP_field_functions"
@@ -57,6 +58,11 @@ object ARPPluginNaming {
       nameMap += node -> getNewName(prefix, suffix)
     }
     nameMap(node)
+  }
+
+  def storeName(node: Node, name: String): Unit ={
+    usedNames += name
+    nameMap += node -> name
   }
 
   def collectUsedNames(node: Node): Set[String] = {

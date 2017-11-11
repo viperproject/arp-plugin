@@ -77,7 +77,7 @@ object ARPPluginMethods {
       case Some(method) =>
         val newErrTrafo = m.errT + NodeTrafo(m)
         val labelName = ARPPluginNaming.getNewName(method.name, "call_label")
-        val methodRdName = ARPPluginNaming.getNameFor(m, method.name, "call_rd")
+        val methodRdName = ARPPluginNaming.getNewName(method.name, "call_rd")
         Seqn(
           Seq(
             // call label

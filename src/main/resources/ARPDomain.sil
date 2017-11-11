@@ -95,6 +95,10 @@ function rd(): Perm
 function rdc(): Perm
   requires false
 
+// requires false to make sure all references to rdw are transformed
+function rdw(): Perm
+  requires false
+
 function globalRd(): Perm
   ensures none < result && result <= write
 

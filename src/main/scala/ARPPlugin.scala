@@ -17,11 +17,13 @@ class ARPPlugin extends SilverPlugin {
 
   // TODO: Add tests
   // TODO: Find nice way to report errors
-  // TODO: Normalize expressions
-  // TODO: Build huge if construct in a nicer way
-  // TODO: Only output if when option is defined
-  // TODO: Handle wildcards
+  // TODO: Optimize if generations
+  // TODO: Handle wildcards correctly
   // TODO: Handle implies and ternary
+  // TODO: Figure out which Exhale should be which level
+  // TODO: reuse previous rd name for while
+  // TODO: Report error if normalization failed in handleBreath
+  // TODO: Handle rd in negative positions
 
   var _errors: Seq[AbstractError] = Seq[AbstractError]()
 
@@ -32,13 +34,15 @@ class ARPPlugin extends SilverPlugin {
     val argument = Seq(PFormalArgDecl(PIdnDef("x"), TypeHelper.Int))
     val epsilonFunction = PFunction(PIdnDef(ARPPluginNaming.rdCountingName), argument, TypeHelper.Perm, Seq(), Seq(), None, None)
 
+    val wildcardFunction = PFunction(PIdnDef(ARPPluginNaming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
+
     // inject functions for rd() and rdc()
     val inputWithFunctions = PProgram(
       input.imports,
       input.macros,
       input.domains,
       input.fields,
-      input.functions :+ rdFunction :+ epsilonFunction,
+      input.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction,
       input.predicates,
       input.methods,
       input.errors
@@ -47,6 +51,7 @@ class ARPPlugin extends SilverPlugin {
     // replace all rd with rd()
     val rdRewriter = StrategyBuilder.Slim[PNode]({
       case PIdnUse(ARPPluginNaming.rdName) => PCall(PIdnUse(ARPPluginNaming.rdName), Seq(), None)
+      case PIdnUse(ARPPluginNaming.rdWildcardName) => PCall(PIdnUse(ARPPluginNaming.rdWildcardName), Seq(), None)
     }, Traverse.BottomUp)
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
@@ -77,10 +82,9 @@ class ARPPlugin extends SilverPlugin {
       "", // default context
       {
         case (m@Method(name, _, _, _, _, _), _) =>
-          ARPPluginNaming.getNameFor(m, suffix = "rd")
+          ARPPluginNaming.getNameFor(m, m.name, "rd")
         case (w@While(_, _, _), _) =>
-          // TODO: reuse previous rd name
-          ARPPluginNaming.getNameFor(w, suffix = "rd")
+          ARPPluginNaming.getNameFor(w, suffix = "while_rd")
       }
     )
 
@@ -120,7 +124,11 @@ class ARPPlugin extends SilverPlugin {
     val newProgram = Program(
       input.domains ++ arpDomainFile.domains,
       input.fields ++ arpDomainFile.fields,
-      input.functions.filterNot(f => f.name == ARPPluginNaming.rdName || f.name == ARPPluginNaming.rdCountingName) ++ arpDomainFile.functions,
+      input.functions.filterNot(f =>
+        f.name == ARPPluginNaming.rdName ||
+        f.name == ARPPluginNaming.rdCountingName ||
+        f.name == ARPPluginNaming.rdWildcardName
+      ) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
       input.methods ++ arpDomainFile.methods
     )(input.pos, input.info, input.errT + NodeTrafo(input))
@@ -164,8 +172,11 @@ class ARPPlugin extends SilverPlugin {
     input.fields.filter(f => inputPrime.fields.exists(ff => ff.name == f.name)).foreach(f => {
       _errors :+= TypecheckerError(s"Duplicate field '${f.name}'", f.pos)
     })
-    input.functions.filterNot(f => f.name == ARPPluginNaming.rdName || f.name == ARPPluginNaming.rdCountingName)
-      .filter(f => inputPrime.functions.exists(ff => ff.name == f.name)).foreach(f => {
+    input.functions.filterNot(f =>
+        f.name == ARPPluginNaming.rdName ||
+        f.name == ARPPluginNaming.rdCountingName ||
+        f.name == ARPPluginNaming.rdWildcardName
+    ).filter(f => inputPrime.functions.exists(ff => ff.name == f.name)).foreach(f => {
       _errors :+= TypecheckerError(s"Duplicate function '${f.name}'", f.pos)
     })
     input.predicates.filter(p => inputPrime.predicates.exists(pp => pp.name == p.name)).foreach(p => {

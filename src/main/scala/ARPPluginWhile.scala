@@ -17,7 +17,7 @@ object ARPPluginWhile {
       w
     } else {
       val whileRdName = ARPPluginNaming.getNameFor(w, suffix = "while_rd")
-      val condName = ARPPluginNaming.getNameFor(w.cond, suffix = "while_cond")
+      val condName = ARPPluginNaming.getNewName(suffix = "while_cond")
       val newErrTrafo = w.errT + NodeTrafo(w)
       val condVar = LocalVar(condName)(Bool, w.pos, w.info, newErrTrafo)
 
@@ -37,7 +37,8 @@ object ARPPluginWhile {
         )(w.pos, w.info, newErrTrafo)
       )(w.pos, w.info, newErrTrafo)
 
-      ctx.noRec(whilePrime)
+      ARPPluginNaming.storeName(whilePrime, whileRdName)
+
       Seqn(
         Seq(
           Inhale(ARPPluginUtils.constrainRdExp(whileRdName)(w.pos, w.info, newErrTrafo))(w.pos, w.info, newErrTrafo),

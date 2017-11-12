@@ -15,26 +15,28 @@ import viper.silver.verifier._
 
 class ARPPlugin extends SilverPlugin {
 
-  // TODO: Add tests
-  // TODO: Find nice way to report errors
-  // TODO: Optimize if generations
   // TODO: Handle wildcards correctly
-  // TODO: Handle implies and ternary
   // TODO: Figure out which Exhale should be which level
   // TODO: reuse previous rd name for while
-  // TODO: Report error if normalization failed in handleBreath
-  // TODO: Handle rd in negative positions
+  // TODO: Fix "not enough permission" in postcondition
+  // TODO: Add more tests
+  // TODO: Optimize if generations
 
-  var _errors: Seq[AbstractError] = Seq[AbstractError]()
+  val utils = new ARPPluginUtils(this)
+  val naming = new ARPPluginNaming(this)
+  val methods = new ARPPluginMethods(this)
+  val while_ = new ARPPluginWhile(this)
+  val breathe = new ARPPluginBreathe(this)
+  val normalize = new ARPPluginNormalize(this)
 
   override def beforeResolve(input: PProgram): PProgram = {
 
-    val rdFunction = PFunction(PIdnDef(ARPPluginNaming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
+    val rdFunction = PFunction(PIdnDef(naming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
     val argument = Seq(PFormalArgDecl(PIdnDef("x"), TypeHelper.Int))
-    val epsilonFunction = PFunction(PIdnDef(ARPPluginNaming.rdCountingName), argument, TypeHelper.Perm, Seq(), Seq(), None, None)
+    val epsilonFunction = PFunction(PIdnDef(naming.rdCountingName), argument, TypeHelper.Perm, Seq(), Seq(), None, None)
 
-    val wildcardFunction = PFunction(PIdnDef(ARPPluginNaming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
+    val wildcardFunction = PFunction(PIdnDef(naming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
     // inject functions for rd() and rdc()
     val inputWithFunctions = PProgram(
@@ -50,8 +52,8 @@ class ARPPlugin extends SilverPlugin {
 
     // replace all rd with rd()
     val rdRewriter = StrategyBuilder.Slim[PNode]({
-      case PIdnUse(ARPPluginNaming.rdName) => PCall(PIdnUse(ARPPluginNaming.rdName), Seq(), None)
-      case PIdnUse(ARPPluginNaming.rdWildcardName) => PCall(PIdnUse(ARPPluginNaming.rdWildcardName), Seq(), None)
+      case PIdnUse(naming.rdName) => PCall(PIdnUse(naming.rdName), Seq(), None)
+      case PIdnUse(naming.rdWildcardName) => PCall(PIdnUse(naming.rdWildcardName), Seq(), None)
     }, Traverse.BottomUp)
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
@@ -61,30 +63,30 @@ class ARPPlugin extends SilverPlugin {
 
   override def beforeVerify(input: Program): Program = {
     val inputWithARPDomain = addARPDomain(input)
-    ARPPluginNaming.init(ARPPluginNaming.collectUsedNames(inputWithARPDomain))
+    naming.init(naming.collectUsedNames(inputWithARPDomain))
     val enhancedInput = addFieldFunctions(inputWithARPDomain)
 
     val arpRewriter = StrategyBuilder.Context[Node, String](
       {
         case (m : Method, ctx) =>
-          ARPPluginMethods.handleMethod(enhancedInput, m, ctx)
+          methods.handleMethod(enhancedInput, m, ctx)
         case (m : MethodCall, ctx) =>
-          ARPPluginMethods.handleMethodCall(enhancedInput, m, ctx)
+          methods.handleMethodCall(enhancedInput, m, ctx)
         case (w : While, ctx) =>
-          ARPPluginWhile.handleWhile(enhancedInput, w, ctx)
+          while_.handleWhile(enhancedInput, w, ctx)
         case (a@Assert(exp), ctx) =>
-          Assert(ARPPluginUtils.rewriteRd(ctx.c)(exp))(a.pos, a.info, a.errT + NodeTrafo(a))
+          Assert(utils.rewriteRd(ctx.c)(exp))(a.pos, a.info, a.errT + NodeTrafo(a))
         case (e: Exhale, ctx) =>
-          ARPPluginBreathe.handleExhale(enhancedInput, e, ctx)
+          breathe.handleExhale(enhancedInput, e, ctx)
         case (i: Inhale, ctx) =>
-          ARPPluginBreathe.handleInhale(enhancedInput, i, ctx)
+          breathe.handleInhale(enhancedInput, i, ctx)
       },
       "", // default context
       {
         case (m@Method(name, _, _, _, _, _), _) =>
-          ARPPluginNaming.getNameFor(m, m.name, "rd")
+          naming.getNameFor(m, m.name, "rd")
         case (w@While(_, _, _), _) =>
-          ARPPluginNaming.getNameFor(w, suffix = "while_rd")
+          naming.getNameFor(w, suffix = "while_rd")
       }
     )
 
@@ -96,8 +98,7 @@ class ARPPlugin extends SilverPlugin {
 
   override def beforeFinish(input: VerificationResult): VerificationResult = {
     input match {
-      case Success =>
-        if (_errors.isEmpty) Success else Failure(_errors)
+      case Success => Success
       case Failure(errors) =>
         Failure(errors.map {
           case ParseError(msg, pos) => ParseError(msg + s" ($pos)", pos)
@@ -105,7 +106,7 @@ class ARPPlugin extends SilverPlugin {
           case TypecheckerError(msg, pos) => TypecheckerError(msg.replace("<undefined position>", "<ARP Plugin>"), pos)
           case error: AbstractVerificationError => error.transformedError() // TODO: Add ErrorTransformation Information to AST
           case default => default
-        } ++ _errors)
+        })
     }
   }
 
@@ -119,15 +120,15 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def addARPDomain(input: Program): Program = {
-    val arpDomainFile = loadSilFile(ARPPluginNaming.arpDomainFile)
+    val arpDomainFile = loadSilFile(naming.arpDomainFile)
 
     val newProgram = Program(
       input.domains ++ arpDomainFile.domains,
       input.fields ++ arpDomainFile.fields,
       input.functions.filterNot(f =>
-        f.name == ARPPluginNaming.rdName ||
-        f.name == ARPPluginNaming.rdCountingName ||
-        f.name == ARPPluginNaming.rdWildcardName
+        f.name == naming.rdName ||
+        f.name == naming.rdCountingName ||
+        f.name == naming.rdWildcardName
       ) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
       input.methods ++ arpDomainFile.methods
@@ -140,11 +141,11 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def addFieldFunctions(input: Program): Program = {
-    val domainName = ARPPluginNaming.fieldFunctionDomainName
+    val domainName = naming.fieldFunctionDomainName
     val fieldDomain = Domain(
       domainName,
       input.fields.map(f => DomainFunc(
-        ARPPluginNaming.getNameFor(f, prefix = "field", suffix = f.name),
+        naming.getNameFor(f, prefix = "field", suffix = f.name),
         Seq(), Int, unique = true
       )(input.pos, input.info, domainName, input.errT)),
       Seq(),
@@ -163,27 +164,25 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def checkUniqueNames(input: Program, inputPrime: Program): Unit ={
-    // TODO: There is no easy way report back errors from within a plugin
-    // TODO: Is there a better way to check for duplicates?
     // check name clashes
     input.domains.filter(d => inputPrime.domains.exists(dd => dd.name == d.name)).foreach(d => {
-      _errors :+= TypecheckerError(s"Duplicate domain '${d.name}'", d.pos)
+      reportError(TypecheckerError(s"Duplicate domain '${d.name}'", d.pos))
     })
     input.fields.filter(f => inputPrime.fields.exists(ff => ff.name == f.name)).foreach(f => {
-      _errors :+= TypecheckerError(s"Duplicate field '${f.name}'", f.pos)
+      reportError(TypecheckerError(s"Duplicate field '${f.name}'", f.pos))
     })
     input.functions.filterNot(f =>
-        f.name == ARPPluginNaming.rdName ||
-        f.name == ARPPluginNaming.rdCountingName ||
-        f.name == ARPPluginNaming.rdWildcardName
+        f.name == naming.rdName ||
+        f.name == naming.rdCountingName ||
+        f.name == naming.rdWildcardName
     ).filter(f => inputPrime.functions.exists(ff => ff.name == f.name)).foreach(f => {
-      _errors :+= TypecheckerError(s"Duplicate function '${f.name}'", f.pos)
+      reportError(TypecheckerError(s"Duplicate function '${f.name}'", f.pos))
     })
     input.predicates.filter(p => inputPrime.predicates.exists(pp => pp.name == p.name)).foreach(p => {
-      _errors :+= TypecheckerError(s"Duplicate predicate '${p.name}'", p.pos)
+      reportError(TypecheckerError(s"Duplicate predicate '${p.name}'", p.pos))
     })
     input.methods.filter(m => inputPrime.methods.exists(mm => mm.name == m.name)).foreach(m => {
-      _errors :+= TypecheckerError(s"Duplicate method '${m.name}'", m.pos)
+      reportError(TypecheckerError(s"Duplicate method '${m.name}'", m.pos))
     })
   }
 }

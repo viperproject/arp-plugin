@@ -11,7 +11,7 @@ import viper.silver.ast.utility.Rewriter.StrategyBuilder
 
 import scala.collection.immutable.HashMap
 
-object ARPPluginUtils {
+class ARPPluginUtils(plugin: ARPPlugin) {
 
   def getMethod(program: Program, method: String): Option[Method] = {
     program.methods.find(m => m.name == method)
@@ -45,27 +45,35 @@ object ARPPluginUtils {
     StrategyBuilder.Slim[Node]({
       case o@Old(exp) if oldLabel => LabelledOld(exp, labelName)(o.pos, o.info, o.errT + NodeTrafo(o))
       case f@FieldAccess(exp, field) if fieldAccess =>
-        FieldAccess(
-          LabelledOld(exp, labelName)(f.pos, f.info, f.errT + NodeTrafo(exp)),
-          field
-        )(f.pos, f.info, f.errT + NodeTrafo(f))
+        exp match {
+          case _: LabelledOld => f
+          case _ =>
+            FieldAccess(
+              LabelledOld(exp, labelName)(f.pos, f.info, f.errT + NodeTrafo(exp)),
+              field
+            )(f.pos, f.info, f.errT + NodeTrafo(f))
+        }
       case c@CurrentPerm(FieldAccess(rcv, field)) =>
-        CurrentPerm(
-          FieldAccess(
-            LabelledOld(rcv, labelName)(c.pos, c.info, c.errT + NodeTrafo(c)),
-            field
-          )(c.pos, c.info, c.errT + NodeTrafo(c))
-        )(c.pos, c.info, c.errT + NodeTrafo(c))
+        rcv match {
+          case _: LabelledOld => c
+          case _ =>
+            CurrentPerm(
+              FieldAccess(
+                LabelledOld(rcv, labelName)(c.pos, c.info, c.errT + NodeTrafo(c)),
+                field
+              )(c.pos, c.info, c.errT + NodeTrafo(c))
+            )(c.pos, c.info, c.errT + NodeTrafo(c))
+        }
     }).execute[T](node)
   }
 
   def rewriteRd[T <: Node](contextRdName: String)(node: T): T = {
     StrategyBuilder.Slim[Node]({
-      case f@FuncApp(ARPPluginNaming.rdName, Seq()) => LocalVar(contextRdName)(Perm, f.pos, f.info, f.errT + NodeTrafo(f))
-      case f@FuncApp(ARPPluginNaming.rdCountingName, Seq(arg: Exp)) =>
+      case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(contextRdName)(Perm, f.pos, f.info, f.errT + NodeTrafo(f))
+      case f@FuncApp(plugin.naming.rdCountingName, Seq(arg: Exp)) =>
         PermMul(
           arg,
-          FuncApp(ARPPluginNaming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, f.errT)
+          FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, f.errT)
         )(f.pos, f.info, f.errT + NodeTrafo(f))
     }).execute[T](node)
   }

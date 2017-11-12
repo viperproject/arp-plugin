@@ -7,33 +7,44 @@
 package viper.silver.plugin
 
 import viper.silver.ast.{ErrorTrafo, Exp, FractionalPerm, FullPerm, FuncApp, Info, IntLit, NoInfo, NoPerm, NoPosition, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position}
+import viper.silver.verifier.TypecheckerError
 
-object ARPPluginNormalize {
+class ARPPluginNormalize(plugin: ARPPlugin) {
 
   def normalizeExpression(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression): Option[NormalizedExpression] = {
-    collect(exp, None, rdPerm)
+    collect(exp, rdPerm)
   }
 
-  def collect(exp: Exp, mult: Option[Exp], rdPerm: (Exp, FuncApp) => NormalizedExpression): Option[NormalizedExpression] = {
+  def collect(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression): Option[NormalizedExpression] = {
     exp match {
-      case PermMinus(left) => collect(left, Some(PermMinus(mult.getOrElse(IntLit(1)()))()), rdPerm)
-      case PermAdd(left, right) => op(collect(left, mult, rdPerm), collect(right, mult, rdPerm), _ +? _)
-      case PermSub(left, right) => collect(PermAdd(left, PermMinus(right)())(), mult, rdPerm)
-      case PermMul(left, right) => op(collect(left, mult, rdPerm), collect(right, mult, rdPerm), _ *? _)
-      case PermDiv(left, right) => op(collect(left, mult, rdPerm), collect(right, mult, rdPerm), _ /? _)
+      case PermMinus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)())), _ *? _, exp.pos)
+      case PermAdd(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp.pos)
+      case PermSub(left, right) => collect(PermAdd(left, PermMinus(right)())(), rdPerm)
+      case PermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp.pos)
+      case PermDiv(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp.pos)
       case i: IntLit => Some(constPerm(i))
-      case FractionalPerm(left, right) => op(collect(left, mult, rdPerm), collect(right, mult, rdPerm), _ /? _)
+      case FractionalPerm(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp.pos)
       case p: NoPerm => Some(constPerm(p))
       case p: FullPerm => Some(constPerm(p))
-      case f@FuncApp(ARPPluginNaming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
-      case f@FuncApp(ARPPluginNaming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, f))
-      case f@FuncApp(ARPPluginNaming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
-      case _ => None
+      case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
+      case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, f))
+      case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
+      case default =>
+        plugin.reportError(TypecheckerError("Can't normalize expression " + default, default.pos))
+        None
     }
   }
 
-  def op(a: Option[NormalizedExpression], b: Option[NormalizedExpression], f: (NormalizedExpression, NormalizedExpression) => Option[NormalizedExpression]): Option[NormalizedExpression] =
-    if (a.isDefined && b.isDefined) f(a.get, b.get) else None
+  def op(a: Option[NormalizedExpression], b: Option[NormalizedExpression], f: (NormalizedExpression, NormalizedExpression) => Option[NormalizedExpression], pos: Position): Option[NormalizedExpression] =
+    if (a.isDefined && b.isDefined) {
+      val result = f(a.get, b.get)
+      if (result.isEmpty){
+        plugin.reportError(TypecheckerError("Nonlinear expression", pos))
+      }
+      result
+    } else {
+      None
+    }
 
   def rdPermFresh(exp: Exp, f: FuncApp): NormalizedExpression = {
     NormalizedExpression(Seq(NormalizedPart(exp, 1, 1, Some(f))), None, None)
@@ -76,7 +87,16 @@ object ARPPluginNormalize {
       NormalizedPart(exp, store, check, u)
     }
 
-    def getTotal(pos: Position, info: Info, errT: ErrorTrafo): Exp = if (unit.isDefined) PermMul(exp, unit.get)(pos, info, errT) else exp
+    def getTotal(pos: Position, info: Info, errT: ErrorTrafo): Exp = {
+      if (unit.isDefined) {
+        exp match {
+          case IntLit(x) if x == 1 => unit.get
+          case default => PermMul(default, unit.get)(pos, info, errT)
+        }
+      } else {
+        exp
+      }
+    }
   }
 
   case class NormalizedExpression(exps: Seq[NormalizedPart], const: Option[NormalizedPart], wildcard: Option[NormalizedPart]) {
@@ -94,21 +114,21 @@ object ARPPluginNormalize {
         val h2 = exps2.head
         if (h1.store == h2.store) {
           if (h1.check == h2.check) {
-            newExps +:= h1.setExp(PermAdd(h1.exp, h2.exp)())
+            newExps :+= h1.setExp(PermAdd(h1.exp, h2.exp)())
             exps1 = exps1.tail
             exps2 = exps2.tail
           } else if (h1.check < h2.check) {
-            newExps +:= h1
+            newExps :+= h1
             exps1 = exps1.tail
           } else {
-            newExps +:= h2
+            newExps :+= h2
             exps2 = exps2.tail
           }
         } else if (h1.store < h2.store) {
-          newExps +:= h1
+          newExps :+= h1
           exps1 = exps1.tail
         } else {
-          newExps +:= h2
+          newExps :+= h2
           exps2 = exps2.tail
         }
       }

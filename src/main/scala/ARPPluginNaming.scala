@@ -11,7 +11,7 @@ import viper.silver.ast.utility.Rewriter.StrategyBuilder
 
 import scala.collection.immutable.{HashMap, HashSet}
 
-object ARPPluginNaming {
+class ARPPluginNaming(plugin: ARPPlugin) {
 
   var usedNames = new HashSet[String]
   var nameMap = new HashMap[Node, String]

@@ -7,16 +7,18 @@
 package viper.silicon.tests
 
 import java.nio.file.Path
-import viper.silver.testing.{LocatedAnnotation, MissingOutput, SilSuite, UnexpectedOutput}
-import viper.silver.verifier.{AbstractError, Verifier, Failure => SilFailure, Success => SilSuccess, VerificationResult => SilVerificationResult}
+
 import viper.silicon.{Silicon, SiliconFrontend, SymbExLogger}
-import viper.silver.frontend.TranslatorState
+import viper.silver.plugin.SilverPluginManager
 import viper.silver.reporter.NoopReporter
+import viper.silver.testing.{LocatedAnnotation, MissingOutput, SilSuite, UnexpectedOutput}
+import viper.silver.verifier.{Verifier, Failure => SilFailure, Success => SilSuccess, VerificationResult => SilVerificationResult}
 
 class ArpTests extends SilSuite {
   private val arpTestDirectories = Seq("arp")
+  private val siliconTestDirectories = Seq("consistency")
   private val silTestDirectories = Seq("all", "quantifiedpermissions", "wands", "examples", "quantifiedpredicates" ,"quantifiedcombinations")
-  val testDirectories = arpTestDirectories ++ silTestDirectories
+  val testDirectories = arpTestDirectories// ++ siliconTestDirectories ++ silTestDirectories
 
   override def frontend(verifier: Verifier, files: Seq[Path]) = {
     require(files.length == 1, "tests should consist of exactly one file")
@@ -44,7 +46,7 @@ class ArpTests extends SilSuite {
 
   lazy val verifiers = List(createSiliconInstance())
 
-  val commandLineArguments: Seq[String] = Seq.empty
+  val commandLineArguments: Seq[String] = Seq("--plugin", "ARPPlugin")
 
   private def createSiliconInstance() = {
     val args =
@@ -59,18 +61,10 @@ class ArpTests extends SilSuite {
 }
 
 class SiliconFrontendWithUnitTesting extends SiliconFrontend(NoopReporter) {
-  /** Is overridden only to append SymbExLogging-UnitTesting-Errors to the Result. **/
-  override def result: SilVerificationResult = {
-    if(_state < TranslatorState.Verified) super.result
-    else{
-      val symbExLogUnitTestErrors = SymbExLogger.unitTestEngine.verify()
-      symbExLogUnitTestErrors match{
-        case Nil => super.result
-        case s1:Seq[AbstractError] => super.result match{
-          case SilSuccess => SilFailure(s1)
-          case SilFailure(s2) => SilFailure(s2 ++ s1)
-        }
-      }
-    }
+
+  // patch missing plugin
+  override def init(verifier: Verifier): Unit = {
+    super.init(verifier)
+    _plugins = SilverPluginManager(_config.plugin.toOption)
   }
 }

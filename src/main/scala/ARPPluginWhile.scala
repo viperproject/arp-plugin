@@ -10,16 +10,18 @@ import viper.silver.ast._
 import viper.silver.ast.utility.Rewriter.ContextC
 import viper.silver.verifier.errors.{ExhaleFailed, LoopInvariantNotEstablished, LoopInvariantNotPreserved}
 
-object ARPPluginWhile {
+class ARPPluginWhile(plugin: ARPPlugin) {
 
   def handleWhile(input: Program, w: While, ctx: ContextC[Node, String]): Node = {
     if (w.invs.isEmpty) {
       w
     } else {
-      val whileRdName = ARPPluginNaming.getNameFor(w, suffix = "while_rd")
-      val condName = ARPPluginNaming.getNewName(suffix = "while_cond")
+      val whileRdName = plugin.naming.getNameFor(w, suffix = "while_rd")
+      val condName = plugin.naming.getNewName(suffix = "while_cond")
       val newErrTrafo = w.errT + NodeTrafo(w)
       val condVar = LocalVar(condName)(Bool, w.pos, w.info, newErrTrafo)
+      val whileStartLabelName = plugin.naming.getNewName("while", "start_label")
+      val whileEndLabelName = plugin.naming.getNewName("while", "end_label")
 
       val whilePrime = While(condVar, Seq(),
         Seqn(
@@ -27,24 +29,32 @@ object ARPPluginWhile {
             Seq(
               Inhale(w.cond)(w.pos, w.info, newErrTrafo),
               w.body,
-              LocalVarAssign(condVar, w.cond)()
+              LocalVarAssign(condVar, w.cond)(),
+              Label(whileEndLabelName, Seq())(w.pos, w.info, newErrTrafo)
             ) ++
-            w.invs.map(i => Exhale(i)(i.pos, i.info, i.errT + NodeTrafo(i) + ErrTrafo({
+            w.invs.map(i => Exhale(
+              plugin.utils.rewriteOldExpr(whileEndLabelName, oldLabel = false)(i)
+            )(i.pos, i.info, i.errT + NodeTrafo(i) + ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 LoopInvariantNotPreserved(i, reason, cached)
             }))),
-          Seq()
+          Seq(
+            Label(whileEndLabelName, Seq())(w.pos, w.info, newErrTrafo)
+          )
         )(w.pos, w.info, newErrTrafo)
       )(w.pos, w.info, newErrTrafo)
 
-      ARPPluginNaming.storeName(whilePrime, whileRdName)
+      plugin.naming.storeName(whilePrime, whileRdName)
 
       Seqn(
         Seq(
-          Inhale(ARPPluginUtils.constrainRdExp(whileRdName)(w.pos, w.info, newErrTrafo))(w.pos, w.info, newErrTrafo),
-          LocalVarAssign(condVar, w.cond)(w.pos, w.info, newErrTrafo)
+          Inhale(plugin.utils.constrainRdExp(whileRdName)(w.pos, w.info, newErrTrafo))(w.pos, w.info, newErrTrafo),
+          LocalVarAssign(condVar, w.cond)(w.pos, w.info, newErrTrafo),
+          Label(whileStartLabelName, Seq())(w.pos, w.info, newErrTrafo)
         ) ++
-          w.invs.map(i => Exhale(i)(i.pos, i.info, i.errT + NodeTrafo(i) + ErrTrafo({
+          w.invs.map(i => Exhale(
+            plugin.utils.rewriteOldExpr(whileStartLabelName, oldLabel = false)(i)
+          )(i.pos, i.info, i.errT + NodeTrafo(i) + ErrTrafo({
             case ExhaleFailed(_, reason, cached) =>
               LoopInvariantNotEstablished(i, reason, cached)
           }))) ++
@@ -55,7 +65,8 @@ object ARPPluginWhile {
           Seq(Inhale(Not(w.cond)(w.pos, w.info, newErrTrafo))(w.pos, w.info, newErrTrafo)),
         Seq(
           LocalVarDecl(whileRdName, Perm)(w.pos, w.info, newErrTrafo),
-          LocalVarDecl(condName, Bool)(w.pos, w.info, newErrTrafo)
+          LocalVarDecl(condName, Bool)(w.pos, w.info, newErrTrafo),
+          Label(whileStartLabelName, Seq())(w.pos, w.info, newErrTrafo)
         )
       )(w.pos, w.info, newErrTrafo)
     }

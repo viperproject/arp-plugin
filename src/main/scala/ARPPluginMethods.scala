@@ -10,19 +10,19 @@ import viper.silver.ast.utility.Rewriter.ContextC
 import viper.silver.ast._
 import viper.silver.verifier.errors.{ExhaleFailed, PostconditionViolated, PreconditionInCallFalse}
 
-object ARPPluginMethods {
+class ARPPluginMethods(plugin: ARPPlugin) {
 
   // add rd argument to method
   // init ARPLog
   // desugar method contracts into explicit inhales/exhales
   def handleMethod(input: Program, m: Method, ctx: ContextC[Node, String]): Node = {
-    val methodRdName = ARPPluginNaming.getNameFor(m, m.name, "rd")
-    val methodStartLabelName = ARPPluginNaming.getNewName(m.name, "start_label")
-    val methodEndLabelName = ARPPluginNaming.getNewName(m.name, "end_label")
+    val methodRdName = plugin.naming.getNameFor(m, m.name, "rd")
+    val methodStartLabelName = plugin.naming.getNewName(m.name, "start_label")
+    val methodEndLabelName = plugin.naming.getNewName(m.name, "end_label")
     val rdArg = LocalVarDecl(methodRdName, Perm)(m.pos, m.info)
-    val arpLogDomain = ARPPluginUtils.getDomain(input, ARPPluginNaming.logDomainName).get
+    val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
     val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
-    val arpLogNil = ARPPluginUtils.getDomainFunction(arpLogDomain, ARPPluginNaming.logDomainNil).get
+    val arpLogNil = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainNil).get
 
     Method(
       m.name,
@@ -36,11 +36,11 @@ object ARPPluginMethods {
           Seq(
             // init arp perm log
             LocalVarAssign(
-              LocalVar(ARPPluginNaming.logName)(arpLogType, b.pos, b.info, b.errT + NodeTrafo(b)),
+              LocalVar(plugin.naming.logName)(arpLogType, b.pos, b.info, b.errT + NodeTrafo(b)),
               DomainFuncApp(arpLogNil, Seq(), Map[TypeVar, Type]())(b.pos, b.info, b.errT + NodeTrafo(b))
             )(b.pos, b.info, b.errT + NodeTrafo(b)),
             // inhale rd constraints for rd argument
-            Inhale(ARPPluginUtils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
+            Inhale(plugin.utils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
           ) ++
             // inhale preconditions
             m.pres.map(p => Inhale(p)(p.pos, p.info, p.errT + NodeTrafo(p))) ++
@@ -53,8 +53,8 @@ object ARPPluginMethods {
             ) ++
             // exhale postconditions
             m.posts.map(p => Exhale(
-              ARPPluginUtils.rewriteOldExpr(methodEndLabelName, oldLabel = false)(
-                ARPPluginUtils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)(p)
+              plugin.utils.rewriteOldExpr(methodEndLabelName, oldLabel = false)(
+                plugin.utils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)(p)
               )
             )(p.pos, p.info, p.errT + NodeTrafo(p) + ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
@@ -64,7 +64,7 @@ object ARPPluginMethods {
           b.scopedDecls ++ Seq(
             Label(methodStartLabelName, Seq())(m.pos, m.info),
             Label(methodEndLabelName, Seq())(m.pos, m.info),
-            LocalVarDecl(ARPPluginNaming.logName, arpLogType)(m.pos, m.info)
+            LocalVarDecl(plugin.naming.logName, arpLogType)(m.pos, m.info)
           )
         )(m.pos, m.info, m.errT + NodeTrafo(b))
       })
@@ -73,28 +73,28 @@ object ARPPluginMethods {
 
   // desugar method calls into explicit inhales/exhales
   def handleMethodCall(input: Program, m: MethodCall, ctx: ContextC[Node, String]): Node = {
-    ARPPluginUtils.getMethod(input, m.methodName) match {
+    plugin.utils.getMethod(input, m.methodName) match {
       case Some(method) =>
         val newErrTrafo = m.errT + NodeTrafo(m)
-        val labelName = ARPPluginNaming.getNewName(method.name, "call_label")
-        val methodRdName = ARPPluginNaming.getNewName(method.name, "call_rd")
+        val labelName = plugin.naming.getNewName(method.name, "call_label")
+        val methodRdName = plugin.naming.getNewName(method.name, "call_rd")
         Seqn(
           Seq(
             // call label
             Label(labelName, Seq())(m.pos, m.info, newErrTrafo),
             // inhale rd constraints for call rd
-            Inhale(ARPPluginUtils.constrainRdExp(methodRdName)(m.pos, m.info, newErrTrafo))(m.pos, m.info, newErrTrafo)
+            Inhale(plugin.utils.constrainRdExp(methodRdName)(m.pos, m.info, newErrTrafo))(m.pos, m.info, newErrTrafo)
           ) ++
             // exhale preconditions
             method.pres.map(p => Exhale(
-              ARPPluginUtils.rewriteOldExpr(labelName)(p)
+              plugin.utils.rewriteOldExpr(labelName, fieldAccess = false)(p)
             )(p.pos, p.info, p.errT + NodeTrafo(p) + ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 PreconditionInCallFalse(m, reason, cached)
             }))) ++
             // inhale postconditions
             method.posts.map(p => Inhale(
-              ARPPluginUtils.rewriteOldExpr(labelName, fieldAccess = false)(p)
+              plugin.utils.rewriteOldExpr(labelName, fieldAccess = false)(p)
             )(p.pos, p.info, p.errT + NodeTrafo(p))),
           // variable declarations
           Seq(

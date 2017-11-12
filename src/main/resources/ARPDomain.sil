@@ -100,11 +100,7 @@ function rdw(): Perm
   requires false
 
 function globalRd(): Perm
-  ensures none < result && result <= write
+  ensures none < result && result < write
 
 function epsilonRd(): Perm
-  ensures none < result && result <= write
-
-method ARPSmokeTest() returns() {
-    assert false
-}
+  ensures none < result && result < write

@@ -11,16 +11,16 @@ import java.nio.file.Paths
 import viper.silver.ast.{Inhale, _}
 import viper.silver.ast.utility.Rewriter.{StrategyBuilder, Traverse}
 import viper.silver.parser._
+import viper.silver.plugin.ARPPlugin.{ARPContext, TransformedWhile}
 import viper.silver.verifier._
 
 class ARPPlugin extends SilverPlugin {
 
-  // TODO: Handle wildcards correctly
-  // TODO: Figure out which Exhale should be which level
-  // TODO: reuse previous rd name for while
-  // TODO: Fix "not enough permission" in postcondition
-  // TODO: Add more tests
-  // TODO: Optimize if generations
+  // TODO: implement globalRd in predicates
+  // TODO: Implement Optimizations (ignoreExhaleWithoutARP)
+  // TODO: Make sure ctx.noRec does work correctly everywhere
+  // TODO: Maybe Conjunct conditions to get rid of duplicate labels
+  // TODO: Maybe reuse previous rd name for while
 
   val utils = new ARPPluginUtils(this)
   val naming = new ARPPluginNaming(this)
@@ -28,6 +28,13 @@ class ARPPlugin extends SilverPlugin {
   val while_ = new ARPPluginWhile(this)
   val breathe = new ARPPluginBreathe(this)
   val normalize = new ARPPluginNormalize(this)
+
+  object Optimize {
+    val simplifyExpressions = true
+    val removeProvableIf = true
+    val ignoreExhaleWithoutARP = true
+    val noAssumptionForPost = true
+  }
 
   override def beforeResolve(input: PProgram): PProgram = {
 
@@ -66,33 +73,40 @@ class ARPPlugin extends SilverPlugin {
     naming.init(naming.collectUsedNames(inputWithARPDomain))
     val enhancedInput = addFieldFunctions(inputWithARPDomain)
 
-    val arpRewriter = StrategyBuilder.Context[Node, String](
+    val arpRewriter = StrategyBuilder.Context[Node, ARPContext](
       {
-        case (m : Method, ctx) =>
+        case (m: Method, ctx) =>
           methods.handleMethod(enhancedInput, m, ctx)
-        case (m : MethodCall, ctx) =>
+        case (m: MethodCall, ctx) =>
           methods.handleMethodCall(enhancedInput, m, ctx)
-        case (w : While, ctx) =>
+        case (w: While, ctx) =>
           while_.handleWhile(enhancedInput, w, ctx)
         case (a@Assert(exp), ctx) =>
-          Assert(utils.rewriteRd(ctx.c)(exp))(a.pos, a.info, a.errT + NodeTrafo(a))
+          Assert(utils.rewriteRd(ctx.c.localRdName)(exp))(a.pos, a.info, a.errT + NodeTrafo(a))
         case (e: Exhale, ctx) =>
           breathe.handleExhale(enhancedInput, e, ctx)
         case (i: Inhale, ctx) =>
           breathe.handleInhale(enhancedInput, i, ctx)
       },
-      "", // default context
+      ARPContext("", ""), // default context
       {
         case (m@Method(name, _, _, _, _, _), _) =>
-          naming.getNameFor(m, m.name, "rd")
-        case (w@While(_, _, _), _) =>
-          naming.getNameFor(w, suffix = "while_rd")
+          ARPContext(naming.getNameFor(m, m.name, "rd"), naming.getNameFor(m, m.name, "log"))
+        case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isEmpty =>
+          ARPContext(naming.getNameFor(w, suffix = "while_rd"), ctx.localLogName)
+        case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isDefined =>
+          ARPContext(ctx.localRdName, naming.getNameFor(w, suffix = "while_log"))
+        case (m@MethodCall(name, _, _), ctx) =>
+          ARPContext(naming.getNameFor(m, name, "call_rd"), ctx.localLogName)
       }
     )
 
     val inputPrime = arpRewriter.execute[Program](enhancedInput)
 
-    println(inputPrime)
+    if (System.getProperty("DEBUG", "").equals("1")) {
+      println(inputPrime)
+    }
+
     inputPrime
   }
 
@@ -127,8 +141,8 @@ class ARPPlugin extends SilverPlugin {
       input.fields ++ arpDomainFile.fields,
       input.functions.filterNot(f =>
         f.name == naming.rdName ||
-        f.name == naming.rdCountingName ||
-        f.name == naming.rdWildcardName
+          f.name == naming.rdCountingName ||
+          f.name == naming.rdWildcardName
       ) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
       input.methods ++ arpDomainFile.methods
@@ -145,7 +159,7 @@ class ARPPlugin extends SilverPlugin {
     val fieldDomain = Domain(
       domainName,
       input.fields.map(f => DomainFunc(
-        naming.getNameFor(f, prefix = "field", suffix = f.name),
+        naming.getNameFor(f, "field", f.name),
         Seq(), Int, unique = true
       )(input.pos, input.info, domainName, input.errT)),
       Seq(),
@@ -163,7 +177,7 @@ class ARPPlugin extends SilverPlugin {
     newProgram
   }
 
-  def checkUniqueNames(input: Program, inputPrime: Program): Unit ={
+  def checkUniqueNames(input: Program, inputPrime: Program): Unit = {
     // check name clashes
     input.domains.filter(d => inputPrime.domains.exists(dd => dd.name == d.name)).foreach(d => {
       reportError(TypecheckerError(s"Duplicate domain '${d.name}'", d.pos))
@@ -172,7 +186,7 @@ class ARPPlugin extends SilverPlugin {
       reportError(TypecheckerError(s"Duplicate field '${f.name}'", f.pos))
     })
     input.functions.filterNot(f =>
-        f.name == naming.rdName ||
+      f.name == naming.rdName ||
         f.name == naming.rdCountingName ||
         f.name == naming.rdWildcardName
     ).filter(f => inputPrime.functions.exists(ff => ff.name == f.name)).foreach(f => {
@@ -185,4 +199,30 @@ class ARPPlugin extends SilverPlugin {
       reportError(TypecheckerError(s"Duplicate method '${m.name}'", m.pos))
     })
   }
+}
+
+object ARPPlugin {
+
+  case class ARPContext(localRdName: String, localLogName: String)
+
+  case class WasMethodCondition() extends Info {
+    lazy val comment = Nil
+  }
+
+  case class WasInvariantOutside() extends Info {
+    lazy val comment = Nil
+  }
+
+  case class WasInvariantInside() extends Info {
+    lazy val comment = Nil
+  }
+
+  case class WasCallCondition() extends Info {
+    lazy val comment = Nil
+  }
+
+  case class TransformedWhile() extends Info {
+    lazy val comment = Nil
+  }
+
 }

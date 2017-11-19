@@ -1,0 +1,9 @@
+field f: Int
+
+method t6_b(r: Ref)
+    ensures r != null
+    //:: ExpectedOutput(not.wellformed:insufficient.permission)
+    ensures r.f == 2
+{
+    assume false
+}

@@ -1,0 +1,7 @@
+field f: Int
+
+method foo(x: Ref)
+requires acc(x.f, rdw*rdw)
+ensures acc(x.f, rdw*rdw)
+{
+}

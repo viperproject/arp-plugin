@@ -14,10 +14,8 @@ import scala.collection.immutable.{HashMap, HashSet}
 class ARPPluginNaming(plugin: ARPPlugin) {
 
   var usedNames = new HashSet[String]
-  var nameMap = new HashMap[Node, String]
+  var nameMap = new HashMap[(Node, Position, String, String), String]
 
-  private var logName_ = "ARP_pl"
-  def logName: String = logName_
   val logDomainName = "ARPLog"
   val logDomainNil = "ARPLog_Nil"
   val logDomainCons = "ARPLog_Cons"
@@ -34,7 +32,6 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   def init(usedNames: Set[String]): Unit = {
     this.usedNames = HashSet[String]()
     this.usedNames ++= usedNames
-    logName_ = getNewName("ARP_pl")
     fieldFunctionDomainName_ = getNewName("ARP_field_functions")
   }
 
@@ -53,16 +50,16 @@ class ARPPluginNaming(plugin: ARPPlugin) {
     name
   }
 
-  def getNameFor(node: Node, prefix: String = "ARP", suffix: String = ""): String ={
-    if (!nameMap.contains(node)){
-      nameMap += node -> getNewName(prefix, suffix)
+  def getNameFor(node: Node with Positioned, prefix: String = "ARP", suffix: String = ""): String ={
+    if (!nameMap.contains((node, node.pos, prefix, suffix))){
+      nameMap += (node, node.pos, prefix, suffix) -> getNewName(prefix, suffix)
     }
-    nameMap(node)
+    nameMap((node, node.pos, prefix, suffix))
   }
 
-  def storeName(node: Node, name: String): Unit ={
+  def storeName(name: String, node: Node with Positioned, prefix: String = "ARP", suffix: String = ""): Unit ={
     usedNames += name
-    nameMap += node -> name
+    nameMap += (node, node.pos, prefix, suffix) -> name
   }
 
   def collectUsedNames(node: Node): Set[String] = {

@@ -4,7 +4,9 @@ field f: Int
 
 method foo(x: Ref) returns()
   requires acc(x.g, write) && acc(x.h, rd)
+  //:: ExpectedOutput(postcondition.violated:assertion.false)
   ensures acc(x.g, write) && acc(x.h, rd) && x.g == x.h + 1
+  ensures false
 {
     while (x.g <= x.h)
       invariant acc(x.g, write) && acc(x.h, rd)
@@ -31,6 +33,7 @@ method client2(x: Ref) returns()
   requires acc(x.g, rd)
   ensures acc(x.g, rd)
 {
+    //:: ExpectedOutput(call.precondition:insufficient.permission)
     foo(x)
 }
 

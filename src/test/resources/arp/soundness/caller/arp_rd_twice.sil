@@ -1,0 +1,27 @@
+field f : Int
+field g : Int
+
+method foo(x: Ref)
+requires acc(x.f, write) && acc(x.g, rd)
+ensures acc(x.f, write) && acc(x.g, rd)
+ensures x.f == x.g + 1
+{
+    x.f := x.g + 1
+}
+
+method client(x: Ref)
+requires acc(x.f, write) && acc(x.g, write)
+ensures acc(x.f, write) && acc(x.g, write)
+//:: ExpectedOutput(postcondition.violated:assertion.false)
+ensures false
+{
+    x.f := 4
+    x.g := 5
+    foo(x)
+    assert x.g == 5
+    assert x.f == 6
+    x.g := 6
+    foo(x)
+    assert x.g == 6
+    assert x.f == 7
+}

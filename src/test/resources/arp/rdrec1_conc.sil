@@ -28,6 +28,7 @@ method eval(self: Ref, s: Ref) returns (res: Int)
         l := eval(self.left, s)
     }
     if (self.right != null) {
+        //:: ExpectedOutput(call.precondition:assertion.false)
         r := eval(self.right, s)
     }
     res := add(l, r)

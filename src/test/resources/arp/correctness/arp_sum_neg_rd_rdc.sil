@@ -16,5 +16,6 @@ ensures acc(x.f, write) && acc(x.g, write)
     x.f := 4
     x.g := 5
     foo(x)
+    assert x.g == 5
     assert x.f == 6
 }

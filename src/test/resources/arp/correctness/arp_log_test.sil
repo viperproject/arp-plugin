@@ -28,58 +28,6 @@ domain ARPLog {
 
     function ARPLog_sum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
 
-    // log levels for debugging
-    /*
-    unique function ARPLog_CONST_STORE(): Int {
-        result = 6
-    }
-    unique function ARPLog_CONST_CHECK(): Int {
-        result = 5
-    }
-    unique function ARPLog_GLOBAL_STORE(): Int {
-        result = 5
-    }
-    unique function ARPLog_GLOBAL_CHECK(): Int {
-        result = 5
-    }
-    unique function ARPLog_CONTEXT_STORE(): Int {
-        result = 4
-    }
-    unique function ARPLog_CONTEXT_CHECK(): Int {
-        result = 4
-    }
-    unique function ARPLog_TOKEN_STORE(): Int {
-        result = 3
-    }
-    unique function ARPLog_TOKEN_CHECK(): Int {
-        result = 4
-    }
-    unique function ARPLog_OLD_STORE(): Int {
-        result = 3
-    }
-    unique function ARPLog_OLD_CHECK(): Int {
-        result = 3
-    }
-    unique function ARPLog_WILDCARD_STORE(): Int {
-        result = 2
-    }
-    unique function ARPLog_WILDCARD_CHECK(): Int {
-        result = 0
-    }
-    unique function ARPLog_FRESH_STORE(): Int {
-        result = 1
-    }
-    unique function ARPLog_FRESH_CHECK(): Int {
-        result = 1
-    }
-    unique function ARPLog_EPSILON_STORE(): Int {
-        result = 0
-    }
-    unique function ARPLog_EPSILON_CHECK(): Int {
-        result = 0
-    }
-    */
-
     // Axioms
 
     axiom destruct_over_construct_Cons {
@@ -140,20 +88,50 @@ domain ARPLog {
     }
 }
 
-// requires false to make sure all references to rd are transformed
-function rd(): Perm
-  requires false
+domain ARP_field_functions {
 
-// requires false to make sure all references to rdc are transformed
-function rdc(): Perm
-  requires false
+  unique function field_f(): Int
 
-// requires false to make sure all references to rdw are transformed
-function rdw(): Perm
-  requires false
+}
 
-function globalRd(): Perm
-  ensures none < result && result < write
+field f: Int
 
-function epsilonRd(): Perm
-  ensures none < result && result < write
+method test (x: Ref)
+{
+    var pl0: ARPLog
+    pl0 := ARPLog_Nil()
+
+    assert ARPLog_type(pl0) == ARPLog_type_Nil()
+    assert ARPLog_is_Nil(pl0)
+    assert !ARPLog_is_Cons(pl0)
+
+    var pl1: ARPLog
+    pl1 := ARPLog_Cons(x, field_f(), write, 6, pl0)
+    assert ARPLog_type(pl1) == ARPLog_type_Cons()
+    assert ARPLog_is_Cons(pl1)
+    assert !ARPLog_is_Nil(pl1)
+
+    assert ARPLog_head_ref_Cons(pl1) == x
+    assert ARPLog_head_fieldId_Cons(pl1) == field_f()
+    assert ARPLog_head_permission_Cons(pl1) == write
+    assert ARPLog_head_level_Cons(pl1) == 6
+    assert ARPLog_tail_Cons(pl1) == pl0
+
+    assert ARPLog_sum(x, field_f(), 5, pl1) == write
+
+    var pl2: ARPLog
+    pl2 := ARPLog_Cons(x, field_f(), -1/3, 2, pl1)
+    assert ARPLog_type(pl2) == ARPLog_type_Cons()
+    assert ARPLog_is_Cons(pl2)
+    assert !ARPLog_is_Nil(pl2)
+
+    assert ARPLog_head_ref_Cons(pl2) == x
+    assert ARPLog_head_fieldId_Cons(pl2) == field_f()
+    assert ARPLog_head_permission_Cons(pl2) == -1/3
+    assert ARPLog_head_level_Cons(pl2) == 2
+    assert ARPLog_tail_Cons(pl2) == pl1
+
+    assert ARPLog_sum(x, field_f(), 5, pl2) == write
+    assert ARPLog_sum(x, field_f(), 0, pl2) == 2/3
+
+}

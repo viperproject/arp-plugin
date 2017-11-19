@@ -1,0 +1,27 @@
+field f : Int
+field g : Int
+
+method foo(y: Ref) returns (z: Int)
+requires acc(y.f, write) && acc(y.g, rd)
+ensures acc(y.f, write) && acc(y.g, rd)
+ensures y.f == y.g + 1
+ensures z == y.f
+//:: ExpectedOutput(postcondition.violated:assertion.false)
+ensures false
+{
+    y.f := y.g + 1
+    z := y.f
+}
+
+method client(x: Ref)
+requires acc(x.f, write) && acc(x.g, write)
+ensures acc(x.f, write) && acc(x.g, write)
+{
+    x.f := 4
+    x.g := 5
+    var y: Int
+    y := foo(x)
+    assert x.g == 5
+    assert x.f == 6
+    assert y == 6
+}

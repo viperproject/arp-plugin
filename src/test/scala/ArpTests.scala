@@ -18,7 +18,9 @@ class ArpTests extends SilSuite {
   private val arpTestDirectories = Seq("arp")
   private val siliconTestDirectories = Seq("consistency")
   private val silTestDirectories = Seq("all", "quantifiedpermissions", "wands", "examples", "quantifiedpredicates" ,"quantifiedcombinations")
-  val testDirectories = arpTestDirectories// ++ siliconTestDirectories ++ silTestDirectories
+//  val testDirectories = arpTestDirectories
+//  val testDirectories = siliconTestDirectories ++ silTestDirectories
+  val testDirectories = arpTestDirectories ++ siliconTestDirectories ++ silTestDirectories
 
   override def frontend(verifier: Verifier, files: Seq[Path]) = {
     require(files.length == 1, "tests should consist of exactly one file")
@@ -53,7 +55,7 @@ class ArpTests extends SilSuite {
       commandLineArguments ++
       Silicon.optionsFromScalaTestConfigMap(prefixSpecificConfigMap.getOrElse("silicon", Map()))
     val reporter = NoopReporter
-    val debugInfo = ("startedBy" -> "viper.silicon.SiliconTests") :: Nil
+    val debugInfo = ("startedBy" -> "viper.silicon.ARPTests") :: Nil
     val silicon = Silicon.fromPartialCommandLineArguments(args, reporter, debugInfo)
 
     silicon

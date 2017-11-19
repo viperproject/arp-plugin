@@ -6,7 +6,7 @@
 
 package viper.silver.plugin
 
-import viper.silver.ast.{ErrorTrafo, Exp, FractionalPerm, FullPerm, FuncApp, Info, IntLit, NoInfo, NoPerm, NoPosition, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position}
+import viper.silver.ast.{Add, Div, ErrorTrafo, Exp, FractionalPerm, FullPerm, FuncApp, Info, IntLit, LocalVar, Mul, NoInfo, NoPerm, NoPosition, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, WildcardPerm}
 import viper.silver.verifier.TypecheckerError
 
 class ARPPluginNormalize(plugin: ARPPlugin) {
@@ -26,6 +26,9 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case FractionalPerm(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp.pos)
       case p: NoPerm => Some(constPerm(p))
       case p: FullPerm => Some(constPerm(p))
+      case p: WildcardPerm =>
+        Some(wildcardPerm(IntLit(1)(), FuncApp(plugin.naming.rdWildcardName, Seq())(p.pos, p.info, Perm, Seq(), p.errT))) // TODO: is this really what we want?
+      case l@LocalVar(name) => Some(constPerm(l))
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, f))
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
@@ -91,7 +94,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       if (unit.isDefined) {
         exp match {
           case IntLit(x) if x == 1 => unit.get
-          case default => PermMul(default, unit.get)(pos, info, errT)
+          case default => PermMul(plugin.utils.simplify(default), unit.get)(pos, info, errT)
         }
       } else {
         exp
@@ -106,55 +109,59 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
     def isconst() = !isnonconst()
 
     def +?(other: NormalizedExpression): Option[NormalizedExpression] = {
-      var exps1 = exps
-      var exps2 = other.exps
-      var newExps = Seq[NormalizedPart]()
-      while (exps1.nonEmpty && exps2.nonEmpty) {
-        val h1 = exps1.head
-        val h2 = exps2.head
-        if (h1.store == h2.store) {
-          if (h1.check == h2.check) {
-            newExps :+= h1.setExp(PermAdd(h1.exp, h2.exp)())
-            exps1 = exps1.tail
-            exps2 = exps2.tail
-          } else if (h1.check < h2.check) {
+      if (wildcard.isDefined || other.wildcard.isDefined){
+        None
+      } else {
+        var exps1 = exps
+        var exps2 = other.exps
+        var newExps = Seq[NormalizedPart]()
+        while (exps1.nonEmpty && exps2.nonEmpty) {
+          val h1 = exps1.head
+          val h2 = exps2.head
+          if (h1.store == h2.store) {
+            if (h1.check == h2.check) {
+              newExps :+= h1.setExp(PermAdd(h1.exp, h2.exp)())
+              exps1 = exps1.tail
+              exps2 = exps2.tail
+            } else if (h1.check < h2.check) {
+              newExps :+= h1
+              exps1 = exps1.tail
+            } else {
+              newExps :+= h2
+              exps2 = exps2.tail
+            }
+          } else if (h1.store < h2.store) {
             newExps :+= h1
             exps1 = exps1.tail
           } else {
             newExps :+= h2
             exps2 = exps2.tail
           }
-        } else if (h1.store < h2.store) {
-          newExps :+= h1
-          exps1 = exps1.tail
-        } else {
-          newExps :+= h2
-          exps2 = exps2.tail
         }
-      }
-      newExps ++= exps1 ++ exps2
+        newExps ++= exps1 ++ exps2
 
-      val newConst =
-        if (const.isDefined && other.const.isDefined) {
-          Some(const.get.setExp(PermAdd(const.get.exp, other.const.get.exp)()))
-        } else if (const.isDefined) {
-          const
+        val newConst =
+          if (const.isDefined && other.const.isDefined) {
+            Some(const.get.setExp(PermAdd(const.get.exp, other.const.get.exp)()))
+          } else if (const.isDefined) {
+            const
+          } else {
+            other.const
+          }
+        val newWildcard = if (wildcard.isDefined && other.wildcard.isDefined) {
+          Some(wildcard.get.setExp(PermAdd(wildcard.get.exp, other.wildcard.get.exp)()))
+        } else if (wildcard.isDefined) {
+          wildcard
         } else {
-          other.const
+          other.wildcard
         }
-      val newWildcard = if (wildcard.isDefined && other.wildcard.isDefined) {
-        Some(wildcard.get.setExp(PermAdd(wildcard.get.exp, other.wildcard.get.exp)()))
-      } else if (wildcard.isDefined) {
-        wildcard
-      } else {
-        other.wildcard
-      }
 
-      Some(NormalizedExpression(newExps, newConst, newWildcard))
+        Some(NormalizedExpression(newExps, newConst, newWildcard))
+      }
     }
 
     def *?(other: NormalizedExpression): Option[NormalizedExpression] = {
-      if (this.isnonconst() && other.isnonconst()) {
+      if (this.isnonconst() && other.isnonconst() || wildcard.isDefined || other.wildcard.isDefined) {
         None
       } else {
         val (const, nonconst) = if (other.isconst()) (other, this) else (this, other)
@@ -169,7 +176,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
     }
 
     def /?(other: NormalizedExpression): Option[NormalizedExpression] = {
-      if (other.isnonconst() || other.const.isEmpty) {
+      if (other.isnonconst() || other.const.isEmpty || wildcard.isDefined || other.wildcard.isDefined) {
         None
       } else {
         val exp = other.const.get.exp

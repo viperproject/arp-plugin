@@ -1,0 +1,40 @@
+field f : Int
+field g : Int
+
+method foo(x: Ref)
+requires acc(x.f, write) && acc(x.g, rd)
+ensures acc(x.f, write) && acc(x.g, rd)
+ensures x.f == x.g + 1
+{
+    if (x.f > x.g){
+        x.f := x.g
+    }
+
+    var local: Bool
+    local := x.f <= x.g
+
+    exhale acc(x.f, write) && acc(x.g, rd/2)
+
+    while(local)
+    {
+        inhale acc(x.f, write) && acc(x.g, rd/2)
+        x.f := x.f + 1
+        local := x.f <= x.g
+        exhale acc(x.f, write) && acc(x.g, rd/2)
+    }
+
+    inhale acc(x.f, write) && acc(x.g, rd/2)
+    inhale x.f <= x.g + 1
+    inhale x.f > x.g
+}
+
+method client(x: Ref)
+requires acc(x.f, write) && acc(x.g, write)
+ensures acc(x.f, write) && acc(x.g, write)
+{
+    x.f := 4
+    x.g := 5
+    foo(x)
+    assert x.g == 5
+    assert x.f == 6
+}

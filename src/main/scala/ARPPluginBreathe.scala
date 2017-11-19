@@ -8,7 +8,7 @@ package viper.silver.plugin
 
 import viper.silver.ast.utility.Rewriter.ContextC
 import viper.silver.ast._
-import viper.silver.plugin.ARPPlugin.{ARPContext, WasInvariantInside, WasMethodCondition}
+import viper.silver.plugin.ARPPlugin._
 
 class ARPPluginBreathe(plugin: ARPPlugin) {
 
@@ -19,7 +19,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     val wildcardNames = getWildcardNames(inhale.exp)
     var currentWildcardNames = wildcardNames
 
-    def rdRewriter[T <: Node](exp: T) = plugin.utils.rewriteRd(ctx.c.localRdName, wildcardNames)(exp)
+    def rdRewriter[T <: Node](exp: T) = plugin.utils.rewriteRd(ctx.c.rdName, wildcardNames)(exp)
 
     def nextWildcardName = if (currentWildcardNames.nonEmpty) {
       val head = currentWildcardNames.head
@@ -39,7 +39,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                 if (normalized.get.wildcard.isDefined) {
                   val wildcardName = nextWildcardName
                   Some(putInIf(
-                    (generateAssumption(input, accessPredicate, normalized.get, ctx.c.localLogName, wildcardName = wildcardName)(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale)) ++
+                    (generateAssumption(input, accessPredicate, normalized.get, ctx.c.logName, wildcardName = wildcardName)(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale)) ++
                       generateLogUpdate(
                         input, accessPredicate, normalized.get, minus = false, ctx
                       )(accessPredicate.pos, accessPredicate.info, accessPredicate.errT))
@@ -48,7 +48,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                   )(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale)))
                 } else {
                   Some(putInIf(
-                    generateAssumption(input, accessPredicate, normalized.get, ctx.c.localLogName, negativeOnly = true)(accessPredicate.pos, accessPredicate.info, accessPredicate.errT).map(rdRewriter) ++
+                    generateAssumption(input, accessPredicate, normalized.get, ctx.c.logName, negativeOnly = true)(accessPredicate.pos, accessPredicate.info, accessPredicate.errT).map(rdRewriter) ++
                       generateLogUpdate(input, accessPredicate, normalized.get, minus = false, ctx)(accessPredicate.pos, accessPredicate.info, accessPredicate.errT).map(rdRewriter),
                     constraint
                   )(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale)))
@@ -70,7 +70,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     val wildcardNames = getWildcardNames(exhale.exp)
     var currentWildcardNames = wildcardNames
 
-    def rdRewriter[T <: Node](exp: T) = plugin.utils.rewriteRd(ctx.c.localRdName, wildcardNames)(exp)
+    def rdRewriter[T <: Node](exp: T) = plugin.utils.rewriteRd(ctx.c.rdName, wildcardNames)(exp)
 
     def nextWildcardName = if (currentWildcardNames.nonEmpty) {
       val head = currentWildcardNames.head
@@ -93,7 +93,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                   val wildcardName = nextWildcardName
                   Seqn(
                     putInIf(
-                      (generateAssumption(input, accessPredicate, normalized.get, ctx.c.localLogName, wildcardName = wildcardName)(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)) ++
+                      (generateAssumption(input, accessPredicate, normalized.get, ctx.c.logName, wildcardName = wildcardName)(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)) ++
                         generateLogUpdate(input, accessPredicate, normalized.get, minus = true, ctx)(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
                         .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))) ++
                         Seq(Exhale(oldRewriter(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))(accessPredicate)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))),
@@ -106,7 +106,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                     (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined) {
                       Seq()
                     } else {
-                      generateAssumption(input, accessPredicate, normalized.get, ctx.c.localLogName)(exhale.pos, exhale.info, exhale.errT).map(rdRewriter) ++
+                      generateAssumption(input, accessPredicate, normalized.get, ctx.c.logName)(exhale.pos, exhale.info, exhale.errT).map(rdRewriter) ++
                         generateLogUpdate(
                           input, accessPredicate, normalized.get, minus = true, ctx
                         )(exhale.pos, exhale.info, exhale.errT)
@@ -163,10 +163,10 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
   }
 
   private def getRdLevel(infoed: Infoed): (Exp, FuncApp) => plugin.normalize.NormalizedExpression = {
-    if ((infoed.info.getUniqueInfo[WasMethodCondition] ++ infoed.info.getUniqueInfo[WasInvariantInside]).nonEmpty) {
-      plugin.normalize.rdPermContext
-    } else {
+    if ((infoed.info.getUniqueInfo[WasCallCondition] ++ infoed.info.getUniqueInfo[WasInvariantOutside]).nonEmpty) {
       plugin.normalize.rdPermFresh
+    } else {
+      plugin.normalize.rdPermContext
     }
   }
 
@@ -422,7 +422,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     // ARPLog
     val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
     val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
-    val arpLog = LocalVar(ctx.c.localLogName)(arpLogType, fieldAccessPredicate.pos, fieldAccessPredicate.info)
+    val arpLog = LocalVar(ctx.c.logName)(arpLogType, fieldAccessPredicate.pos, fieldAccessPredicate.info)
     val arpLogCons = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainCons).get
 
     // FieldAccess

@@ -74,19 +74,14 @@ class ARPPluginUtils(plugin: ARPPlugin) {
         ctx.noRec(
           ForPerm(variable, access, rewriteOldExpr(labelName, oldLabel, fieldAccess)(body))(f.pos, f.info, f.errT + NodeTrafo(f))
         )
-      case (f@FieldAccess(rcv, field), ctx) if fieldAccess =>
-        rcv match {
-          case _ =>
-            ctx.noRec(
-              LabelledOld(
-                FieldAccess(
-                  rcv,
-                  field
-                )(f.pos, f.info, f.errT + NodeTrafo(f)),
-                labelName
-              )(f.pos, f.info, f.errT + NodeTrafo(f))
-            )
-        }
+      case (f: FieldAccess, ctx) if fieldAccess =>
+        ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
+      case (f: FuncApp, ctx) if fieldAccess =>
+        ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
+      case (f: DomainFuncApp, ctx) if fieldAccess =>
+        ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
+      case (u: Unfolding, ctx) if fieldAccess =>
+        ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u)))
     }).execute[T](node)
   }
 
@@ -112,7 +107,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
   }
 
   // Simplify int expressions
-  def simplify(exp: Exp): Exp ={
+  def simplify(exp: Exp): Exp = {
     if (plugin.Optimize.simplifyExpressions) {
       /* Always simplify children first, then treat parent. */
       StrategyBuilder.Slim[Node]({
@@ -143,7 +138,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }
   }
 
-  def getZeroEquivalent(exp: Exp): Exp ={
+  def getZeroEquivalent(exp: Exp): Exp = {
     val intLit = IntLit(bigIntZero)(exp.pos, exp.info)
     val permLit = NoPerm()(exp.pos, exp.info)
     exp match {

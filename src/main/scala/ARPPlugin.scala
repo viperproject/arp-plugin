@@ -40,7 +40,7 @@ class ARPPlugin extends SilverPlugin {
 
     val rdFunction = PFunction(PIdnDef(naming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
-    val argument = Seq(PFormalArgDecl(PIdnDef("x"), TypeHelper.Int))
+    val argument = Seq(PFormalArgDecl(PIdnDef("ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264"), TypeHelper.Int))
     val epsilonFunction = PFunction(PIdnDef(naming.rdCountingName), argument, TypeHelper.Perm, Seq(), Seq(), None, None)
 
     val wildcardFunction = PFunction(PIdnDef(naming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
@@ -58,9 +58,9 @@ class ARPPlugin extends SilverPlugin {
     )
 
     // replace all rd with rd()
-    val rdRewriter = StrategyBuilder.Slim[PNode]({
-      case PIdnUse(naming.rdName) => PCall(PIdnUse(naming.rdName), Seq(), None)
-      case PIdnUse(naming.rdWildcardName) => PCall(PIdnUse(naming.rdWildcardName), Seq(), None)
+    val rdRewriter = StrategyBuilder.Ancestor[PNode]({
+      case (PIdnUse(naming.rdName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(PIdnUse(naming.rdName), Seq(), None)
+      case (PIdnUse(naming.rdWildcardName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(PIdnUse(naming.rdWildcardName), Seq(), None)
     }, Traverse.BottomUp)
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
@@ -82,22 +82,22 @@ class ARPPlugin extends SilverPlugin {
         case (w: While, ctx) =>
           while_.handleWhile(enhancedInput, w, ctx)
         case (a@Assert(exp), ctx) =>
-          Assert(utils.rewriteRd(ctx.c.localRdName)(exp))(a.pos, a.info, a.errT + NodeTrafo(a))
+          Assert(utils.rewriteRd(ctx.c.rdName)(utils.rewriteOldExpr(ctx.c.oldLabelName, fieldAccess = false)(exp)))(a.pos, a.info, a.errT + NodeTrafo(a))
         case (e: Exhale, ctx) =>
           breathe.handleExhale(enhancedInput, e, ctx)
         case (i: Inhale, ctx) =>
           breathe.handleInhale(enhancedInput, i, ctx)
       },
-      ARPContext("", ""), // default context
+      ARPContext("", "", ""), // default context
       {
         case (m@Method(name, _, _, _, _, _), _) =>
-          ARPContext(naming.getNameFor(m, m.name, "rd"), naming.getNameFor(m, m.name, "log"))
+          ARPContext(naming.getNameFor(m, m.name, "rd"), naming.getNameFor(m, m.name, "log"), naming.getNameFor(m, m.name, "start_label"))
         case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isEmpty =>
-          ARPContext(naming.getNameFor(w, suffix = "while_rd"), ctx.localLogName)
+          ARPContext(naming.getNameFor(w, suffix = "while_rd"), ctx.logName, ctx.oldLabelName)
         case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isDefined =>
-          ARPContext(ctx.localRdName, naming.getNameFor(w, suffix = "while_log"))
+          ARPContext(ctx.rdName, naming.getNameFor(w, suffix = "while_log"), ctx.oldLabelName)
         case (m@MethodCall(name, _, _), ctx) =>
-          ARPContext(naming.getNameFor(m, name, "call_rd"), ctx.localLogName)
+          ARPContext(naming.getNameFor(m, name, "call_rd"), ctx.logName, ctx.oldLabelName)
       }
     )
 
@@ -203,7 +203,7 @@ class ARPPlugin extends SilverPlugin {
 
 object ARPPlugin {
 
-  case class ARPContext(localRdName: String, localLogName: String)
+  case class ARPContext(rdName: String, logName: String, oldLabelName: String)
 
   case class WasMethodCondition() extends Info {
     lazy val comment = Nil

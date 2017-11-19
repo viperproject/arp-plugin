@@ -1,0 +1,14 @@
+field f : Int
+field g : Int
+
+method foo(x: Ref)
+requires acc(x.f, write) && acc(x.g, rd)
+ensures acc(x.f, write) && acc(x.g, rd)
+ensures x.f == x.g + 1
+{
+    exhale acc(x.g, rd)
+    //:: ExpectedOutput(assert.failed:assertion.false)
+    assert false
+    inhale acc(x.g, rd)
+    x.f := x.g + 1
+}

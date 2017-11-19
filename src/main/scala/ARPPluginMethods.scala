@@ -20,7 +20,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
   // desugar method contracts into explicit inhales/exhales
   def handleMethod(input: Program, m: Method, ctx: ContextC[Node, ARPContext]): Node = {
     val methodRdName = plugin.naming.getNameFor(m, m.name, "rd")
-    val methodStartLabelName = plugin.naming.getNewName(m.name, "start_label")
+    val methodStartLabelName = plugin.naming.getNameFor(m, m.name, "start_label")
     val methodEndLabelName = plugin.naming.getNewName(m.name, "end_label")
     val logName = plugin.naming.getNameFor(m, m.name, "log")
     val rdArg = LocalVarDecl(methodRdName, Perm)(m.pos, m.info)

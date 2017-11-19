@@ -1,0 +1,24 @@
+field f: Int
+field next: Ref
+
+predicate valid(r: Ref) {
+    acc(r.f, write) && acc(r.next, write) && ((r.next != null) ==> (acc(valid(r.next), write)))
+}
+
+method t10(r:Ref, i:Int) // test unfolding in loop invariant
+  requires acc(valid(r))
+  ensures acc(valid(r)) && unfolding valid(r) in (r.f > 2)
+{
+  var j : Int := i
+  unfold valid(r)
+  r.f := 3
+  fold valid(r)
+  while(j > 0)
+    invariant acc(valid(r)) && unfolding valid(r) in (r.f > 2)
+  {
+    j := j - 1
+    unfold valid(r)
+    r.f := r.f + 1
+    fold valid(r)
+  }
+}

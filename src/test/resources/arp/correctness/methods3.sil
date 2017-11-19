@@ -1,0 +1,16 @@
+field b: Bool
+field c: Ref
+field d: Ref
+field f: Int
+
+method succeeds2(k: Perm, x: Ref) returns (r: Bool)
+  requires k > none
+  requires acc(x.c, k) && acc(x.d, k) && acc(x.b, k)
+  requires x.c != null && x.d != null
+  requires x.b <==> x.c == x.d
+  requires acc(x.c.f, k) && acc(x.d.f)
+  ensures acc(x.c, k) && acc(x.d, k) && acc(x.b, k)
+  ensures x.c != null && x.d != null
+  ensures acc(x.c.f, k) && acc(x.d.f)
+  ensures x.b ==> x.c.f == x.d.f
+{}

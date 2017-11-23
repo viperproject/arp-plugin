@@ -6,8 +6,10 @@
 
 package viper.silver.plugin
 
-import viper.silver.ast.{Add, Div, ErrorTrafo, Exp, FractionalPerm, FullPerm, FuncApp, Info, IntLit, LocalVar, Mul, NoInfo, NoPerm, NoPosition, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, WildcardPerm}
+import viper.silver.ast.{Add, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, LabelledOld, LocalVar, Mul, NoInfo, NoPerm, NoPosition, NoTrafos, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, WildcardPerm}
 import viper.silver.verifier.TypecheckerError
+import viper.silver.verifier.errors.Internal
+import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPluginNormalize(plugin: ARPPlugin) {
 
@@ -17,32 +19,38 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
 
   def collect(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression): Option[NormalizedExpression] = {
     exp match {
-      case PermMinus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)())), _ *? _, exp.pos)
-      case PermAdd(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp.pos)
+      case PermMinus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)())), _ *? _, exp)
+      case PermAdd(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp)
       case PermSub(left, right) => collect(PermAdd(left, PermMinus(right)())(), rdPerm)
-      case PermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp.pos)
-      case PermDiv(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp.pos)
+      case PermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
+      case PermDiv(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
       case i: IntLit => Some(constPerm(i))
-      case FractionalPerm(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp.pos)
+      case FractionalPerm(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
       case p: NoPerm => Some(constPerm(p))
       case p: FullPerm => Some(constPerm(p))
       case p: WildcardPerm =>
-        Some(wildcardPerm(IntLit(1)(), FuncApp(plugin.naming.rdWildcardName, Seq())(p.pos, p.info, Perm, Seq(), p.errT))) // TODO: is this really what we want?
+        Some(wildcardPerm(IntLit(1)(), FuncApp(plugin.naming.rdWildcardName, Seq())(p.pos, p.info, Perm, Seq(), NoTrafos)))
+      case p: EpsilonPerm =>
+        Some(rdcPerm(IntLit(1)(), FuncApp(plugin.naming.rdCountingName, Seq())(p.pos, p.info, Perm, Seq(), NoTrafos)))
       case l@LocalVar(name) => Some(constPerm(l))
+      case LabelledOld(l: LocalVar, _) => Some(constPerm(l))
+      case l@LabelledOld(fa: FieldAccess, _) => Some(constPerm(l))
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, f))
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
+      case f: FuncApp => Some(constPerm(f))
+      case f: DomainFuncApp => Some(constPerm(f))
       case default =>
-        plugin.reportError(TypecheckerError("Can't normalize expression " + default, default.pos))
+        plugin.reportError(Internal(default, FeatureUnsupported(default, "Can't normalize expression. " + default.getClass)))
         None
     }
   }
 
-  def op(a: Option[NormalizedExpression], b: Option[NormalizedExpression], f: (NormalizedExpression, NormalizedExpression) => Option[NormalizedExpression], pos: Position): Option[NormalizedExpression] =
+  def op(a: Option[NormalizedExpression], b: Option[NormalizedExpression], f: (NormalizedExpression, NormalizedExpression) => Option[NormalizedExpression], exp: Exp): Option[NormalizedExpression] =
     if (a.isDefined && b.isDefined) {
       val result = f(a.get, b.get)
       if (result.isEmpty){
-        plugin.reportError(TypecheckerError("Nonlinear expression", pos))
+        plugin.reportError(Internal(exp, FeatureUnsupported(exp, "Nonlinear expression")))
       }
       result
     } else {

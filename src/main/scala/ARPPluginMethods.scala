@@ -9,6 +9,7 @@ package viper.silver.plugin
 import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder, Traverse}
 import viper.silver.ast._
 import viper.silver.plugin.ARPPlugin.{ARPContext, WasCallCondition, WasMethodCondition}
+import viper.silver.verifier.AbstractVerificationError
 import viper.silver.verifier.errors._
 
 import scala.collection.immutable.HashMap
@@ -40,16 +41,17 @@ class ARPPluginMethods(plugin: ARPPlugin) {
           Seq(
             // init arp perm log
             LocalVarAssign(
-              LocalVar(logName)(arpLogType, b.pos, b.info, b.errT + NodeTrafo(b)),
-              DomainFuncApp(arpLogNil, Seq(), Map[TypeVar, Type]())(b.pos, b.info, b.errT + NodeTrafo(b))
-            )(b.pos, b.info, b.errT + NodeTrafo(b)),
+              LocalVar(logName)(arpLogType, b.pos, b.info, NodeTrafo(b)),
+              DomainFuncApp(arpLogNil, Seq(), Map[TypeVar, Type]())(b.pos, b.info, NodeTrafo(b))
+            )(b.pos, b.info, NodeTrafo(b)),
             // inhale rd constraints for rd argument
             Inhale(plugin.utils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
           ) ++
             // inhale preconditions
-            m.pres.map(p => Inhale(p)(p.pos, ConsInfo(p.info, WasMethodCondition()), p.errT + NodeTrafo(p) + ErrTrafo({
+            m.pres.map(p => Inhale(p)(p.pos, ConsInfo(p.info, WasMethodCondition()), ErrTrafo({
               case InhaleFailed(_, reason, cached) =>
                 ContractNotWellformed(p, reason, cached)
+              case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
             }))) ++
             // start label
             Seq(Label(methodStartLabelName, Seq())(m.pos, m.info)) ++
@@ -63,9 +65,10 @@ class ARPPluginMethods(plugin: ARPPlugin) {
               plugin.utils.rewriteOldExpr(methodEndLabelName, oldLabel = false)(
                 plugin.utils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)(p)
               )
-            )(p.pos, ConsInfo(p.info, WasMethodCondition()), p.errT + NodeTrafo(p) + ErrTrafo({
+            )(p.pos, ConsInfo(p.info, WasMethodCondition()), ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 PostconditionViolated(p, m, reason, cached)
+              case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
             }))),
           // variable declarations
           b.scopedDecls ++ Seq(
@@ -73,9 +76,9 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             Label(methodEndLabelName, Seq())(m.pos, m.info),
             LocalVarDecl(logName, arpLogType)(m.pos, m.info)
           )
-        )(m.pos, m.info, m.errT + NodeTrafo(b))
+        )(m.pos, m.info, NodeTrafo(b))
       })
-    )(m.pos, m.info, m.errT + NodeTrafo(m))
+    )(m.pos, m.info, NodeTrafo(m))
   }
 
   // desugar method calls into explicit inhales/exhales
@@ -84,9 +87,11 @@ class ARPPluginMethods(plugin: ARPPlugin) {
       case Some(method) =>
         val labelName = plugin.naming.getNewName(method.name, "call_label")
         val methodRdName = plugin.naming.getNameFor(m, method.name, "call_rd")
-        def argRenamer(exp: Exp) = renameArguments(m, method)(exp)
+        def argRenamer(exp: Exp) = renameArguments(m, method, labelName)(exp)
         Seqn(
           Seq(
+            // TODO: Why is this declStmt needed? (see test recursive.sil)
+            LocalVarDeclStmt(LocalVarDecl(methodRdName, Perm)(m.pos, m.info))(m.pos, m.info),
             // call label
             Label(labelName, Seq())(m.pos, m.info),
             // inhale rd constraints for call rd
@@ -95,9 +100,10 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // exhale preconditions
             method.pres.map(p => Exhale(
               plugin.utils.rewriteOldExpr(labelName)(argRenamer(p))
-            )(p.pos, ConsInfo(p.info, WasCallCondition()), p.errT + NodeTrafo(p) + ErrTrafo({
+            )(p.pos, ConsInfo(p.info, WasCallCondition()), ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 PreconditionInCallFalse(m, reason, cached)
+              case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
             }))) ++
             m.targets.map(t => {
               val tmpName = plugin.naming.getNewName(suffix = "havoc")
@@ -113,24 +119,29 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // inhale postconditions
             method.posts.map(p => Inhale(
               plugin.utils.rewriteOldExpr(labelName, fieldAccess = false)(argRenamer(p))
-            )(p.pos, ConsInfo(p.info, WasCallCondition()), p.errT + NodeTrafo(p) + ErrTrafo({
+            )(p.pos, ConsInfo(p.info, WasCallCondition()), ErrTrafo({
               case InhaleFailed(_, reason, cached) =>
                 ContractNotWellformed(p, reason, cached)
+              case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
             }))),
           // variable declarations
           Seq(
-            Label(labelName, Seq())(m.pos, m.info),
-            LocalVarDecl(methodRdName, Perm)(m.pos, m.info)
+            LocalVarDecl(methodRdName, Perm)(m.pos, m.info),
+            Label(labelName, Seq())(m.pos, m.info)
           )
-        )(m.pos, m.info, m.errT + NodeTrafo(m))
+        )(m.pos, m.info, NodeTrafo(m))
       case None => m
     }
   }
 
-  def renameArguments(call: MethodCall, method: Method)(exp: Exp): Exp = {
+  def renameArguments(call: MethodCall, method: Method, labelName: String)(exp: Exp): Exp = {
     if (call.args.length == method.formalArgs.length) {
-      val argMapping = method.formalArgs.zip(call.args).foldLeft(HashMap[String, Exp]())((m, c) => m + (c._1.name -> c._2))
-      val allMapping = method.formalReturns.zip(call.targets).foldLeft(argMapping)((m, c) => m + (c._1.name -> c._2))
+      val argMapping = method.formalArgs.zip(call.args).foldLeft(HashMap[String, Exp]())((m, c) =>
+        m + (c._1.name -> LabelledOld(c._2, labelName)(call.pos, call.info, NodeTrafo(c._2)))
+      )
+      val allMapping = method.formalReturns.zip(call.targets).foldLeft(argMapping)((m, c) =>
+        m + (c._1.name -> c._2)
+      )
       StrategyBuilder.Ancestor[Node]({
         case (l@LocalVar(name), ctx) => allMapping.getOrElse(name, l)
       }, Traverse.BottomUp).execute[Exp](exp)

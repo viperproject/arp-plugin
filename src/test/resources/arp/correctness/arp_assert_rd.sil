@@ -1,0 +1,8 @@
+field f: Int
+
+method foo(x: Ref)
+requires acc(x.f, rd)
+ensures acc(x.f, rd)
+{
+    assert acc(x.f, rd)
+}

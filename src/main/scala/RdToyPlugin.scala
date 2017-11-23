@@ -58,31 +58,31 @@ class RdToyPlugin extends SilverPlugin {
       case m@Method(name, formalArgs, formalReturns, pres, posts, body) =>
         Method(
           name,
-          formalArgs :+ LocalVarDecl("rd", Perm)(m.pos, m.info, m.errT),
+          formalArgs :+ LocalVarDecl("rd", Perm)(m.pos, m.info),
           formalReturns,
           And(
             PermLtCmp(
-              NoPerm()(m.pos, m.info, m.errT),
-              LocalVar("rd")(Perm, m.pos, m.info, m.errT)
-            )(m.pos, m.info, m.errT),
+              NoPerm()(m.pos, m.info),
+              LocalVar("rd")(Perm, m.pos, m.info)
+            )(m.pos, m.info),
             PermLeCmp(
-              LocalVar("rd")(Perm, m.pos, m.info, m.errT),
-              FullPerm()(m.pos, m.info, m.errT)
-            )(m.pos, m.info, m.errT)
-          )(m.pos, m.info, m.errT)
+              LocalVar("rd")(Perm, m.pos, m.info),
+              FullPerm()(m.pos, m.info)
+            )(m.pos, m.info)
+          )(m.pos, m.info)
             +: pres,
           posts,
           body
-        )(m.pos, m.info, m.errT)
+        )(m.pos, m.info)
       case m@MethodCall(methodName, args, targets) =>
         MethodCall(
           methodName,
           args
-            :+ PermDiv(FuncApp("rd", Seq())(m.pos, m.info, Perm, Seq(), m.errT), IntLit(2)(m.pos, m.info, m.errT))(m.pos, m.info, m.errT),
+            :+ PermDiv(FuncApp("rd", Seq())(m.pos, m.info, Perm, Seq(), NoTrafos), IntLit(2)(m.pos, m.info, m.errT))(m.pos, m.info),
           targets
-        )(m.pos, m.info, m.errT)
+        )(m.pos, m.info, NoTrafos)
       case f@FuncApp("rd", Seq()) =>
-        LocalVar("rd")(Perm, f.pos, f.info, f.errT)
+        LocalVar("rd")(Perm, f.pos, f.info)
     })
 
     val programPrime = rdRewriter.execute[Program](input)

@@ -1,0 +1,7 @@
+field f: Int
+
+method foo(x: Ref)
+{
+  inhale acc(x.f)
+  exhale perm(x.f) == write && acc(x.f) && perm(x.f) == none
+}

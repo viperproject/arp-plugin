@@ -1,0 +1,8 @@
+field f: Int
+
+//:: ExpectedOutput(typechecker.error)
+function globalRd(): Int
+
+method foo(x: Ref)
+{
+}

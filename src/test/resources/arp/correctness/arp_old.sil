@@ -1,0 +1,8 @@
+field f: Ref
+field g: Ref
+field h: Ref
+
+method foo(x: Ref)
+requires acc(x.f, rd) && acc(x.f.g, rd) && acc(x.f.g.h, rd)
+ensures acc(x.f, rd) && acc(x.f.g, rd) && acc(x.f.g.h, rd)
+{}

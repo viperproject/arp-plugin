@@ -1,0 +1,31 @@
+field value: Int
+
+predicate inv(this: Ref) {
+    acc(this.value, write)
+}
+
+function get(this: Ref): Int
+requires acc(inv(this), write)
+{
+    (unfolding acc(inv(this), write) in this.value)
+}
+
+method set(this: Ref, newval: Int)
+requires acc(inv(this), write)
+ensures acc(inv(this), write) && ((get(this)) == (newval))
+{
+    unfold acc(inv(this), write)
+    this.value := newval
+    fold acc(inv(this), write)
+}
+
+method ifc(this: Ref)
+requires acc(inv(this), write)
+ensures acc(inv(this), write) && get(this) > old(get(this))
+{
+    if (get(this) > 0) {
+        set(this, get(this) + get(this));
+    } else {
+        set(this, 2);
+    }
+}

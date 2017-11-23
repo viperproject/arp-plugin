@@ -1,0 +1,21 @@
+field f: Int
+
+predicate p(y: Ref)
+{
+    acc(y.f, 1/4)
+}
+
+method bar(x: Ref)
+requires acc(x.f, rd)
+ensures acc(x.f, rd)
+
+method foo1(x: Ref)
+requires p(x)
+ensures p(x)
+{
+    unfold p(x)
+    bar(x)
+    fold p(x)
+    //:: ExpectedOutput(precondition.violated:insufficient.permission)
+    bar(x)
+}

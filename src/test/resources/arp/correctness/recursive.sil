@@ -1,0 +1,10 @@
+function get(i: Int): Int
+{
+    4
+}
+
+method foo()
+ensures (forall i: Int :: (i == 4) ==> (4 == old(get(i))))
+{
+    foo()
+}

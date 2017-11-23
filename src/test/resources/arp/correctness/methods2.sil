@@ -3,7 +3,6 @@ field f: Int
 method t6_b(r: Ref)
     ensures r != null
     //:: ExpectedOutput(not.wellformed:insufficient.permission)
-    //:: MissingOutput(not.wellformed:insufficient.permission, /Silicon/issue/999999/)
     ensures r.f == 2
 {
     assume false

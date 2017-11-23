@@ -1,0 +1,10 @@
+field f: Int
+
+method foo(x: Ref)
+requires acc(x.f, rd)
+ensures acc(x.f, rd)
+//:: ExpectedOutput(postcondition.violated:assertion.false)
+ensures false
+{
+    assert acc(x.f, rdc(1))
+}

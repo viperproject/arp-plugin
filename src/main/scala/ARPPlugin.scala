@@ -17,8 +17,6 @@ import viper.silver.verifier._
 class ARPPlugin extends SilverPlugin {
 
   // TODO: implement globalRd in predicates
-  // TODO: Implement Optimizations (ignoreExhaleWithoutARP)
-  // TODO: Make sure ctx.noRec does work correctly everywhere
   // TODO: Maybe Conjunct conditions to get rid of duplicate labels
   // TODO: Maybe reuse previous rd name for while
 
@@ -32,7 +30,6 @@ class ARPPlugin extends SilverPlugin {
   object Optimize {
     val simplifyExpressions = true
     val removeProvableIf = true
-    val ignoreExhaleWithoutARP = true
     val noAssumptionForPost = true
   }
 
@@ -45,16 +42,36 @@ class ARPPlugin extends SilverPlugin {
 
     val wildcardFunction = PFunction(PIdnDef(naming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
+    // If a program already contains a definition for rd we can't use our arp rd
+    var alreadyContainsRd = false
+    var alreadyContainsRdc = false
+    var alreadyContainsRdw = false
+    StrategyBuilder.SlimVisitor[PNode]({
+      case PIdnDef(naming.rdName) => alreadyContainsRd = true
+      case PIdnDef(naming.rdCountingName) => alreadyContainsRdc = true
+      case PIdnDef(naming.rdWildcardName) => alreadyContainsRdw = true
+      case _ =>
+    }).visit(input)
+
+    val sanitizedInput = StrategyBuilder.Slim[PNode]({
+      case PIdnUse(naming.rdName) if alreadyContainsRd => PIdnUse("WAS_RD_BUT_IS_NOT_ARP_RD")
+      case PIdnDef(naming.rdName) if alreadyContainsRd => PIdnDef("WAS_RD_BUT_IS_NOT_ARP_RD")
+      case PIdnUse(naming.rdCountingName) if alreadyContainsRdc => PIdnUse("WAS_RDC_BUT_IS_NOT_ARP_RDC")
+      case PIdnDef(naming.rdCountingName) if alreadyContainsRdc => PIdnDef("WAS_RDC_BUT_IS_NOT_ARP_RDC")
+      case PIdnUse(naming.rdWildcardName) if alreadyContainsRdw => PIdnUse("WAS_RDW_BUT_IS_NOT_ARP_RDW")
+      case PIdnDef(naming.rdWildcardName) if alreadyContainsRdw => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_RDW")
+    }).execute[PProgram](input)
+
     // inject functions for rd() and rdc()
     val inputWithFunctions = PProgram(
-      input.imports,
-      input.macros,
-      input.domains,
-      input.fields,
-      input.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction,
-      input.predicates,
-      input.methods,
-      input.errors
+      sanitizedInput.imports,
+      sanitizedInput.macros,
+      sanitizedInput.domains,
+      sanitizedInput.fields,
+      sanitizedInput.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction,
+      sanitizedInput.predicates,
+      sanitizedInput.methods,
+      sanitizedInput.errors
     )
 
     // replace all rd with rd()
@@ -81,12 +98,17 @@ class ARPPlugin extends SilverPlugin {
           methods.handleMethodCall(enhancedInput, m, ctx)
         case (w: While, ctx) =>
           while_.handleWhile(enhancedInput, w, ctx)
-        case (a@Assert(exp), ctx) =>
-          Assert(utils.rewriteRd(ctx.c.rdName)(utils.rewriteOldExpr(ctx.c.oldLabelName, fieldAccess = false)(exp)))(a.pos, a.info, a.errT + NodeTrafo(a))
+        case (a: Assert, ctx) =>
+          breathe.handleAssert(enhancedInput, a, ctx)
         case (e: Exhale, ctx) =>
           breathe.handleExhale(enhancedInput, e, ctx)
         case (i: Inhale, ctx) =>
           breathe.handleInhale(enhancedInput, i, ctx)
+        case (f: Fold, ctx) =>
+          breathe.handleFold(enhancedInput, f, ctx)
+        case (f: Unfold, ctx) =>
+          breathe.handleUnfold(enhancedInput, f, ctx)
+        case (c: Constraining, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, c))
       },
       ARPContext("", "", ""), // default context
       {
@@ -101,7 +123,8 @@ class ARPPlugin extends SilverPlugin {
       }
     )
 
-    val inputPrime = arpRewriter.execute[Program](enhancedInput)
+    val rewrittenInput = arpRewriter.execute[Program](enhancedInput)
+    val inputPrime = addDummyMethods(input, rewrittenInput)
 
     if (System.getProperty("DEBUG", "").equals("1")) {
       println(inputPrime)
@@ -146,7 +169,7 @@ class ARPPlugin extends SilverPlugin {
       ) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
       input.methods ++ arpDomainFile.methods
-    )(input.pos, input.info, input.errT + NodeTrafo(input))
+    )(input.pos, input.info, NodeTrafo(input))
 
     checkUniqueNames(input, arpDomainFile)
 
@@ -161,10 +184,10 @@ class ARPPlugin extends SilverPlugin {
       input.fields.map(f => DomainFunc(
         naming.getNameFor(f, "field", f.name),
         Seq(), Int, unique = true
-      )(input.pos, input.info, domainName, input.errT)),
+      )(input.pos, input.info, domainName)),
       Seq(),
       Seq()
-    )(input.pos, input.info, input.errT + NodeTrafo(input))
+    )(input.pos, input.info, NodeTrafo(input))
 
     val newProgram = Program(
       input.domains :+ fieldDomain,
@@ -172,9 +195,50 @@ class ARPPlugin extends SilverPlugin {
       input.functions,
       input.predicates,
       input.methods
-    )(input.pos, input.info, input.errT + NodeTrafo(input))
+    )(input.pos, input.info, NodeTrafo(input))
 
     newProgram
+  }
+
+  def addDummyMethods(originalInput: Program, input: Program): Program = {
+    // ensures false is not checked if there is no body, so would not need handle this
+
+    val newProgram = Program(
+      input.domains,
+      input.fields,
+      input.functions,
+      input.predicates,
+      input.methods ++ originalInput.methods
+        .filter(m => m.pres.nonEmpty || m.posts.nonEmpty)
+        .map(m =>
+          Method(
+            naming.getNameFor(m, m.name, "contract_wellformed_dummy_method"),
+            m.formalArgs,
+            m.formalReturns,
+            m.pres.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+            m.posts.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+            None
+          )(m.pos, m.info, NodeTrafo(input))
+        )
+    )(input.pos, input.info, NodeTrafo(input))
+
+    newProgram
+  }
+
+  def rewriteMethodCallsToDummyMethods(input: Program, node: Node): Node ={
+    StrategyBuilder.Slim[Node]({
+      case m@MethodCall(methodName, args, targets) =>
+        val maybeMethod = utils.getMethod(input, methodName)
+        if (maybeMethod.isDefined) {
+          MethodCall(
+            naming.getNameFor(maybeMethod.get, methodName, "contract_wellformed_dummy_method"),
+            args,
+            targets
+          )(m.pos, m.info, NodeTrafo(m))
+        } else {
+          m
+        }
+    }).execute(node)
   }
 
   def checkUniqueNames(input: Program, inputPrime: Program): Unit = {

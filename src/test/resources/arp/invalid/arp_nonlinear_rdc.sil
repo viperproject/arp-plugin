@@ -1,7 +1,9 @@
 field f: Int
 
 method foo(x: Ref)
+//:: ExpectedOutput(internal:feature.unsupported)
 requires acc(x.f, rdc(1)*rdc(4))
+//:: ExpectedOutput(internal:feature.unsupported)
 ensures acc(x.f, rdc(4)*rdc(1))
 {
 }

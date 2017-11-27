@@ -1,0 +1,8 @@
+field f: Int
+field p: Perm
+field r: Ref
+
+method foo(x: Ref)
+requires acc(x.r) && acc(x.r.p) && acc(x.f, x.r.p)
+ensures acc(x.r) && acc(x.r.p) && acc(x.f, x.r.p)
+{}

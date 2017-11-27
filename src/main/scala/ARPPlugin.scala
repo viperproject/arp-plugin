@@ -13,6 +13,8 @@ import viper.silver.ast.utility.Rewriter.{StrategyBuilder, Traverse}
 import viper.silver.parser._
 import viper.silver.plugin.ARPPlugin.{ARPContext, TransformedWhile}
 import viper.silver.verifier._
+import viper.silver.verifier.errors._
+import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
@@ -133,17 +135,24 @@ class ARPPlugin extends SilverPlugin {
     inputPrime
   }
 
-  override def beforeFinish(input: VerificationResult): VerificationResult = {
+  override def mapVerificationResult(input: VerificationResult): VerificationResult = {
     input match {
       case Success => Success
       case Failure(errors) =>
-        Failure(errors.map {
+        val errorsPrime = errors.map({
           case ParseError(msg, pos) => ParseError(msg + s" ($pos)", pos)
           case AbortedExceptionally(cause) => ParseError(s"Exception: $cause", NoPosition) // Is not really a parse error...
           case TypecheckerError(msg, pos) => TypecheckerError(msg.replace("<undefined position>", "<ARP Plugin>"), pos)
           case error: AbstractVerificationError => error.transformedError() // TODO: Add ErrorTransformation Information to AST
           case default => default
         })
+        Failure(errorsPrime.filterNot({
+          case ep: PostconditionViolated => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+          case ep: WhileFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+          case ep: LoopInvariantNotEstablished => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+          case ep: LoopInvariantNotPreserved => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+          case _ => false
+        }))
     }
   }
 
@@ -152,7 +161,10 @@ class ARPPlugin extends SilverPlugin {
     val arpFrontend = new ARPFrontend
     arpFrontend.loadFile(path) match {
       case Some(program) => program
-      case None => Program(Seq(), Seq(), Seq(), Seq(), Seq())() // TODO: Probably not the best way to do it
+      case None =>
+        val empty = Program(Seq(), Seq(), Seq(), Seq(), Seq())()
+        reportError(Internal(FeatureUnsupported(empty, "Could not load ARP Domain")))
+        empty
     }
   }
 
@@ -203,12 +215,33 @@ class ARPPlugin extends SilverPlugin {
   def addDummyMethods(originalInput: Program, input: Program): Program = {
     // ensures false is not checked if there is no body, so would not need handle this
 
+    var whileMethods = Seq[Method]()
+    StrategyBuilder.AncestorVisitor[Node]({
+      case (w: While, ctx) if w.invs.nonEmpty =>
+        var args = Seq[LocalVarDecl]()
+        w.invs.foreach(wi =>
+          StrategyBuilder.SlimVisitor[Node]({
+            case l@LocalVar(name) => if(!args.exists(a => a.localVar.name == name)) args :+= LocalVarDecl(name, l.typ)(l.pos, l.info)
+            case _ =>
+          }).visit(wi)
+        )
+        whileMethods :+= Method(
+          naming.getNameFor(w, suffix = "invariant_wellformed_dummy_method"),
+          args,
+          Seq(),
+          w.invs.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+          Seq(),
+          None
+        )(w.pos, w.info)
+      case _ =>
+    }).visit(originalInput)
+
     val newProgram = Program(
       input.domains,
       input.fields,
       input.functions,
       input.predicates,
-      input.methods ++ originalInput.methods
+      input.methods ++ whileMethods ++ originalInput.methods
         .filter(m => m.pres.nonEmpty || m.posts.nonEmpty)
         .map(m =>
           Method(

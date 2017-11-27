@@ -56,7 +56,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // start label
             Seq(Label(methodStartLabelName, Seq())(m.pos, m.info)) ++
             // method body
-            b.ss ++
+            b.ss.map(plugin.utils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)) ++
             Seq(
               Label(methodEndLabelName, Seq())(m.pos, m.info)
             ) ++
@@ -126,7 +126,8 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             }))),
           // variable declarations
           Seq(
-            LocalVarDecl(methodRdName, Perm)(m.pos, m.info),
+            // TODO: Why does this not always work?
+            // LocalVarDecl(methodRdName, Perm)(m.pos, m.info),
             Label(labelName, Seq())(m.pos, m.info)
           )
         )(m.pos, m.info, NodeTrafo(m))
@@ -137,7 +138,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
   def renameArguments(call: MethodCall, method: Method, labelName: String)(exp: Exp): Exp = {
     if (call.args.length == method.formalArgs.length) {
       val argMapping = method.formalArgs.zip(call.args).foldLeft(HashMap[String, Exp]())((m, c) =>
-        m + (c._1.name -> LabelledOld(c._2, labelName)(call.pos, call.info, NodeTrafo(c._2)))
+        m + (c._1.name -> plugin.utils.rewriteOldExpr(labelName)(c._2))
       )
       val allMapping = method.formalReturns.zip(call.targets).foldLeft(argMapping)((m, c) =>
         m + (c._1.name -> c._2)

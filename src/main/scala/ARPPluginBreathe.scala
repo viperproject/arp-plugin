@@ -15,6 +15,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
   private type NormalizedExpression = plugin.normalize.NormalizedExpression
 
   def handleInhale(input: Program, inhale: Inhale, ctx: ContextC[Node, ARPContext]): Node = {
+    val labelName = plugin.naming.getNewName(suffix = "inhale_label")
 
     val wildcardNames = getWildcardNames(inhale.exp)
     var currentWildcardNames = wildcardNames
@@ -31,7 +32,8 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     ctx.noRec(
       Seqn(
-        Seq(Inhale(rdRewriter(inhale.exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale))) ++
+        Seq(Label(labelName, Seq())(inhale.pos, inhale.info)) ++
+          Seq(Inhale(rdRewriter(inhale.exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale))) ++
           splitBreathing(inhale.exp).map({
             case (accessPredicate: FieldAccessPredicate, constraint) =>
               val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, getRdLevel(inhale))
@@ -44,13 +46,15 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                         input, accessPredicate, normalized.get, minus = false, ctx
                       )(accessPredicate.pos, accessPredicate.info, NoTrafos))
                       .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))),
-                    constraint
+                    constraint,
+                    Some(labelName)
                   )(inhale.pos, inhale.info, NodeTrafo(inhale)))
                 } else {
                   Some(putInIf(
                     generateAssumption(input, accessPredicate, normalized.get, ctx.c.logName, negativeOnly = true)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter) ++
                       generateLogUpdate(input, accessPredicate, normalized.get, minus = false, ctx)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter),
-                    constraint
+                    constraint,
+                    Some(labelName)
                   )(inhale.pos, inhale.info, NodeTrafo(inhale)))
                 }
               } else {
@@ -59,7 +63,8 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
             case _ =>
               None
           }).filter(_.isDefined).flatMap(_.get),
-        wildcardNames.map(n => LocalVarDecl(n, Perm)(inhale.pos, inhale.info))
+        Seq(Label(labelName, Seq())(inhale.pos, inhale.info)) ++
+          wildcardNames.map(n => LocalVarDecl(n, Perm)(inhale.pos, inhale.info))
       )(inhale.pos, inhale.info, NodeTrafo(inhale))
     )
   }
@@ -96,7 +101,8 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                       generateLogUpdate(input, accessPredicate, normalized.get, minus = true, ctx)(exhale.pos, exhale.info, NodeTrafo(exhale)))
                       .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))) ++
                       Seq(Exhale(oldRewriter(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))(accessPredicate)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))),
-                    constraint
+                    constraint,
+                    Some(labelName)
                   )(exhale.pos, exhale.info, NodeTrafo(exhale)),
                     Seq()
                   )(exhale.pos, exhale.info, NodeTrafo(exhale))
@@ -112,7 +118,8 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                           .map(rdRewriter).map(oldRewriter)
                     }) ++
                       Seq(Exhale(oldRewriter(rdRewriter(accessPredicate)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))),
-                    constraint
+                    constraint,
+                    Some(labelName)
                   )(exhale.pos, exhale.info, NoTrafos),
                     Seq()
                   )(exhale.pos, exhale.info)
@@ -121,9 +128,10 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                 Assert(BoolLit(b = false)())()
               }
             case (default, constraint) =>
-              putInIf(
+              putStmtInIf(
                 Exhale(oldRewriter(rdRewriter(default)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)),
-                constraint
+                constraint,
+                Some(labelName)
               )(exhale.pos, exhale.info, NodeTrafo(exhale))
           },
         Seq(Label(labelName, Seq())(exhale.pos, exhale.info)) ++
@@ -177,9 +185,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           Seq(
             Assert(
               plugin.utils.rewriteRd(ctx.c.rdName, wildcardNames)(
-                plugin.utils.rewriteOldExpr(ctx.c.oldLabelName, fieldAccess = false)(
-                  assert.exp
-                )
+                assert.exp
               )
             )(assert.pos, assert.info, assert.errT + NodeTrafo(assert))
           ),
@@ -189,39 +195,52 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
   }
 
   def handleFold(input: Program, fold: Fold, ctx: ContextC[Node, ARPContext]): Node = {
-    ctx.noRec(handlePredicateFolding(input, fold, fold.acc, minus = false, ctx))
+    ctx.noRec(handlePredicateFolding(input, fold, fold.acc, foldBefore = false, minus = true, ctx))
   }
 
   def handleUnfold(input: Program, unfold: Unfold, ctx: ContextC[Node, ARPContext]): Node = {
-    ctx.noRec(handlePredicateFolding(input, unfold, unfold.acc, minus = true, ctx))
+    ctx.noRec(handlePredicateFolding(input, unfold, unfold.acc, foldBefore = true, minus = false, ctx))
   }
 
-  def handlePredicateFolding(input: Program, fold: Stmt, acc: PredicateAccessPredicate, minus: Boolean, ctx: ContextC[Node, ARPContext]): Node = {
-    def newPerm(exp: Exp) = PermMul(acc.perm, exp)(exp.pos, exp.info)
+  def handlePredicateFolding(input: Program, fold: Stmt, acc: PredicateAccessPredicate, foldBefore: Boolean, minus: Boolean, ctx: ContextC[Node, ARPContext]): Node = {
+    val wildcardNames = getWildcardNames(acc)
 
-    // TODO: handle arguments correctly
+    def newPerm(exp: Exp) = plugin.utils.simplify(PermMul(acc.perm, exp)(exp.pos, exp.info))
 
     acc.loc.predicateBody(input) match {
       case Some(body) =>
+        val wildcardNamesAll = wildcardNames ++ getWildcardNames(body);
         Seqn(
-          Seq(
-            fold
-          ) ++
-          splitBreathing(body).map({
-            case (accessPredicate: FieldAccessPredicate, constraint) =>
-              val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
-              if (normalized.isDefined){
-                Some(putInIf(
-                  generateLogUpdate(input, accessPredicate, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos),
-                  constraint
-                )(fold.pos, fold.info, NodeTrafo(fold)))
-              } else {
-                Some(Seq(Assert(BoolLit(b = false)())()))
-              }
-            case _ =>
-              None
-          }).filter(_.isDefined).flatMap(_.get),
-          Seq()
+          (if (foldBefore) {
+            Seq(
+              fold
+            )
+          } else {
+            Seq()
+          }) ++
+            splitBreathing(body).map({
+              case (accessPredicate: FieldAccessPredicate, constraint) =>
+                val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
+                if (normalized.isDefined) {
+                  Some(putInIf(
+                    generateLogUpdate(input, accessPredicate, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos)
+                      .map(plugin.utils.rewriteRd(ctx.c.rdName, wildcardNamesAll)),
+                    constraint
+                  )(fold.pos, fold.info, NodeTrafo(fold)))
+                } else {
+                  Some(Seq(Assert(BoolLit(b = false)())()))
+                }
+              case _ =>
+                None
+            }).filter(_.isDefined).flatMap(_.get) ++
+            (if (!foldBefore) {
+              Seq(
+                fold
+              )
+            } else {
+              Seq()
+            }),
+          wildcardNamesAll.map(n => LocalVarDecl(n, Perm)(fold.pos, fold.info))
         )(fold.pos, fold.info, NodeTrafo(fold))
       case None => fold
     }
@@ -229,7 +248,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
   def getWildcardNames(exp: Exp): Seq[String] = {
     splitBreathing(exp).map({
-      case (accessPredicate: FieldAccessPredicate, _) =>
+      case (accessPredicate: AccessPredicate, _) =>
         val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
         if (normalized.isDefined && normalized.get.wildcard.isDefined) {
           Some(plugin.naming.getNewName(suffix = "wildcard"))
@@ -240,17 +259,27 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }).filter(_.isDefined).map(_.get)
   }
 
-  def putInIf(seq: Seq[Stmt], constraint: Option[Exp])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def putInIf(seq: Seq[Stmt], constraint: Option[Exp], labelName: Option[String] = None)(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     if (constraint.isDefined && seq.nonEmpty) {
-      Seq(If(constraint.get, Seqn(seq, Seq())(pos, info, errT), Seqn(Seq(), Seq())(pos, info, errT))(pos, info, errT))
+      val constr = if (labelName.isDefined) {
+        plugin.utils.rewriteOldExpr(labelName.get, oldLabel = false, includeNonpure = true)(constraint.get)
+      } else {
+        constraint.get
+      }
+      Seq(If(constr, Seqn(seq, Seq())(pos, info, errT), Seqn(Seq(), Seq())(pos, info, errT))(pos, info, errT))
     } else {
       seq
     }
   }
 
-  def putInIf(s: Stmt, constraint: Option[Exp])(pos: Position, info: Info, errT: ErrorTrafo): Stmt = {
+  def putStmtInIf(s: Stmt, constraint: Option[Exp], labelName: Option[String] = None)(pos: Position, info: Info, errT: ErrorTrafo): Stmt = {
     if (constraint.isDefined) {
-      If(constraint.get, Seqn(Seq(s), Seq())(pos, info, errT), Seqn(Seq(), Seq())(pos, info, errT))(pos, info, errT)
+      val constr = if (labelName.isDefined) {
+        plugin.utils.rewriteOldExpr(labelName.get, oldLabel = false, includeNonpure = true)(constraint.get)
+      } else {
+        constraint.get
+      }
+      If(constr, Seqn(Seq(s), Seq())(pos, info, errT), Seqn(Seq(), Seq())(pos, info, errT))(pos, info, errT)
     } else {
       s
     }
@@ -264,19 +293,21 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def splitBreathing(breath: Exp): Seq[(Exp, Option[Exp])] = splitBreathing(breath, None)
+  def splitBreathing(breath: Exp): Seq[(Exp, Option[Exp])] = splitBreathing(breath, None, None)
 
-  def splitBreathing(breath: Exp, constraint: Option[Exp]): Seq[(Exp, Option[Exp])] = {
+  def splitBreathing(breath: Exp, constraint: Option[Exp], oldLabel: Option[String]): Seq[(Exp, Option[Exp])] = {
     def addConstraint(c: Exp) = if (constraint.isDefined) {
       Some(And(constraint.get, c)(breath.pos, breath.info))
     } else {
       Some(c)
     }
 
+    // TODO: conditionals in acc
+
     breath match {
-      case And(left, right) => splitBreathing(left, constraint) ++ splitBreathing(right, constraint)
-      case Implies(left, right) => splitBreathing(right, addConstraint(left))
-      case CondExp(cond, thn, els) => splitBreathing(thn, addConstraint(cond)) ++ splitBreathing(els, addConstraint(Not(cond)(breath.pos, breath.info)))
+      case And(left, right) => splitBreathing(left, constraint, oldLabel) ++ splitBreathing(right, constraint, oldLabel)
+      case Implies(left, right) => splitBreathing(right, addConstraint(left), oldLabel)
+      case CondExp(cond, thn, els) => splitBreathing(thn, addConstraint(cond), oldLabel) ++ splitBreathing(els, addConstraint(Not(cond)(breath.pos, breath.info)), oldLabel)
       case default => Seq((default, constraint))
     }
   }
@@ -534,7 +565,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           arpLogCons, Seq(
             rcv,
             DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(pos, info, errT),
-            if (minus) Minus(permission)(pos, info, errT) else permission,
+            plugin.utils.simplify(if (minus) Minus(permission)(pos, info, errT) else permission),
             IntLit(level)(pos, info, errT),
             arpLog
           ),

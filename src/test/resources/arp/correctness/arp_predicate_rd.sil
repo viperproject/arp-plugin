@@ -1,8 +1,8 @@
 field f: Int
 
-predicate p(y: Ref)
+predicate p(z: Ref)
 {
-    acc(y.f, 1/4)
+    acc(z.f, 1/4)
 }
 
 method bar(x: Ref)
@@ -16,6 +16,9 @@ ensures p(x)
     unfold p(x)
     bar(x)
     fold p(x)
-    //:: ExpectedOutput(precondition.violated:insufficient.permission)
+    unfold acc(p(x), 1/2)
+    bar(x)
+    fold acc(p(x), 1/2)
+    //:: ExpectedOutput(call.precondition:insufficient.permission)
     bar(x)
 }

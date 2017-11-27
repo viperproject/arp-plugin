@@ -40,7 +40,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       )(pos, info, errT)
     )(pos, info, errT)
 
-  def rewriteOldExpr[T <: Node](labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true)(node: T): T = {
+  def rewriteOldExpr[T <: Node](labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true, includeNonpure: Boolean = false)(node: T): T = {
     def rewriteFieldAccess(fa: FieldAccess): FieldAccess = {
       fa.rcv match {
         case _: LabelledOld => fa
@@ -53,6 +53,20 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       }
     }
 
+    def rewritePredicateAccess(pa: PredicateAccess): PredicateAccess = {
+      PredicateAccess(pa.args.map(rewriteOldExpr(labelName, oldLabel, fieldAccess)), pa.predicateName)(pa.pos, pa.info, NodeTrafo(pa))
+    }
+
+    def rewritePerm(perm: Exp): Exp = {
+      StrategyBuilder.Ancestor[Node]({
+        case (l: LabelledOld, ctx) => ctx.noRec(l)
+        case (c: CurrentPerm, ctx) => ctx.noRec(c)
+        case (fa: FieldAccess, ctx) => ctx.noRec(LabelledOld(fa, labelName)(fa.pos, fa.info, NodeTrafo(fa)))
+        case (u: Unfolding, ctx) =>
+          ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u)))
+      }).execute[Exp](perm)
+    }
+
     val nodePrime = if (oldLabel) {
       StrategyBuilder.Ancestor[Node]({
         case (l: LabelledOld, ctx) => ctx.noRec(l)
@@ -62,19 +76,21 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       node
     }
 
-    def isPure(pureNode: Node): Boolean ={
-      !pureNode.exists(n =>
-        n.isInstanceOf[AccessPredicate] ||
-          n.isInstanceOf[CurrentPerm] ||
-          n.isInstanceOf[ForPerm])
+    def isPure(pureNode: Node): Boolean = {
+      includeNonpure ||
+        !pureNode.exists(n =>
+          n.isInstanceOf[AccessPredicate] ||
+            n.isInstanceOf[CurrentPerm] ||
+            n.isInstanceOf[ForPerm])
     }
 
     val nodePrimePrime = if (fieldAccess) {
       StrategyBuilder.Ancestor[Node]({
         case (l: LabelledOld, ctx) => ctx.noRec(l)
         case (f@FieldAccessPredicate(fa: FieldAccess, perm), ctx) =>
-          ctx.noRec(FieldAccessPredicate(rewriteFieldAccess(fa), perm)(f.pos, f.info, NodeTrafo(f)))
-        case (p: PredicateAccessPredicate, ctx) => ctx.noRec(p)
+          ctx.noRec(FieldAccessPredicate(rewriteFieldAccess(fa), rewritePerm(perm))(f.pos, f.info, NodeTrafo(f)))
+        case (p@PredicateAccessPredicate(loc, perm), ctx) =>
+          ctx.noRec(PredicateAccessPredicate(rewritePredicateAccess(loc), rewritePerm(perm))(p.pos, p.info, NodeTrafo(p)))
         case (c@CurrentPerm(fa: FieldAccess), ctx) =>
           ctx.noRec(CurrentPerm(rewriteFieldAccess(fa))(c.pos, c.info, NodeTrafo(c)))
         case (c: CurrentPerm, ctx) => ctx.noRec(c)
@@ -84,7 +100,12 @@ class ARPPluginUtils(plugin: ARPPlugin) {
         case (a: AbstractAssign, ctx) =>
           ctx.noRec(a.lhs)
           a
-        case (f: DomainFuncApp, ctx) if f.domainName == plugin.naming.logDomainName && f.funcname == plugin.naming.logDomainCons => ctx.noRec(f)
+        case (f@DomainFuncApp(name, args, typVarMap), ctx) if f.domainName == plugin.naming.logDomainName && f.funcname == plugin.naming.logDomainCons =>
+          ctx.noRec(DomainFuncApp(name, args.map({
+            case fa: FieldAccess => LabelledOld(fa, labelName)(fa.pos, fa.info, NodeTrafo(fa))
+            case default => default
+          }), typVarMap)(f.pos, f.info, f.typ, f.formalArgs, f.domainName, f.errT))
+        case (l: LocalVar, ctx) => ctx.noRec(l)
         case (n: Exp, ctx) if isPure(n) => ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n)))
         case (f: FieldAccess, ctx) =>
           ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
@@ -156,6 +177,10 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           IntLit(left - right)(root.pos, root.info, NodeTrafo(root))
         case root@PermMul(IntLit(left), IntLit(right)) =>
           IntLit(left * right)(root.pos, root.info, NodeTrafo(root))
+        case PermMul(_: FullPerm, e: Exp) => e
+        case PermMul(e: Exp, _: FullPerm) => e
+        case PermMul(e: NoPerm, _: Exp) => e
+        case PermMul(_: Exp, e: NoPerm) => e
       }, Traverse.BottomUp).execute[Exp](exp)
     } else {
       exp

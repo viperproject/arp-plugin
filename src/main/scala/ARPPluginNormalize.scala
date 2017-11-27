@@ -6,7 +6,7 @@
 
 package viper.silver.plugin
 
-import viper.silver.ast.{Add, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, LabelledOld, LocalVar, Mul, NoInfo, NoPerm, NoPosition, NoTrafos, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, WildcardPerm}
+import viper.silver.ast.{Add, CurrentPerm, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Implies, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoInfo, NoPerm, NoPosition, NoTrafos, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
 import viper.silver.verifier.TypecheckerError
 import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported
@@ -23,7 +23,13 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case PermAdd(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp)
       case PermSub(left, right) => collect(PermAdd(left, PermMinus(right)())(), rdPerm)
       case PermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
+      case IntPermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
       case PermDiv(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
+      case Minus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)())), _ *? _, exp)
+      case Add(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp)
+      case Sub(left, right) => collect(PermAdd(left, PermMinus(right)())(), rdPerm)
+      case Mul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
+      case Div(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
       case i: IntLit => Some(constPerm(i))
       case FractionalPerm(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
       case p: NoPerm => Some(constPerm(p))
@@ -33,6 +39,8 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case p: EpsilonPerm =>
         Some(rdcPerm(IntLit(1)(), FuncApp(plugin.naming.rdCountingName, Seq())(p.pos, p.info, Perm, Seq(), NoTrafos)))
       case l@LocalVar(name) => Some(constPerm(l))
+      case f: FieldAccess => Some(constPerm(f))
+      case c: CurrentPerm => Some(lowestPerm(c))
       case LabelledOld(l: LocalVar, _) => Some(constPerm(l))
       case l@LabelledOld(fa: FieldAccess, _) => Some(constPerm(l))
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
@@ -71,6 +79,11 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
 
   def rdcPerm(exp: Exp, f: FuncApp): NormalizedExpression = {
     NormalizedExpression(Seq(NormalizedPart(exp, 0, 0, Some(f))), None, None)
+  }
+
+  def lowestPerm(exp: Exp): NormalizedExpression = {
+    // TODO: check levels
+    NormalizedExpression(Seq(NormalizedPart(exp, 0, 5, None)), None, None)
   }
 
   def constPerm(exp: Exp): NormalizedExpression = {
@@ -169,7 +182,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
     }
 
     def *?(other: NormalizedExpression): Option[NormalizedExpression] = {
-      if (this.isnonconst() && other.isnonconst() || wildcard.isDefined || other.wildcard.isDefined) {
+      if (this.isnonconst() && other.isnonconst()) {
         None
       } else {
         val (const, nonconst) = if (other.isconst()) (other, this) else (this, other)

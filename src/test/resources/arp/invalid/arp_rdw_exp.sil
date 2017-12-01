@@ -2,8 +2,8 @@ field f: Int
 
 method foo(x: Ref)
 //:: ExpectedOutput(internal:feature.unsupported)
-requires acc(x.f, 3*rdw)
+requires acc(x.f, write - rdw)
 //:: ExpectedOutput(internal:feature.unsupported)
-ensures acc(x.f, 3*rdw)
+ensures acc(x.f, write - rdw)
 {
 }

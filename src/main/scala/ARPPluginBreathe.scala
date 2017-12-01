@@ -46,15 +46,13 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                         input, accessPredicate, normalized.get, minus = false, ctx
                       )(accessPredicate.pos, accessPredicate.info, NoTrafos))
                       .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))),
-                    constraint,
-                    Some(labelName)
+                    constraint
                   )(inhale.pos, inhale.info, NodeTrafo(inhale)))
                 } else {
                   Some(putInIf(
                     generateAssumption(input, accessPredicate, normalized.get, ctx.c.logName, negativeOnly = true)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter) ++
                       generateLogUpdate(input, accessPredicate, normalized.get, minus = false, ctx)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter),
-                    constraint,
-                    Some(labelName)
+                    constraint
                   )(inhale.pos, inhale.info, NodeTrafo(inhale)))
                 }
               } else {
@@ -101,8 +99,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                       generateLogUpdate(input, accessPredicate, normalized.get, minus = true, ctx)(exhale.pos, exhale.info, NodeTrafo(exhale)))
                       .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))) ++
                       Seq(Exhale(oldRewriter(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))(accessPredicate)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))),
-                    constraint,
-                    Some(labelName)
+                    constraint
                   )(exhale.pos, exhale.info, NodeTrafo(exhale)),
                     Seq()
                   )(exhale.pos, exhale.info, NodeTrafo(exhale))
@@ -118,8 +115,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                           .map(rdRewriter).map(oldRewriter)
                     }) ++
                       Seq(Exhale(oldRewriter(rdRewriter(accessPredicate)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale))),
-                    constraint,
-                    Some(labelName)
+                    constraint
                   )(exhale.pos, exhale.info, NoTrafos),
                     Seq()
                   )(exhale.pos, exhale.info)
@@ -209,7 +205,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     acc.loc.predicateBody(input) match {
       case Some(body) =>
-        val wildcardNamesAll = wildcardNames ++ getWildcardNames(body);
+        val wildcardNamesAll = wildcardNames ++ getWildcardNames(body)
         Seqn(
           (if (foldBefore) {
             Seq(
@@ -259,14 +255,9 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }).filter(_.isDefined).map(_.get)
   }
 
-  def putInIf(seq: Seq[Stmt], constraint: Option[Exp], labelName: Option[String] = None)(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def putInIf(seq: Seq[Stmt], constraint: Option[Exp])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     if (constraint.isDefined && seq.nonEmpty) {
-      val constr = if (labelName.isDefined) {
-        plugin.utils.rewriteOldExpr(labelName.get, oldLabel = false, includeNonpure = true)(constraint.get)
-      } else {
-        constraint.get
-      }
-      Seq(If(constr, Seqn(seq, Seq())(pos, info, errT), Seqn(Seq(), Seq())(pos, info, errT))(pos, info, errT))
+      Seq(If(constraint.get, Seqn(seq, Seq())(pos, info, errT), Seqn(Seq(), Seq())(pos, info, errT))(pos, info, errT))
     } else {
       seq
     }

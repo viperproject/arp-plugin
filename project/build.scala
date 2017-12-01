@@ -37,7 +37,7 @@ object ARPBuild extends Build {
               name := "ARP",
               mainClass in Compile := Some("viper.silicon.SiliconRunner"),
               mainClass in assembly := Some("viper.silicon.SiliconRunner"),
-              jarName in assembly := "silicon-arp.jar",
+              jarName in assembly := "arp-plugin-silicon.jar",
               test in assembly := {},
                 /* Skip tests before assembling fat jar. Assembling stops if tests fails. */
               // scalacOptions ++= Seq("-Xelide-below", "1000"),

@@ -6,7 +6,7 @@
 
 package viper.silver.plugin
 
-import viper.silver.ast.{Add, CurrentPerm, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Implies, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoInfo, NoPerm, NoPosition, NoTrafos, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
+import viper.silver.ast.{Add, CurrentPerm, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Implies, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoInfo, NoPerm, NoPosition, NoTrafos, NodeTrafo, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
 import viper.silver.verifier.TypecheckerError
 import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported
@@ -19,15 +19,15 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
 
   def collect(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression): Option[NormalizedExpression] = {
     exp match {
-      case PermMinus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)())), _ *? _, exp)
+      case PermMinus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
       case PermAdd(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp)
-      case PermSub(left, right) => collect(PermAdd(left, PermMinus(right)())(), rdPerm)
+      case PermSub(left, right) => collect(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))(left.pos, left.info, NodeTrafo(left)), rdPerm)
       case PermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
       case IntPermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
       case PermDiv(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
-      case Minus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)())), _ *? _, exp)
+      case Minus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
       case Add(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp)
-      case Sub(left, right) => collect(PermAdd(left, PermMinus(right)())(), rdPerm)
+      case Sub(left, right) => collect(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))(), rdPerm)
       case Mul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
       case Div(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
       case i: IntLit => Some(constPerm(i))

@@ -1,0 +1,23 @@
+field f : Int
+field g : Int
+
+method foo(x: Ref)
+requires acc(x.f, write) && acc(x.g, 1/4 + (x.f > 0 ? rd : 1/2))
+ensures acc(x.f, write) && acc(x.g, 1/4 + (x.f > 0 ? rd : 1/2))
+ensures x.f == x.g + 1
+//:: ExpectedOutput(postcondition.violated:assertion.false)
+ensures false
+{
+    x.f := x.g + 1
+}
+
+method client(x: Ref)
+requires acc(x.f, write) && acc(x.g, write)
+ensures acc(x.f, write) && acc(x.g, write)
+{
+    x.f := 4
+    x.g := 5
+    foo(x)
+    assert x.g == 5
+    assert x.f == 6
+}

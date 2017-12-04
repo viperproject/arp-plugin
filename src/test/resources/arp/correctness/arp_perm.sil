@@ -1,0 +1,11 @@
+field f: Int
+field g: Int
+
+method foo(x: Ref)
+requires acc(x.f, rd)
+ensures acc(x.f, rd)
+{
+    inhale acc(x.g, perm(x.f))
+    assert acc(x.g, rd)
+    exhale acc(x.g, perm(x.f))
+}

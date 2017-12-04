@@ -19,6 +19,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   val logDomainName = "ARPLog"
   val logDomainNil = "ARPLog_Nil"
   val logDomainCons = "ARPLog_Cons"
+  val logDomainSumGt = "ARPLog_sum_gt"
   val logDomainSum = "ARPLog_sum"
   val rdName = "rd"
   val rdCountingName = "rdc"

@@ -26,59 +26,11 @@ domain ARPLog {
 
     // Functions
 
-    function ARPLog_sum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+    function ARPLog_max_level(log: ARPLog): Int
 
-    // log levels for debugging
-    /*
-    unique function ARPLog_CONST_STORE(): Int {
-        result = 6
-    }
-    unique function ARPLog_CONST_CHECK(): Int {
-        result = 5
-    }
-    unique function ARPLog_GLOBAL_STORE(): Int {
-        result = 5
-    }
-    unique function ARPLog_GLOBAL_CHECK(): Int {
-        result = 5
-    }
-    unique function ARPLog_CONTEXT_STORE(): Int {
-        result = 4
-    }
-    unique function ARPLog_CONTEXT_CHECK(): Int {
-        result = 4
-    }
-    unique function ARPLog_TOKEN_STORE(): Int {
-        result = 3
-    }
-    unique function ARPLog_TOKEN_CHECK(): Int {
-        result = 4
-    }
-    unique function ARPLog_OLD_STORE(): Int {
-        result = 3
-    }
-    unique function ARPLog_OLD_CHECK(): Int {
-        result = 3
-    }
-    unique function ARPLog_WILDCARD_STORE(): Int {
-        result = 2
-    }
-    unique function ARPLog_WILDCARD_CHECK(): Int {
-        result = 0
-    }
-    unique function ARPLog_FRESH_STORE(): Int {
-        result = 1
-    }
-    unique function ARPLog_FRESH_CHECK(): Int {
-        result = 1
-    }
-    unique function ARPLog_EPSILON_STORE(): Int {
-        result = 0
-    }
-    unique function ARPLog_EPSILON_CHECK(): Int {
-        result = 0
-    }
-    */
+    function ARPLog_sum_gt(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+
+    function ARPLog_sum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
 
     // Axioms
 
@@ -106,17 +58,36 @@ domain ARPLog {
     }
 
     axiom type_existence {
-        forall log: ARPLog ::
+        forall log: ARPLog :: { ARPLog_is_Nil(log) }{ ARPLog_is_Cons(log) }{ ARPLog_type(log) }
             ARPLog_type(log) == ARPLog_type_Nil()
          || ARPLog_type(log) == ARPLog_type_Cons()
     }
 
     axiom type_is_Nil {
-        forall log: ARPLog :: ARPLog_type(log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(log)
+        forall log: ARPLog :: { ARPLog_is_Nil(log) }{ ARPLog_type(log) }
+            ARPLog_type(log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(log)
     }
 
     axiom type_is_Cons {
-        forall log: ARPLog :: ARPLog_type(log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(log)
+        forall log: ARPLog :: { ARPLog_is_Cons(log) }{ ARPLog_type(log) }
+            ARPLog_type(log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(log)
+    }
+
+    // could be made more generic, but this is probably faster
+    axiom log_max_level {
+        forall log: ARPLog :: { ARPLog_max_level(log) }
+            ARPLog_max_level(log) == 6
+    }
+
+    axiom sum_gt_of_log {
+        forall ref: Ref, fieldId: Int, level: Int, log: ARPLog :: { ARPLog_sum_gt(ref, fieldId, level, log) }
+            (level > ARPLog_max_level(log) ==> ARPLog_sum_gt(ref, fieldId, level, log) == none)
+         && (level <= ARPLog_max_level(log) ==>
+                ARPLog_sum_gt(ref, fieldId, level, log) ==
+                (
+                    ARPLog_sum_gt(ref, fieldId, level + 1, log) + ARPLog_sum(ref, fieldId, level, log)
+                )
+            )
     }
 
     axiom sum_of_log {
@@ -130,7 +101,7 @@ domain ARPLog {
                         (
                             ARPLog_head_ref_Cons(log) == ref
                          && ARPLog_head_fieldId_Cons(log) == fieldId
-                         && ARPLog_head_level_Cons(log) > level
+                         && ARPLog_head_level_Cons(log) == level
                         ) ?
                         (ARPLog_head_permission_Cons(log)) :
                         (none)

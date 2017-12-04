@@ -26,6 +26,10 @@ domain ARPLog {
 
     // Functions
 
+    function ARPLog_max_level(log: ARPLog): Int
+
+    function ARPLog_sum_gt(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+
     function ARPLog_sum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
 
     // Axioms
@@ -54,17 +58,36 @@ domain ARPLog {
     }
 
     axiom type_existence {
-        forall log: ARPLog ::
+        forall log: ARPLog :: { ARPLog_is_Nil(log) }{ ARPLog_is_Cons(log) }{ ARPLog_type(log) }
             ARPLog_type(log) == ARPLog_type_Nil()
          || ARPLog_type(log) == ARPLog_type_Cons()
     }
 
     axiom type_is_Nil {
-        forall log: ARPLog :: ARPLog_type(log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(log)
+        forall log: ARPLog :: { ARPLog_is_Nil(log) }{ ARPLog_type(log) }
+            ARPLog_type(log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(log)
     }
 
     axiom type_is_Cons {
-        forall log: ARPLog :: ARPLog_type(log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(log)
+        forall log: ARPLog :: { ARPLog_is_Cons(log) }{ ARPLog_type(log) }
+            ARPLog_type(log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(log)
+    }
+
+    // could be made more generic, but this is probably faster
+    axiom log_max_level {
+        forall log: ARPLog :: { ARPLog_max_level(log) }
+            ARPLog_max_level(log) == 6
+    }
+
+    axiom sum_gt_of_log {
+        forall ref: Ref, fieldId: Int, level: Int, log: ARPLog :: { ARPLog_sum_gt(ref, fieldId, level, log) }
+            (level > ARPLog_max_level(log) ==> ARPLog_sum_gt(ref, fieldId, level, log) == none)
+         && (level <= ARPLog_max_level(log) ==>
+                ARPLog_sum_gt(ref, fieldId, level, log) ==
+                (
+                    ARPLog_sum_gt(ref, fieldId, level + 1, log) + ARPLog_sum(ref, fieldId, level, log)
+                )
+            )
     }
 
     axiom sum_of_log {
@@ -78,7 +101,7 @@ domain ARPLog {
                         (
                             ARPLog_head_ref_Cons(log) == ref
                          && ARPLog_head_fieldId_Cons(log) == fieldId
-                         && ARPLog_head_level_Cons(log) > level
+                         && ARPLog_head_level_Cons(log) == level
                         ) ?
                         (ARPLog_head_permission_Cons(log)) :
                         (none)
@@ -117,7 +140,9 @@ method test (x: Ref)
     assert ARPLog_head_level_Cons(pl1) == 6
     assert ARPLog_tail_Cons(pl1) == pl0
 
-    assert ARPLog_sum(x, field_f(), 5, pl1) == write
+    assert ARPLog_sum_gt(x, field_f(), 5, pl1) == write
+    assert ARPLog_sum(x, field_f(), 5, pl1) == none
+    assert ARPLog_sum(x, field_f(), 6, pl1) == write
 
     var pl2: ARPLog
     pl2 := ARPLog_Cons(x, field_f(), -1/3, 2, pl1)
@@ -131,7 +156,10 @@ method test (x: Ref)
     assert ARPLog_head_level_Cons(pl2) == 2
     assert ARPLog_tail_Cons(pl2) == pl1
 
-    assert ARPLog_sum(x, field_f(), 5, pl2) == write
-    assert ARPLog_sum(x, field_f(), 0, pl2) == 2/3
+    assert ARPLog_sum_gt(x, field_f(), 5, pl2) == write
+    assert ARPLog_sum_gt(x, field_f(), 0, pl2) == 2/3
+    assert ARPLog_sum(x, field_f(), 2, pl2) == -1/3
+    assert ARPLog_sum(x, field_f(), 5, pl2) == none
+    assert ARPLog_sum(x, field_f(), 6, pl2) == write
 
 }

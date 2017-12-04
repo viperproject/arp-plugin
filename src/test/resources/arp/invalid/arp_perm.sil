@@ -1,0 +1,10 @@
+field f: Int
+
+method bar(x: Ref)
+requires acc(x.f, rd)
+ensures acc(x.f, rd)
+{
+    //:: ExpectedOutput(internal:feature.unsupported)
+    var c: Perm := rd
+    exhale acc(x.f, c)
+}

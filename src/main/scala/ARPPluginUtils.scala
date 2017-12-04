@@ -197,6 +197,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       case _: PermDiv => permLit
       case _: AbstractConcretePerm => permLit
       case v: LocalVar if v.typ == Perm => permLit
+      case _: CurrentPerm => permLit
       case _ =>
         intLit
     }

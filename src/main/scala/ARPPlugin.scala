@@ -18,6 +18,11 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
+  // TODO: Implement log update for quantified expressions
+  // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions
+  // TODO: Check c := perm(x.f) calls
+  // TODO: Handle acc(x.f, perm(x.g))
+  // TODO: Optimization: whitelist of logged fields
   // TODO: implement globalRd in predicates
   // TODO: Maybe Conjunct conditions to get rid of duplicate labels
   // TODO: Maybe reuse previous rd name for while
@@ -56,12 +61,12 @@ class ARPPlugin extends SilverPlugin {
     }).visit(input)
 
     val sanitizedInput = StrategyBuilder.Slim[PNode]({
-      case PIdnUse(naming.rdName) if alreadyContainsRd => PIdnUse("WAS_RD_BUT_IS_NOT_ARP_RD")
-      case PIdnDef(naming.rdName) if alreadyContainsRd => PIdnDef("WAS_RD_BUT_IS_NOT_ARP_RD")
-      case PIdnUse(naming.rdCountingName) if alreadyContainsRdc => PIdnUse("WAS_RDC_BUT_IS_NOT_ARP_RDC")
-      case PIdnDef(naming.rdCountingName) if alreadyContainsRdc => PIdnDef("WAS_RDC_BUT_IS_NOT_ARP_RDC")
-      case PIdnUse(naming.rdWildcardName) if alreadyContainsRdw => PIdnUse("WAS_RDW_BUT_IS_NOT_ARP_RDW")
-      case PIdnDef(naming.rdWildcardName) if alreadyContainsRdw => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_RDW")
+      case p@PIdnUse(naming.rdName) if alreadyContainsRd => PIdnUse("WAS_RD_BUT_IS_NOT_ARP_RD").setPos(p)
+      case p@PIdnDef(naming.rdName) if alreadyContainsRd => PIdnDef("WAS_RD_BUT_IS_NOT_ARP_RD").setPos(p)
+      case p@PIdnUse(naming.rdCountingName) if alreadyContainsRdc => PIdnUse("WAS_RDC_BUT_IS_NOT_ARP_RDC").setPos(p)
+      case p@PIdnDef(naming.rdCountingName) if alreadyContainsRdc => PIdnDef("WAS_RDC_BUT_IS_NOT_ARP_RDC").setPos(p)
+      case p@PIdnUse(naming.rdWildcardName) if alreadyContainsRdw => PIdnUse("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
+      case p@PIdnDef(naming.rdWildcardName) if alreadyContainsRdw => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
     }).execute[PProgram](input)
 
     // inject functions for rd() and rdc()
@@ -78,8 +83,8 @@ class ARPPlugin extends SilverPlugin {
 
     // replace all rd with rd()
     val rdRewriter = StrategyBuilder.Ancestor[PNode]({
-      case (PIdnUse(naming.rdName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(PIdnUse(naming.rdName), Seq(), None)
-      case (PIdnUse(naming.rdWildcardName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(PIdnUse(naming.rdWildcardName), Seq(), None)
+      case (p@PIdnUse(naming.rdName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
+      case (p@PIdnUse(naming.rdWildcardName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
     }, Traverse.BottomUp)
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
@@ -127,6 +132,8 @@ class ARPPlugin extends SilverPlugin {
 
     val rewrittenInput = arpRewriter.execute[Program](enhancedInput)
     val inputPrime = addDummyMethods(input, rewrittenInput)
+
+    checkAllRdTransformed(inputPrime)
 
     if (System.getProperty("DEBUG", "").equals("1")) {
       println(inputPrime)
@@ -272,6 +279,18 @@ class ARPPlugin extends SilverPlugin {
           m
         }
     }).execute(node)
+  }
+
+  def checkAllRdTransformed(input: Program): Unit ={
+    StrategyBuilder.SlimVisitor[Node]({
+      case f@FuncApp(naming.rdName, _) =>
+        reportError(Internal(f, FeatureUnsupported(f, "rd is not allowed here.")))
+      case f@FuncApp(naming.rdCountingName, _) =>
+        reportError(Internal(f, FeatureUnsupported(f, "rdc is not allowed here.")))
+      case f@FuncApp(naming.rdWildcardName, _) =>
+        reportError(Internal(f, FeatureUnsupported(f, "rdw is not allowed here.")))
+      case _ =>
+    }).visit(input)
   }
 
   def checkUniqueNames(input: Program, inputPrime: Program): Unit = {

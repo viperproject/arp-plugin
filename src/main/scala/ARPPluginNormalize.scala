@@ -13,25 +13,27 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPluginNormalize(plugin: ARPPlugin) {
 
-  def normalizeExpression(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression): Option[NormalizedExpression] = {
-    collect(exp, rdPerm)
+  def normalizeExpression(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression, ignoreErrors : Boolean = false): Option[NormalizedExpression] = {
+    collect(exp, rdPerm, ignoreErrors)
   }
 
-  def collect(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression): Option[NormalizedExpression] = {
+  def collect(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression, ignoreErrors : Boolean = false): Option[NormalizedExpression] = {
+    def recursive(e: Exp) = collect(e, rdPerm, ignoreErrors)
+
     exp match {
-      case PermMinus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
-      case PermAdd(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp)
-      case PermSub(left, right) => collect(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))(left.pos, left.info, NodeTrafo(left)), rdPerm)
-      case PermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
-      case IntPermMul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
-      case PermDiv(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
-      case Minus(left) => op(collect(left, rdPerm), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
-      case Add(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ +? _, exp)
-      case Sub(left, right) => collect(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))(), rdPerm)
-      case Mul(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ *? _, exp)
-      case Div(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
+      case PermMinus(left) => op(recursive(left), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
+      case PermAdd(left, right) => op(recursive(left), recursive(right), _ +? _, exp)
+      case PermSub(left, right) => recursive(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))(left.pos, left.info, NodeTrafo(left)))
+      case PermMul(left, right) => op(recursive(left), recursive(right), _ *? _, exp)
+      case IntPermMul(left, right) => op(recursive(left), recursive(right), _ *? _, exp)
+      case PermDiv(left, right) => op(recursive(left), recursive(right), _ /? _, exp)
+      case Minus(left) => op(recursive(left), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
+      case Add(left, right) => op(recursive(left), recursive(right), _ +? _, exp)
+      case Sub(left, right) => recursive(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))())
+      case Mul(left, right) => op(recursive(left), recursive(right), _ *? _, exp)
+      case Div(left, right) => op(recursive(left), recursive(right), _ /? _, exp)
       case i: IntLit => Some(constPerm(i))
-      case FractionalPerm(left, right) => op(collect(left, rdPerm), collect(right, rdPerm), _ /? _, exp)
+      case FractionalPerm(left, right) => op(recursive(left), recursive(right), _ /? _, exp)
       case p: NoPerm => Some(constPerm(p))
       case p: FullPerm => Some(constPerm(p))
       case p: WildcardPerm =>
@@ -40,7 +42,6 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
         Some(rdcPerm(IntLit(1)(), FuncApp(plugin.naming.rdCountingName, Seq())(p.pos, p.info, Perm, Seq(), NoTrafos)))
       case l@LocalVar(name) => Some(constPerm(l))
       case f: FieldAccess => Some(constPerm(f))
-      case c: CurrentPerm => Some(lowestPerm(c))
       case LabelledOld(l: LocalVar, _) => Some(constPerm(l))
       case l@LabelledOld(fa: FieldAccess, _) => Some(constPerm(l))
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
@@ -48,6 +49,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
       case f: FuncApp => Some(constPerm(f))
       case f: DomainFuncApp => Some(constPerm(f))
+      case _ if ignoreErrors => None
       case default =>
         plugin.reportError(Internal(default, FeatureUnsupported(default, "Can't normalize expression. " + default.getClass)))
         None
@@ -79,11 +81,6 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
 
   def rdcPerm(exp: Exp, f: FuncApp): NormalizedExpression = {
     NormalizedExpression(Seq(NormalizedPart(exp, 0, 0, Some(f))), None, None)
-  }
-
-  def lowestPerm(exp: Exp): NormalizedExpression = {
-    // TODO: check levels
-    NormalizedExpression(Seq(NormalizedPart(exp, 0, 5, None)), None, None)
   }
 
   def constPerm(exp: Exp): NormalizedExpression = {

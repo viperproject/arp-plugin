@@ -21,6 +21,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   val logDomainCons = "ARPLog_Cons"
   val logDomainSumGt = "ARPLog_sum_gt"
   val logDomainSum = "ARPLog_sum"
+  val logDomainMaxLevel = "ARPLog_max_level"
   val rdName = "rd"
   val rdCountingName = "rdc"
   val rdWildcardName = "rdw"

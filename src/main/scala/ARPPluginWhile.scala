@@ -26,7 +26,7 @@ class ARPPluginWhile(plugin: ARPPlugin) {
       val newLogName = plugin.naming.getNameFor(w, suffix = "while_log")
 
       val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
-      val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
+      val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]())
       val arpLogNil = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainNil).get
 
       val whilePrime = While(condVar, Seq(),

@@ -59,6 +59,7 @@ object ARPBuild extends Build {
                  */
                javaOptions in run ++= Seq("-Xss128M", "-Dfile.encoding=UTF-8"),
                javaOptions in Test += "-Xss128M",
+               testOptions in Test += Tests.Argument("-oGK"),
                 /* Options passed to JVMs forked by test-related Sbt command.
                  * See http://www.scala-sbt.org/0.12.4/docs/Detailed-Topics/Forking.html
                  * In contrast to what the documentation states, it seemed

@@ -18,10 +18,14 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
+  // TODO: fix all/issues/silicon/unofficial006.sil (LocalVarDecl gets lost)
   // TODO: Implement log update for quantified expressions
   // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions
   // TODO: Check c := perm(x.f) calls
   // TODO: Handle acc(x.f, perm(x.g))
+  // TODO: Maybe handle acc(x.f, write - perm(x.g))
+  // TODO: Handle arbitrary conditionals in acc
+  // TODO: Make sure error transformation works everywhere
   // TODO: Optimization: whitelist of logged fields
   // TODO: implement globalRd in predicates
   // TODO: Maybe Conjunct conditions to get rid of duplicate labels
@@ -150,7 +154,7 @@ class ARPPlugin extends SilverPlugin {
           case ParseError(msg, pos) => ParseError(msg + s" ($pos)", pos)
           case AbortedExceptionally(cause) => ParseError(s"Exception: $cause", NoPosition) // Is not really a parse error...
           case TypecheckerError(msg, pos) => TypecheckerError(msg.replace("<undefined position>", "<ARP Plugin>"), pos)
-          case error: AbstractVerificationError => error.transformedError() // TODO: Add ErrorTransformation Information to AST
+          case error: AbstractVerificationError => error.transformedError()
           case default => default
         })
         Failure(errorsPrime.filterNot({
@@ -158,6 +162,7 @@ class ARPPlugin extends SilverPlugin {
           case ep: WhileFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
           case ep: LoopInvariantNotEstablished => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
           case ep: LoopInvariantNotPreserved => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+          case ep: InhaleFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
           case _ => false
         }))
     }

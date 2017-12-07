@@ -81,11 +81,11 @@ domain ARPLog {
 
     axiom sum_gt_of_log {
         forall ref: Ref, fieldId: Int, level: Int, log: ARPLog :: { ARPLog_sum_gt(ref, fieldId, level, log) }
-            (level > ARPLog_max_level(log) ==> ARPLog_sum_gt(ref, fieldId, level, log) == none)
-         && (level <= ARPLog_max_level(log) ==>
+            (level >= ARPLog_max_level(log) ==> ARPLog_sum_gt(ref, fieldId, level, log) == none)
+         && (level < ARPLog_max_level(log) ==>
                 ARPLog_sum_gt(ref, fieldId, level, log) ==
                 (
-                    ARPLog_sum_gt(ref, fieldId, level + 1, log) + ARPLog_sum(ref, fieldId, level, log)
+                    ARPLog_sum_gt(ref, fieldId, level + 1, log) + ARPLog_sum(ref, fieldId, level + 1, log)
                 )
             )
     }

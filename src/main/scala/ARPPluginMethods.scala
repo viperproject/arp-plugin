@@ -26,7 +26,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
     val logName = plugin.naming.getNameFor(m, m.name, "log")
     val rdArg = LocalVarDecl(methodRdName, Perm)(m.pos, m.info)
     val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
-    val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]() /* TODO: What's the deal with this? */)
+    val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]())
     val arpLogNil = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainNil).get
 
     Method(
@@ -48,11 +48,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             Inhale(plugin.utils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
           ) ++
             // inhale preconditions
-            m.pres.map(p => Inhale(p)(p.pos, ConsInfo(p.info, WasMethodCondition()), ErrTrafo({
-              case InhaleFailed(_, reason, cached) =>
-                ContractNotWellformed(p, reason, cached)
-              case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
-            }))) ++
+            m.pres.map(p => Inhale(p)(p.pos, ConsInfo(p.info, WasMethodCondition()))) ++
             // start label
             Seq(Label(methodStartLabelName, Seq())(m.pos, m.info)) ++
             // method body
@@ -119,11 +115,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // inhale postconditions
             method.posts.map(p => Inhale(
               plugin.utils.rewriteOldExpr(labelName, fieldAccess = false)(argRenamer(p))
-            )(p.pos, ConsInfo(p.info, WasCallCondition()), ErrTrafo({
-              case InhaleFailed(_, reason, cached) =>
-                ContractNotWellformed(p, reason, cached)
-              case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
-            }))),
+            )(p.pos, ConsInfo(p.info, WasCallCondition()))),
           // variable declarations
           Seq(
             // TODO: Why does this not always work?

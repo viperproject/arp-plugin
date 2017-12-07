@@ -2,8 +2,8 @@ field f : Int
 field g : Int
 
 method foo(x: Ref)
-requires acc(x.f, write) && acc(x.g, 1/4 + (x.f > 0 ? rd : 1/2))
-ensures acc(x.f, write) && acc(x.g, 1/4 + (x.f > 0 ? rd : 1/2))
+requires acc(x.f, write) && acc(x.g, (x.f == 4 ? 1/4 : none) + (x.f > 0 ? rd : 1/2))
+ensures acc(x.f, write) && acc(x.g, (old(x.f) == 4 ? 1/4 : none) + (x.f > 0 ? rd : 1/2))
 ensures x.f == x.g + 1
 {
     x.f := x.g + 1

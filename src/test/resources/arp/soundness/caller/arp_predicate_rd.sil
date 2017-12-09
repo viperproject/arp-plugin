@@ -11,6 +11,8 @@ ensures acc(pred(), rd)
 method bar(x: Ref)
 requires acc(pred(), 1/2) && acc(pred2(2)) && acc(x.f, 1/2)
 ensures acc(pred(), 1/2) && acc(pred2(2)) && acc(x.f, 1/2)
+//:: ExpectedOutput(postcondition.violated:assertion.false)
+ensures false
 {
     foo()
 }

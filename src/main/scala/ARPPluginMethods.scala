@@ -83,7 +83,11 @@ class ARPPluginMethods(plugin: ARPPlugin) {
       case Some(method) =>
         val labelName = plugin.naming.getNewName(method.name, "call_label")
         val methodRdName = plugin.naming.getNameFor(m, method.name, "call_rd")
-        def argRenamer(exp: Exp) = renameArguments(m, method, labelName)(exp)
+        val argumentNames = method.formalArgs.map(v => plugin.naming.getNewName("arg", v.localVar.name))
+        val localVars = method.formalArgs.zip(m.args).zip(argumentNames).map(z => LocalVar(z._2)(z._1._1.localVar.typ, m.pos, m.info, NodeTrafo(z._1._2)))
+
+        def argRenamer = renameArguments(m, method, localVars)
+
         Seqn(
           Seq(
             // TODO: Why is this declStmt needed? (see test recursive.sil)
@@ -93,6 +97,9 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // inhale rd constraints for call rd
             Inhale(plugin.utils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
           ) ++
+            localVars.zip(m.args).map(z => LocalVarAssign(z._1, z._2)(m.pos, m.info, ErrTrafo({
+              case AssignmentFailed(_, reason, cached) => CallFailed(m, reason, cached)
+            }))) ++
             // exhale preconditions
             method.pres.map(p => Exhale(
               plugin.utils.rewriteOldExpr(labelName)(argRenamer(p))
@@ -101,17 +108,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
                 PreconditionInCallFalse(m, reason, cached)
               case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
             }))) ++
-            m.targets.map(t => {
-              val tmpName = plugin.naming.getNewName(suffix = "havoc")
-              Seqn(
-                Seq(
-                  // TODO: Why is this declStmt needed?
-                  LocalVarDeclStmt(LocalVarDecl(tmpName, t.typ)(m.pos, m.info))(m.pos, m.info),
-                  LocalVarAssign(t, LocalVar(tmpName)(t.typ, m.pos, m.info))(m.pos, m.info)
-                ),
-                Seq(LocalVarDecl(tmpName, t.typ)(m.pos, m.info))
-              )(m.pos, m.info)
-            }) ++
+            m.targets.map(t => plugin.utils.havoc(t)) ++
             // inhale postconditions
             method.posts.map(p => Inhale(
               plugin.utils.rewriteOldExpr(labelName, fieldAccess = false)(argRenamer(p))
@@ -121,26 +118,31 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // TODO: Why does this not always work?
             // LocalVarDecl(methodRdName, Perm)(m.pos, m.info),
             Label(labelName, Seq())(m.pos, m.info)
-          )
+          ) ++
+            localVars.map(v => LocalVarDecl(v.name, v.typ)(m.pos, m.info))
         )(m.pos, m.info, NodeTrafo(m))
       case None => m
     }
   }
 
-  def renameArguments(call: MethodCall, method: Method, labelName: String)(exp: Exp): Exp = {
-    if (call.args.length == method.formalArgs.length) {
-      val argMapping = method.formalArgs.zip(call.args).foldLeft(HashMap[String, Exp]())((m, c) =>
-        m + (c._1.name -> plugin.utils.rewriteOldExpr(labelName)(c._2))
-      )
-      val allMapping = method.formalReturns.zip(call.targets).foldLeft(argMapping)((m, c) =>
-        m + (c._1.name -> c._2)
-      )
-      StrategyBuilder.Ancestor[Node]({
-        case (l@LocalVar(name), ctx) => allMapping.getOrElse(name, l)
-      }, Traverse.BottomUp).execute[Exp](exp)
-    } else {
-      exp
+  def renameArguments(call: MethodCall, method: Method, vars: Seq[LocalVar]): Exp => Exp = {
+    val argMapping = method.formalArgs.zip(vars).foldLeft(HashMap[String, Exp]())((m, c) =>
+      m + (c._1.name -> c._2)
+    )
+
+    val allMapping = method.formalReturns.zip(call.targets).foldLeft(argMapping)((m, c) =>
+      m + (c._1.name -> c._2)
+    )
+
+    val strategy = StrategyBuilder.Slim[Node]({
+      case l@LocalVar(name) => allMapping.getOrElse(name, l)
+    }, Traverse.BottomUp)
+
+    def renamer(exp: Exp): Exp = {
+      strategy.execute[Exp](exp)
     }
+
+    renamer
   }
 
   def joinBreathing(breath: Seq[Exp]): Exp = {

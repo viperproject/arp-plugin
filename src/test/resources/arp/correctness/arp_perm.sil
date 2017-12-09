@@ -7,5 +7,7 @@ ensures acc(x.f, rd)
 {
     inhale acc(x.g, perm(x.f))
     assert acc(x.g, rd)
+    assert perm(x.g) == rd
     exhale acc(x.g, perm(x.f))
+    assert perm(x.g) == none
 }

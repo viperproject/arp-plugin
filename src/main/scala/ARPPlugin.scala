@@ -18,15 +18,15 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
-  // TODO: fix all/issues/silicon/unofficial006.sil (LocalVarDecl gets lost)
+  // TODO: Handle magic wands
   // TODO: Implement log update for quantified expressions
-  // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions
-  // TODO: Check c := perm(x.f) calls
-  // TODO: Handle acc(x.f, perm(x.g))
+  // TODO: Check c := perm(x.f) calls (Rewriter thinks assignment was already rewritten)
+  // TODO: Fix nested old
+  // TODO: fix all/issues/silicon/unofficial006.sil (LocalVarDecl gets lost)
+  // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions)
   // TODO: Maybe handle acc(x.f, write - perm(x.g))
-  // TODO: Handle arbitrary conditionals in acc
+  // TODO: Constraining in quantified expressions
   // TODO: Make sure error transformation works everywhere
-  // TODO: Optimization: whitelist of logged fields
   // TODO: implement globalRd in predicates
   // TODO: Maybe Conjunct conditions to get rid of duplicate labels
   // TODO: Maybe reuse previous rd name for while
@@ -34,14 +34,39 @@ class ARPPlugin extends SilverPlugin {
   val utils = new ARPPluginUtils(this)
   val naming = new ARPPluginNaming(this)
   val methods = new ARPPluginMethods(this)
-  val while_ = new ARPPluginWhile(this)
+  val loops = new ARPPluginWhile(this)
   val breathe = new ARPPluginBreathe(this)
   val normalize = new ARPPluginNormalize(this)
+  val misc = new ARPPluginMisc(this)
+  var ignoredFields = Seq[String]()
 
   object Optimize {
     val simplifyExpressions = true
     val removeProvableIf = true
     val noAssumptionForPost = true
+  }
+
+  def setIgnoredFields(fields: Seq[String]): Unit = {
+    ignoredFields = fields
+  }
+
+  def isAccIgnored(acc: LocationAccess): Boolean ={
+    acc match {
+      case f: FieldAccess => isFieldIgnored(f.field)
+      case p: PredicateAccess => isPredicateIgnored(p.predicateName)
+    }
+  }
+
+  def isFieldIgnored(field: Field): Boolean ={
+    ignoredFields.contains(field.name)
+  }
+
+  def isPredicateIgnored(predicate: String): Boolean ={
+    ignoredFields.contains(predicate)
+  }
+
+  def isPredicateIgnored(predicate: Predicate): Boolean = {
+    ignoredFields.contains(predicate.name)
   }
 
   override def beforeResolve(input: PProgram): PProgram = {
@@ -73,6 +98,14 @@ class ARPPlugin extends SilverPlugin {
       case p@PIdnDef(naming.rdWildcardName) if alreadyContainsRdw => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
     }).execute[PProgram](input)
 
+    val blacklistMethod = sanitizedInput.methods.find(p => p.idndef.name == naming.blacklistName)
+    if (blacklistMethod.isDefined && blacklistMethod.get.body.isDefined) {
+      blacklistMethod.get.body.get.childStmts.foreach({
+        case PMethodCall(_, PIdnUse(name), _) => ignoredFields :+= name
+        case _ =>
+      })
+    }
+
     // inject functions for rd() and rdc()
     val inputWithFunctions = PProgram(
       sanitizedInput.imports,
@@ -81,7 +114,7 @@ class ARPPlugin extends SilverPlugin {
       sanitizedInput.fields,
       sanitizedInput.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction,
       sanitizedInput.predicates,
-      sanitizedInput.methods,
+      sanitizedInput.methods.filterNot(p => p.idndef.name == naming.blacklistName),
       sanitizedInput.errors
     )
 
@@ -108,7 +141,7 @@ class ARPPlugin extends SilverPlugin {
         case (m: MethodCall, ctx) =>
           methods.handleMethodCall(enhancedInput, m, ctx)
         case (w: While, ctx) =>
-          while_.handleWhile(enhancedInput, w, ctx)
+          loops.handleWhile(enhancedInput, w, ctx)
         case (a: Assert, ctx) =>
           breathe.handleAssert(enhancedInput, a, ctx)
         case (e: Exhale, ctx) =>
@@ -119,7 +152,10 @@ class ARPPlugin extends SilverPlugin {
           breathe.handleFold(enhancedInput, f, ctx)
         case (f: Unfold, ctx) =>
           breathe.handleUnfold(enhancedInput, f, ctx)
+        case (a: AbstractAssign, ctx) =>
+          misc.handleAssignment(enhancedInput, a, ctx)
         case (c: Constraining, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, c))
+        case (p: Package, ctx) => p
       },
       ARPContext("", "", ""), // default context
       {
@@ -203,13 +239,73 @@ class ARPPlugin extends SilverPlugin {
 
   def addFieldFunctions(input: Program): Program = {
     val domainName = naming.fieldFunctionDomainName
+    val fields = input.fields.filterNot(isFieldIgnored)
+    val predicates = input.predicates.filterNot(isPredicateIgnored)
+
+    def generateEqCmp(e1: Seq[Exp], e2: Seq[Exp]): Exp = {
+      val eq = EqCmp(e1.head, e2.head)(input.pos, input.info)
+      if (e1.size == 1) {
+        eq
+      } else {
+        And(eq, generateEqCmp(e1.tail, e2.tail))(input.pos, input.info)
+      }
+    }
+
     val fieldDomain = Domain(
       domainName,
-      input.fields.map(f => DomainFunc(
-        naming.getNameFor(f, "field", f.name),
+      fields.map(f => DomainFunc(
+        naming.getFieldFunctionName(f),
         Seq(), Int, unique = true
-      )(input.pos, input.info, domainName)),
-      Seq(),
+      )(input.pos, input.info, domainName)) ++
+        predicates.map(p => DomainFunc(
+          naming.getPredicateFunctionName(p),
+          p.formalArgs, Int, unique = p.formalArgs.isEmpty
+        )(input.pos, input.info, domainName)),
+      predicates.flatMap(p => if (p.formalArgs.nonEmpty) {
+        val localArgs1 = p.formalArgs.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
+        val app1 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs1, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
+        val args2 = p.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
+        val localArgs2 = args2.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
+        val app2 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs2, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
+        fields.map(f =>
+          DomainAxiom(
+            naming.getNewName(suffix = p.name + "_" + f.name),
+            Forall(
+              p.formalArgs,
+              Seq(Trigger(Seq(app1))(input.pos, input.info)),
+              NeCmp(app1, DomainFuncApp(naming.getFieldFunctionName(f), Seq(), Map[TypeVar, Type]())(input.pos, input.info, Int, Seq(), domainName, NoTrafos))(input.pos, input.info)
+            )(input.pos, input.info)
+          )(input.pos, input.info, domainName)
+        ) ++
+          predicates.filterNot(_ == p).map(pp => {
+            val args3 = pp.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
+            val localArgs3 = args3.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
+            val app3 = DomainFuncApp(naming.getPredicateFunctionName(pp), localArgs3, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
+            DomainAxiom(
+              naming.getNewName(suffix = p.name + "_" + pp.name),
+              Forall(
+                p.formalArgs ++ args3,
+                Seq(Trigger(Seq(app1, app3))(input.pos, input.info)),
+                NeCmp(app1, app3)(input.pos, input.info)
+              )(input.pos, input.info)
+            )(input.pos, input.info, domainName)
+          }) ++
+          Seq(
+            DomainAxiom(
+              naming.getNewName(suffix = p.name),
+              Forall(
+                p.formalArgs ++ args2,
+                Seq(Trigger(Seq(app1, app2))(input.pos, input.info)),
+                Implies(
+                  EqCmp(app1, app2)(input.pos, input.info),
+                  generateEqCmp(localArgs1, localArgs2)
+                )(input.pos, input.info)
+              )(input.pos, input.info)
+            )(input.pos, input.info, domainName)
+          )
+      } else {
+        Seq()
+      }),
       Seq()
     )(input.pos, input.info, NodeTrafo(input))
 
@@ -233,7 +329,7 @@ class ARPPlugin extends SilverPlugin {
         var args = Seq[LocalVarDecl]()
         w.invs.foreach(wi =>
           StrategyBuilder.SlimVisitor[Node]({
-            case l@LocalVar(name) => if(!args.exists(a => a.localVar.name == name)) args :+= LocalVarDecl(name, l.typ)(l.pos, l.info)
+            case l@LocalVar(name) => if (!args.exists(a => a.localVar.name == name)) args :+= LocalVarDecl(name, l.typ)(l.pos, l.info)
             case _ =>
           }).visit(wi)
         )
@@ -270,7 +366,7 @@ class ARPPlugin extends SilverPlugin {
     newProgram
   }
 
-  def rewriteMethodCallsToDummyMethods(input: Program, node: Node): Node ={
+  def rewriteMethodCallsToDummyMethods(input: Program, node: Node): Node = {
     StrategyBuilder.Slim[Node]({
       case m@MethodCall(methodName, args, targets) =>
         val maybeMethod = utils.getMethod(input, methodName)
@@ -286,7 +382,7 @@ class ARPPlugin extends SilverPlugin {
     }).execute(node)
   }
 
-  def checkAllRdTransformed(input: Program): Unit ={
+  def checkAllRdTransformed(input: Program): Unit = {
     StrategyBuilder.SlimVisitor[Node]({
       case f@FuncApp(naming.rdName, _) =>
         reportError(Internal(f, FeatureUnsupported(f, "rd is not allowed here.")))

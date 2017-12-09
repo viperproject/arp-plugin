@@ -6,8 +6,8 @@
 
 package viper.silver.plugin
 
-import viper.silver.ast.{Add, CurrentPerm, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Implies, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoInfo, NoPerm, NoPosition, NoTrafos, NodeTrafo, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
-import viper.silver.verifier.TypecheckerError
+import viper.silver.ast.utility.Rewriter.StrategyBuilder
+import viper.silver.ast.{Add, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
 import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported
 
@@ -49,11 +49,25 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
       case f: FuncApp => Some(constPerm(f))
       case f: DomainFuncApp => Some(constPerm(f))
+      case e if !containsNonConst(e) => Some(constPerm(e))
       case _ if ignoreErrors => None
       case default =>
         plugin.reportError(Internal(default, FeatureUnsupported(default, "Can't normalize expression. " + default.getClass)))
         None
     }
+  }
+
+  def containsNonConst(exp: Exp): Boolean ={
+    var nonConst = true
+
+    StrategyBuilder.SlimVisitor[Node]({
+      case FuncApp(plugin.naming.rdName, _) => nonConst = false
+      case FuncApp(plugin.naming.rdCountingName, Seq(_)) => nonConst = false
+      case FuncApp(plugin.naming.rdWildcardName, _) => nonConst = false
+      case _ =>
+    })
+
+    nonConst
   }
 
   def op(a: Option[NormalizedExpression], b: Option[NormalizedExpression], f: (NormalizedExpression, NormalizedExpression) => Option[NormalizedExpression], exp: Exp): Option[NormalizedExpression] =

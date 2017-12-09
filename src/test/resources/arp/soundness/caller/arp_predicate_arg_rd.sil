@@ -1,0 +1,18 @@
+field f: Int
+
+predicate pred(y: Int)
+
+predicate pred2(x: Int)
+
+method foo(y: Int)
+requires acc(pred(y), rd)
+ensures acc(pred(y), rd)
+
+method bar(x: Ref)
+requires acc(pred(2), 1/2) && acc(pred2(2)) && acc(x.f, 1/2)
+ensures acc(pred(2), 1/2) && acc(pred2(2)) && acc(x.f, 1/2)
+//:: ExpectedOutput(postcondition.violated:assertion.false)
+ensures false
+{
+    foo(2)
+}

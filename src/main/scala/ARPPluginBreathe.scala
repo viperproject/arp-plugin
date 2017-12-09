@@ -9,6 +9,9 @@ package viper.silver.plugin
 import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder}
 import viper.silver.ast._
 import viper.silver.plugin.ARPPlugin._
+import viper.silver.verifier.AbstractVerificationError
+import viper.silver.verifier.errors.{AssertFailed, Internal}
+import viper.silver.verifier.reasons.{AssertionFalse, FeatureUnsupported}
 
 class ARPPluginBreathe(plugin: ARPPlugin) {
 
@@ -35,21 +38,23 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         Seq(Label(labelName, Seq())(inhale.pos, inhale.info)) ++
           Seq(Inhale(rdRewriter(inhale.exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale))) ++
           splitBreathing(inhale.exp, Some(true), {
-            case f@FieldAccessPredicate(_, CurrentPerm(loc: FieldAccess)) =>
-              generateLogUpdateCurrentPerm(input, f, loc, minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
-            case accessPredicate: FieldAccessPredicate =>
+            case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
+              generateLogUpdateCurrentPerm(input, floc, loc, minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
+            case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+              generateLogUpdateCurrentPerm(input, ploc, loc, minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
+            case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
               val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, getRdLevel(inhale))
               if (normalized.isDefined) {
                 if (normalized.get.wildcard.isDefined) {
                   val wildcardName = nextWildcardName
-                  (generateAssumptionInhale(input, accessPredicate, normalized.get, ctx.c.logName, wildcardName = wildcardName)(accessPredicate.pos, accessPredicate.info, NodeTrafo(accessPredicate)) ++
+                  (generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, wildcardName = wildcardName)(accessPredicate.pos, accessPredicate.info, NodeTrafo(accessPredicate)) ++
                     generateLogUpdate(
-                      input, accessPredicate, normalized.get, minus = false, ctx
+                      input, accessPredicate.loc, normalized.get, minus = false, ctx
                     )(accessPredicate.pos, accessPredicate.info, NoTrafos))
                     .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
                 } else {
-                  generateAssumptionInhale(input, accessPredicate, normalized.get, ctx.c.logName, negativeOnly = true)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter) ++
-                    generateLogUpdate(input, accessPredicate, normalized.get, minus = false, ctx)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter)
+                  generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, negativeOnly = true)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter) ++
+                    generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = false, ctx)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter)
                 }
               } else {
                 Seq(Assert(BoolLit(b = false)())())
@@ -84,24 +89,28 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
       Seqn(
         Seq(Label(labelName, Seq())(exhale.pos, exhale.info)) ++
           splitBreathing(exhale.exp, Some(false), {
-            case f@FieldAccessPredicate(loc, CurrentPerm(perm: FieldAccess)) =>
-              generateLogUpdateCurrentPerm(input, f, perm, minus = true, ctx)(f.pos, f.info, NodeTrafo(f))
-            case accessPredicate: FieldAccessPredicate =>
+            case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
+              generateLogUpdateCurrentPerm(input, floc, loc, minus = true, ctx)(f.pos, f.info, NodeTrafo(f)) ++
+                Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
+            case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+              generateLogUpdateCurrentPerm(input, ploc, loc, minus = true, ctx)(p.pos, p.info, NodeTrafo(p)) ++
+                Seq(Exhale(oldRewriter(rdRewriter(p)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
+            case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
               val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, getRdLevel(exhale))
               if (normalized.isDefined) {
                 if (normalized.get.wildcard.isDefined) {
                   val wildcardName = nextWildcardName
-                  (generateAssumptionInhale(input, accessPredicate, normalized.get, ctx.c.logName, wildcardName = wildcardName)(exhale.pos, exhale.info, NodeTrafo(exhale)) ++
-                    generateLogUpdate(input, accessPredicate, normalized.get, minus = true, ctx)(exhale.pos, exhale.info, NodeTrafo(exhale)))
+                  (generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, wildcardName = wildcardName)(exhale.pos, exhale.info, NodeTrafo(exhale)) ++
+                    generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = true, ctx)(exhale.pos, exhale.info, NodeTrafo(exhale)))
                     .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))) ++
                     Seq(Exhale(oldRewriter(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))(accessPredicate)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
                 } else {
                   (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined) {
                     Seq()
                   } else {
-                    generateAssumptionInhale(input, accessPredicate, normalized.get, ctx.c.logName)(exhale.pos, exhale.info, NoTrafos).map(rdRewriter) ++
+                    generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName)(exhale.pos, exhale.info, NoTrafos).map(rdRewriter) ++
                       generateLogUpdate(
-                        input, accessPredicate, normalized.get, minus = true, ctx
+                        input, accessPredicate.loc, normalized.get, minus = true, ctx
                       )(exhale.pos, exhale.info, NoTrafos)
                         .map(rdRewriter).map(oldRewriter)
                   }) ++
@@ -136,15 +145,15 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     ctx.noRec(
       Seqn(
         splitBreathing(assert.exp, Some(false), {
-          case accessPredicate: FieldAccessPredicate =>
+          case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
             val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, getRdLevel(assert), ignoreErrors = true)
             if (normalized.isDefined) {
               if (normalized.get.wildcard.isDefined) {
                 val wildcardName = nextWildcardName
-                generateAssumptionInhale(input, accessPredicate, normalized.get, ctx.c.logName, wildcardName = wildcardName)(assert.pos, assert.info, NodeTrafo(assert))
+                generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, wildcardName = wildcardName)(assert.pos, assert.info, NodeTrafo(assert))
                   .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
               } else {
-                generateAssumptionInhale(input, accessPredicate, normalized.get, ctx.c.logName)(assert.pos, assert.info, NoTrafos).map(rdRewriter)
+                generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName)(assert.pos, assert.info, NoTrafos).map(rdRewriter)
               }
             } else {
               Seq()
@@ -186,10 +195,10 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
             Seq()
           }) ++
             splitBreathing(body, None, {
-              case accessPredicate: FieldAccessPredicate =>
+              case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
                 val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
                 if (normalized.isDefined) {
-                  generateLogUpdate(input, accessPredicate, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos)
+                  generateLogUpdate(input, accessPredicate.loc, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos)
                     .map(plugin.utils.rewriteRd(ctx.c.rdName, wildcardNamesAll))
                 } else {
                   Seq(Assert(BoolLit(b = false)())())
@@ -274,30 +283,25 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateAssumptionInhale(input: Program, accessPredicate: FieldAccessPredicate, normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
-    generateAssumption(input, accessPredicate, normalized, logName, negativeOnly, wildcardName)(pos, info, errT).map(Inhale(_)(pos, info, errT)).toSeq
+  def generateAssumptionInhale(input: Program, acc: LocationAccess,  normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+    generateAssumption(input, acc, normalized, logName, negativeOnly, wildcardName)(pos, info, errT).map(Inhale(_)(pos, info, errT)).toSeq
   }
 
-  def generateAssumption(input: Program, accessPredicate: FieldAccessPredicate, normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
-    // FieldAcces
-    val fieldAccess = accessPredicate.loc
-    val field = fieldAccess.field
-    val fieldFunctionName = plugin.naming.getNameFor(field, "field", field.name)
-    val rcv = fieldAccess.rcv
-    val arpFieldFunctionDomain = plugin.utils.getDomain(input, plugin.naming.fieldFunctionDomainName).get
-    val arpFieldFunction = plugin.utils.getDomainFunction(arpFieldFunctionDomain, fieldFunctionName).get
+  def generateAssumption(input: Program, acc: LocationAccess, normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+    val arpFieldFunction = plugin.utils.getAccessDomainFuncApp(input, acc)(pos, info, errT)
+    val rcv = plugin.utils.getAccessRcv(acc)(pos, info, errT)
 
     // ARPLog
     val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
     val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]())
     val arpLogSum = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainSumGt).get
-    val arpLog = LocalVar(logName)(arpLogType, accessPredicate.pos, accessPredicate.info)
+    val arpLog = LocalVar(logName)(arpLogType, acc.pos, acc.info)
 
     def getSumCall(level: Int): DomainFuncApp = DomainFuncApp(
       arpLogSum,
       Seq(
         rcv,
-        DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(pos, info, errT),
+        arpFieldFunction,
         IntLit(level)(pos, info, errT),
         arpLog
       ),
@@ -314,11 +318,11 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           Implies(
             And(
               PermLtCmp(NoPerm()(pos, info, errT), getSumCall(normalized.wildcard.get.check))(pos, info, errT),
-              PermLtCmp(NoPerm()(pos, info, errT), CurrentPerm(accessPredicate.loc)(pos, info, errT))(pos, info, errT)
+              PermLtCmp(NoPerm()(pos, info, errT), CurrentPerm(acc)(pos, info, errT))(pos, info, errT)
             )(pos, info, errT),
             PermLtCmp(
               LocalVar(wildcardName)(Perm, pos, info, errT),
-              CurrentPerm(accessPredicate.loc)(pos, info, errT)
+              CurrentPerm(acc)(pos, info, errT)
             )(pos, info, errT)
           )(pos, info, errT)
         )(pos, info, errT)
@@ -328,9 +332,9 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         None
       } else {
         if (negativeOnly) {
-          generateAssumptionWorkerNegative(fieldAccess, getSumCall, normalized, None, foundPositive = false)(pos, info, errT)
+          generateAssumptionWorkerNegative(acc, getSumCall, normalized, None, foundPositive = false)(pos, info, errT)
         } else {
-          generateAssumptionWorker(fieldAccess, getSumCall, normalized, None, onlyPositive = false)(pos, info, errT)
+          generateAssumptionWorker(acc, getSumCall, normalized, None, onlyPositive = false)(pos, info, errT)
         }
       }
     }
@@ -352,7 +356,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
   def combineAssumptions(a: Option[Exp], b: Option[Exp])(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     if ((a ++ b).nonEmpty) {
-      if (a.isEmpty){
+      if (a.isEmpty) {
         b
       } else if (b.isEmpty) {
         a
@@ -364,7 +368,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateAssumptionWorker(fieldAccess: FieldAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], onlyPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+  def generateAssumptionWorker(fieldAccess: LocationAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], onlyPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     def addAssumption(exp: Exp) = if (assumption.isDefined) Some(PermAdd(exp, assumption.get)(pos, info, errT)) else Some(exp)
 
     def recursive(n: NormalizedExpression = normalized, a: Option[Exp] = assumption, p: Boolean = onlyPositive) =
@@ -432,7 +436,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateAssumptionWorkerNegative(fieldAccess: FieldAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], foundPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+  def generateAssumptionWorkerNegative(fieldAccess: LocationAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], foundPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     def addAssumption(exp: Exp) = if (assumption.isDefined) Some(PermAdd(exp, assumption.get)(pos, info, errT)) else Some(exp)
 
     def recursive(n: NormalizedExpression = normalized, a: Option[Exp] = assumption, f: Boolean = foundPositive) =
@@ -503,7 +507,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateLogUpdateCurrentPerm(input: Program, fieldAccessPredicate: FieldAccessPredicate, perm: FieldAccess, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def generateLogUpdateCurrentPerm(input: Program, accAccess: LocationAccess, permAccess: LocationAccess, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     // ARPLog
     val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
     val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]())
@@ -512,58 +516,58 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     val arpLogMaxLevel = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainMaxLevel).get
     val tmpLogName = plugin.naming.getNewName(suffix = "tmpLog")
     val tmpLog = LocalVar(tmpLogName)(arpLogType, pos, info)
-    val havocLogName = plugin.naming.getNewName(suffix = "havocLog")
-    val havocLog = LocalVar(havocLogName)(arpLogType, pos, info)
+    val quantifiedRefName = plugin.naming.getNewName(suffix = "quantRef")
+    val quantifiedRef = LocalVar(quantifiedRefName)(Ref, pos, info)
     val quantifiedIntName = plugin.naming.getNewName(suffix = "quantInt")
     val quantifiedInt = LocalVar(quantifiedIntName)(Int, pos, info)
 
-    // FieldAccess
-    val fieldAccess = fieldAccessPredicate.loc
-    val field = fieldAccess.field
-    val fieldFunctionName = plugin.naming.getNameFor(field, "field", field.name)
-    val rcv = fieldAccess.rcv
-
-    val field2 = perm.field
-    val fieldFunctionName2 = plugin.naming.getNameFor(field2, "field", field2.name)
-    val rcv2 = perm.rcv
-
-    val arpFieldFunctionDomain = plugin.utils.getDomain(input, plugin.naming.fieldFunctionDomainName).get
-    val arpFieldFunction = plugin.utils.getDomainFunction(arpFieldFunctionDomain, fieldFunctionName).get
-    val arpFieldFunction2 = plugin.utils.getDomainFunction(arpFieldFunctionDomain, fieldFunctionName2).get
+    val arpFieldFunctionAcc = plugin.utils.getAccessDomainFuncApp(input, accAccess)(pos, info, errT)
+    val arpFieldFunctionPerm = plugin.utils.getAccessDomainFuncApp(input, permAccess)(pos, info, errT)
+    val accRcv = plugin.utils.getAccessRcv(accAccess)(pos, info, errT)
+    val permRcv = plugin.utils.getAccessRcv(permAccess)(pos, info, errT)
 
     val add = if (minus) (a: Exp, b: Exp) => PermSub(a, b)(pos, info) else (a: Exp, b: Exp) => PermAdd(a, b)(pos, info)
 
-    // TODO: this is broken as it only copies the changed fields to the new log
     Seq(
       Seqn(
         Seq(
           LocalVarAssign(tmpLog, arpLog)(pos, info, errT),
-          LocalVarAssign(arpLog, havocLog)(pos, info, errT),
-          Inhale(Forall(Seq(LocalVarDecl(quantifiedIntName, Int)(pos, info)), Seq(),
+          plugin.utils.havoc(arpLog),
+          Inhale(Forall(
+            Seq(LocalVarDecl(quantifiedRefName, Ref)(pos, info), LocalVarDecl(quantifiedIntName, Int)(pos, info)),
+            Seq(Trigger(Seq(
+              DomainFuncApp(arpLogSum, Seq(quantifiedRef, arpFieldFunctionAcc, quantifiedInt, arpLog), Map[TypeVar, Type]())(pos, info)
+            ))(pos, info)),
             Implies(
               And(
                 LeCmp(IntLit(0)(pos, info), quantifiedInt)(pos, info),
                 LeCmp(quantifiedInt, DomainFuncApp(arpLogMaxLevel, Seq(tmpLog), Map[TypeVar, Type]())(pos, info))(pos, info)
               )(pos, info),
               EqCmp(
-                DomainFuncApp(arpLogSum, Seq(rcv, DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(pos, info), quantifiedInt, arpLog), Map[TypeVar, Type]())(pos, info),
-                add(
-                  DomainFuncApp(arpLogSum, Seq(rcv, DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(pos, info), quantifiedInt, tmpLog), Map[TypeVar, Type]())(pos, info),
-                  DomainFuncApp(arpLogSum, Seq(rcv2, DomainFuncApp(arpFieldFunction2, Seq(), Map[TypeVar, Type]())(pos, info), quantifiedInt, tmpLog), Map[TypeVar, Type]())(pos, info)
-                )
+                DomainFuncApp(arpLogSum, Seq(quantifiedRef, arpFieldFunctionAcc, quantifiedInt, arpLog), Map[TypeVar, Type]())(pos, info),
+                CondExp(
+                  EqCmp(
+                    quantifiedRef,
+                    accRcv
+                  )(pos, info),
+                  add(
+                    DomainFuncApp(arpLogSum, Seq(quantifiedRef, arpFieldFunctionAcc, quantifiedInt, tmpLog), Map[TypeVar, Type]())(pos, info),
+                    DomainFuncApp(arpLogSum, Seq(permRcv, arpFieldFunctionPerm, quantifiedInt, tmpLog), Map[TypeVar, Type]())(pos, info)
+                  ),
+                  DomainFuncApp(arpLogSum, Seq(quantifiedRef, arpFieldFunctionAcc, quantifiedInt, tmpLog), Map[TypeVar, Type]())(pos, info)
+                )(pos, info)
               )(pos, info)
             )(pos, info)
           )(pos, info))(pos, info)
         ),
         Seq(
-          LocalVarDecl(tmpLogName, arpLogType)(pos, info, errT),
-          LocalVarDecl(havocLogName, arpLogType)(pos, info, errT)
+          LocalVarDecl(tmpLogName, arpLogType)(pos, info, errT)
         )
       )(pos, info, errT)
     )
   }
 
-  def generateLogUpdate(input: Program, fieldAccessPredicate: FieldAccessPredicate, normalized: NormalizedExpression, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def generateLogUpdate(input: Program, acc: LocationAccess, normalized: NormalizedExpression, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
 
     // ARPLog
     val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
@@ -571,13 +575,8 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     val arpLog = LocalVar(ctx.c.logName)(arpLogType, pos, info)
     val arpLogCons = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainCons).get
 
-    // FieldAccess
-    val fieldAccess = fieldAccessPredicate.loc
-    val field = fieldAccess.field
-    val fieldFunctionName = plugin.naming.getNameFor(field, "field", field.name)
-    val rcv = fieldAccess.rcv
-    val arpFieldFunctionDomain = plugin.utils.getDomain(input, plugin.naming.fieldFunctionDomainName).get
-    val arpFieldFunction = plugin.utils.getDomainFunction(arpFieldFunctionDomain, fieldFunctionName).get
+    val rcv = plugin.utils.getAccessRcv(acc)(pos, info, errT)
+    val arpFieldFunction = plugin.utils.getAccessDomainFuncApp(input, acc)(pos, info, errT)
 
     def getConsCall(level: Int, permission: Exp): LocalVarAssign = {
       LocalVarAssign(
@@ -585,7 +584,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         DomainFuncApp(
           arpLogCons, Seq(
             rcv,
-            DomainFuncApp(arpFieldFunction, Seq(), Map[TypeVar, Type]())(pos, info, errT),
+            arpFieldFunction,
             plugin.utils.simplify(if (minus) Minus(permission)(pos, info, errT) else permission),
             IntLit(level)(pos, info, errT),
             arpLog

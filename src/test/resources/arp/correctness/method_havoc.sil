@@ -1,0 +1,16 @@
+method foo(x: Int) returns (y: Int)
+requires x != 0
+
+method bar()
+{
+    var x: Int
+
+    assume x != 0
+    x := foo(x)
+
+    assume x != 0
+    x := foo(x)
+
+    //:: ExpectedOutput(precondition.violated:assertion.false)
+    x := foo(x)
+}

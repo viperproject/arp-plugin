@@ -2,8 +2,9 @@ field f : Int
 field g : Int
 
 method foo(x: Ref)
-requires acc(x.f, write) && acc(x.g, rdw)
-ensures acc(x.f, write) && acc(x.g, rdw)
+//:: ExpectedOutput(internal:feature.unsupported)
+requires acc(x.f, write) && acc(x.g, (x.f == 4 ? none : 1/4) + (x.f > 0 ? rd : 1/4))
+ensures acc(x.f, write) && acc(x.g, (old(x.f) == 4 ? none : 1/4) + (old(x.f) > 0 ? rd : 1/4))
 ensures x.f == x.g + 1
 {
     x.f := x.g + 1
@@ -11,11 +12,10 @@ ensures x.f == x.g + 1
 
 method client(x: Ref)
 requires acc(x.f, write) && acc(x.g, 1/2)
-//:: ExpectedOutput(postcondition.violated:insufficient.permission)
 ensures acc(x.f, write) && acc(x.g, 1/2)
 {
     x.f := 4
-    inhale x.g == 5
+    x.g := 5
     foo(x)
     assert x.g == 5
     assert x.f == 6

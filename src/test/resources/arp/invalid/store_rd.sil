@@ -1,0 +1,75 @@
+field f: Perm
+field g: Perm
+
+method foo1(r: Ref)
+requires acc(r.f, 1/2)
+{
+    var c1: Perm
+    var d1: Perm
+    c1 := perm(r.f)
+    inhale acc(r.f, rd)
+    //:: ExpectedOutput(internal:feature.unsupported)
+    d1 := perm(r.f)
+}
+
+method foo2(r: Ref)
+requires acc(r.f, 1/2)
+{
+    var c2: Perm
+    var d2: Perm
+    c2 := perm(r.f)
+    inhale acc(r.f, rdc(2))
+    //:: ExpectedOutput(internal:feature.unsupported)
+    d2 := perm(r.f)
+}
+
+method foo3(r: Ref)
+requires acc(r.f, 1/2)
+{
+    var c3: Perm
+    var d3: Perm
+    c3 := perm(r.f)
+    inhale acc(r.f, rdw)
+    //:: ExpectedOutput(internal:feature.unsupported)
+    d3 := perm(r.f)
+}
+
+method foo4(r: Ref)
+requires acc(r.f, write) && acc(r.f, 1/2)
+{
+    r.f := perm(r.f)
+    r.f := perm(r.g)
+    inhale acc(r.f, rd)
+    //:: ExpectedOutput(internal:feature.unsupported)
+    r.f := perm(r.g)
+}
+
+method foo5(r: Ref)
+requires acc(r.f, write) && acc(r.f, 1/2)
+{
+    r.f := perm(r.f)
+    r.f := perm(r.g)
+    inhale acc(r.f, rdc(3))
+    //:: ExpectedOutput(internal:feature.unsupported)
+    r.f := perm(r.g)
+}
+
+method foo6(r: Ref)
+requires acc(r.f, write) && acc(r.f, 1/2)
+{
+    r.f := perm(r.f)
+    r.f := perm(r.g)
+    inhale acc(r.f, rdw)
+    //:: ExpectedOutput(internal:feature.unsupported)
+    r.f := perm(r.g)
+}
+
+method foo7(r: Ref)
+requires acc(r.f, write) && acc(r.f, 1/2)
+{
+    r.f := perm(r.f)
+    r.f := perm(r.g)
+    inhale acc(r.f, rd)
+    //:: ExpectedOutput(internal:feature.unsupported)
+    r.f := write - perm(r.f) + perm(r.g)
+}

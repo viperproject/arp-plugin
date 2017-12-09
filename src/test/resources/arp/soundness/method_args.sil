@@ -7,6 +7,8 @@ method bar()
     var y: Int
     y := foo(x)
     assert y == 5
+    //:: ExpectedOutput(assert.failed:assertion.false)
+    assert false
 }
 
 method bar2()
@@ -14,4 +16,6 @@ method bar2()
     var x: Int := 4
     x := foo(x)
     assert x == 5
+    //:: ExpectedOutput(assert.failed:assertion.false)
+    assert false
 }

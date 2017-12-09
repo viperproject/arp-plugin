@@ -1,0 +1,28 @@
+field f: Int
+field g: Int
+
+method ARP_IGNORE()
+{
+    g()
+}
+
+method foo(x: Ref)
+requires acc(x.f, rd)
+ensures acc(x.f, rd)
+
+method foo2(x: Ref)
+requires acc(x.g, rd)
+ensures acc(x.g, rd)
+
+method bar(r: Ref)
+requires acc(r.f, 1/2)
+{
+    foo(r)
+}
+
+method bar2(r: Ref)
+requires acc(r.g, 1/2)
+{
+    //:: ExpectedOutput(call.failed:insufficient.permission)
+    foo2(r)
+}

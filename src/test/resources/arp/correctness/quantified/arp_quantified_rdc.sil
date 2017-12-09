@@ -1,0 +1,20 @@
+field f: Int
+field g: Int
+
+method foo(a: Ref, b: Ref)
+requires acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, rdc(1))
+ensures forall x: Ref :: x != null ==> acc(x.f, rdc(1)) && acc(a.g)
+ensures a.g == a.f + b.f
+{
+    a.g := a.f + b.f
+}
+
+method bar(a: Ref, b: Ref)
+requires acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, 1/2)
+ensures acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, 1/2)
+{
+    a.g := 4
+    inhale a.f == 5 && a.g == 6
+    foo(a, b)
+    assert a.g == 11
+}

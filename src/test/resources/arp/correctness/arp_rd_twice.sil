@@ -10,15 +10,15 @@ ensures x.f == x.g + 1
 }
 
 method client(x: Ref)
-requires acc(x.f, write) && acc(x.g, write)
-ensures acc(x.f, write) && acc(x.g, write)
+requires acc(x.f, write) && acc(x.g, 1/2)
+ensures acc(x.f, write) && acc(x.g, 1/2)
 {
     x.f := 4
-    x.g := 5
+    inhale x.g == 5
     foo(x)
     assert x.g == 5
     assert x.f == 6
-    x.g := 6
+    inhale x.g == 6
     foo(x)
     assert x.g == 6
     assert x.f == 7

@@ -27,6 +27,8 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   val rdWildcardName = "rdw"
   val rdEpsilonName = "epsilonRd"
   val rdGlobalName = "epsilonRd"
+  val blacklistName = "ARP_IGNORE"
+  val havocNames = HashMap[Type, String]() + (Bool -> "ARPHavocBool") + (Int -> "ARPHavocInt") + (Ref -> "ARPHavocRef") + (Perm -> "ARPHavocPerm")
   private var fieldFunctionDomainName_ = "ARP_field_functions"
   def fieldFunctionDomainName = fieldFunctionDomainName_
   val arpDomainFile = "/ARPDomain.sil"
@@ -38,7 +40,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   }
 
   def getNewName(prefix: String = "ARP", suffix: String = ""): String ={
-    def conc(i: Integer) = prefix + "_" + i.toString + "_" + suffix
+    def conc(i: Integer) = prefix + "_" + i.toString + (if (suffix.nonEmpty) "_" + suffix else "")
 
     var name = if (suffix.isEmpty) prefix else prefix +  "_" + suffix
     if (usedNames.contains(name)) {
@@ -57,6 +59,14 @@ class ARPPluginNaming(plugin: ARPPlugin) {
       nameMap += (node, node.pos, prefix, suffix) -> getNewName(prefix, suffix)
     }
     nameMap((node, node.pos, prefix, suffix))
+  }
+
+  def getFieldFunctionName(f: Field): String ={
+    getNameFor(f, "field", f.name)
+  }
+
+  def getPredicateFunctionName(p: Predicate): String ={
+    getNameFor(p, "predicate", p.name)
   }
 
   def storeName(name: String, node: Node with Positioned, prefix: String = "ARP", suffix: String = ""): Unit ={

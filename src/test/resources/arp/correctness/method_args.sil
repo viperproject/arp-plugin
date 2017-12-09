@@ -1,0 +1,19 @@
+method foo(x: Int) returns (y: Int)
+ensures y == x+1
+
+method bar()
+{
+    var x: Int := 4
+    var y: Int
+    y := foo(x)
+    assert y == 5
+    assert false
+}
+
+method bar2()
+{
+    var x: Int := 4
+    x := foo(x)
+    assert x == 5
+    assert false
+}

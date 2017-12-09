@@ -1,0 +1,19 @@
+field f: Int
+
+method test(x: Ref)
+{
+    inhale acc(x.f, write)
+    x.f := 5
+
+    label end_label
+    exhale acc(x.f, write)
+    exhale old[end_label](x).f == 5
+}
+
+method test2(x: Ref)
+requires acc(x.f, write)
+ensures acc(x.f, write)
+ensures x.f == 5
+{
+    x.f := 5
+}

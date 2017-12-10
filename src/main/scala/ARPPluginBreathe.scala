@@ -19,7 +19,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     def rdRewriter[T <: Node](exp: T) = plugin.utils.rewriteRd(ctx.c.rdName, wildcardNames)(exp)
 
-    def nextWildcardName = if (currentWildcardNames.nonEmpty) {
+    def nextWildcardName() = if (currentWildcardNames.nonEmpty) {
       val head = currentWildcardNames.head
       currentWildcardNames = currentWildcardNames.tail
       head
@@ -51,11 +51,11 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     val wildcardNames = getWildcardNames(exhale.exp)
     var currentWildcardNames = wildcardNames
-    var lastWildcardName = ""
+    var lastWildcardName = "NOT_YET_INITIALIZED"
 
     def rdRewriter[T <: Node](exp: T) = plugin.utils.rewriteRd(ctx.c.rdName, wildcardNames)(exp)
 
-    def nextWildcardName = if (currentWildcardNames.nonEmpty) {
+    def nextWildcardName() = if (currentWildcardNames.nonEmpty) {
       val head = currentWildcardNames.head
       currentWildcardNames = currentWildcardNames.tail
       lastWildcardName = head
@@ -77,7 +77,8 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, minus = true, ctx)(p.pos, p.info, NodeTrafo(p)) ++
                 Seq(Exhale(oldRewriter(rdRewriter(p)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
             case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
-              (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined) {
+              val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
+              (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined && !(normalized.isDefined && normalized.get.wildcard.isDefined)) {
                 Seq()
               } else {
                 assumeAndLog(input, isInhale = false, accessPredicate, getRdLevel(exhale), rdRewriter, labelName, nextWildcardName, ctx)
@@ -87,7 +88,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined) {
                 Seq()
               } else {
-                plugin.quantified.handleForallBreathe(input, isInhale = false, forall = f, rdPerm = getRdLevel(exhale), nextWildcardName = nextWildcardName, ctx = ctx)
+                plugin.quantified.handleForallBreathe(input, isInhale = false, forall = f, rdPerm = getRdLevel(exhale), nextWildcardName, ctx = ctx)
               }) ++
                 Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
             case default =>
@@ -99,20 +100,25 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     )
   }
 
-  def assumeAndLog(input: Program, isInhale: Boolean, accessPredicate: AccessPredicate, rdPerm: (Exp, FuncApp) => NormalizedExpression, rdRewriter: Stmt => Stmt, labelName: String, nextWildcardName: => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
+  def assumeAndLog(input: Program, isInhale: Boolean, accessPredicate: AccessPredicate, rdPerm: (Exp, FuncApp) => NormalizedExpression, rdRewriter: Stmt => Stmt, labelName: String, nextWildcardName: () => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
     val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, rdPerm)
 
     def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(labelName, oldLabel = false)(exp)
 
     if (normalized.isDefined) {
       if (normalized.get.wildcard.isDefined) {
-        val wildcardName = nextWildcardName
+        val wildcardName = nextWildcardName()
         (generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, negativeOnly = isInhale, wildcardName = wildcardName)(accessPredicate.pos, accessPredicate.info, NodeTrafo(accessPredicate)) ++
           generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = !isInhale, ctx)(accessPredicate.pos, accessPredicate.info, NodeTrafo(accessPredicate)))
           .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
       } else {
-        generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, negativeOnly = isInhale)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter) ++
-          generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = !isInhale, ctx)(accessPredicate.pos, accessPredicate.info, NoTrafos).map(rdRewriter).map(oldRewriter)
+        val stmts = (generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, negativeOnly = isInhale)(accessPredicate.pos, accessPredicate.info, NoTrafos) ++
+          generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = !isInhale, ctx)(accessPredicate.pos, accessPredicate.info, NoTrafos)).map(rdRewriter)
+        if (isInhale) {
+          stmts
+        } else {
+          stmts.map(oldRewriter)
+        }
       }
     } else {
       Seq(Assert(BoolLit(b = false)())())
@@ -125,7 +131,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     def rdRewriter[T <: Node](exp: T) = plugin.utils.rewriteRd(ctx.c.rdName, wildcardNames)(exp)
 
-    def nextWildcardName = if (currentWildcardNames.nonEmpty) {
+    def nextWildcardName() = if (currentWildcardNames.nonEmpty) {
       val head = currentWildcardNames.head
       currentWildcardNames = currentWildcardNames.tail
       head
@@ -140,7 +146,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
             val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, getRdLevel(assert), ignoreErrors = true)
             if (normalized.isDefined) {
               if (normalized.get.wildcard.isDefined) {
-                val wildcardName = nextWildcardName
+                val wildcardName = nextWildcardName()
                 generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, wildcardName = wildcardName)(assert.pos, assert.info, NodeTrafo(assert))
                   .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
               } else {

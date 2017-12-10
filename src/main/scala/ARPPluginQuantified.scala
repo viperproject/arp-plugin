@@ -15,14 +15,14 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPluginQuantified(plugin: ARPPlugin) {
 
-  def handleForallBreathe(input: Program, isInhale: Boolean, forall: Forall, rdPerm: (Exp, FuncApp) => NormalizedExpression, nextWildcardName: => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
+  def handleForallBreathe(input: Program, isInhale: Boolean, forall: Forall, rdPerm: (Exp, FuncApp) => NormalizedExpression, nextWildcardName: () => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
     forall.exp match {
       case Implies(left, acc: FieldAccessPredicate) =>
         val normalized = plugin.normalize.normalizeExpression(acc.perm, rdPerm)
         val quantifiedReference = getQuantifiedReference(acc.loc)
         if (normalized.isDefined) {
           if (normalized.get.wildcard.isDefined) {
-            val wildcardName = nextWildcardName
+            val wildcardName = nextWildcardName()
             (plugin.breathe.generateAssumption(input, acc.loc, normalized.get, ctx.c.logName, negativeOnly = isInhale, wildcardName = wildcardName)(forall.pos, forall.info, NodeTrafo(forall))
               .map(e => Inhale(Forall(forall.variables, forall.triggers, Implies(left, e)(forall.pos, forall.info))(forall.pos, forall.info))(forall.pos, forall.info)).toSeq ++
               generateLogUpdateQuantifiedFromNormalized(input, forall, left, normalized.get, quantifiedReference.name, acc.loc, minus = !isInhale, ctx)(forall.pos, forall.info, NodeTrafo(forall)))
@@ -43,13 +43,13 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     }
   }
 
-  def handleForallAssert(input: Program, forall: Forall, rdPerm: (Exp, FuncApp) => NormalizedExpression, nextWildcardName: => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
+  def handleForallAssert(input: Program, forall: Forall, rdPerm: (Exp, FuncApp) => NormalizedExpression, nextWildcardName: () => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
     forall.exp match {
       case Implies(left, acc: FieldAccessPredicate) =>
         val normalized = plugin.normalize.normalizeExpression(acc.perm, rdPerm, ignoreErrors = true)
         if (normalized.isDefined) {
           if (normalized.get.wildcard.isDefined) {
-            val wildcardName = nextWildcardName
+            val wildcardName = nextWildcardName()
             plugin.breathe.generateAssumption(input, acc.loc, normalized.get, ctx.c.logName, wildcardName = wildcardName)(forall.pos, forall.info, NodeTrafo(forall))
               .map(e => Inhale(Forall(forall.variables, forall.triggers, Implies(left, e)(forall.pos, forall.info))(forall.pos, forall.info))(forall.pos, forall.info))
               .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName))).toSeq
@@ -69,6 +69,9 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     exp.rcv match {
       case l: LocalVar => l
       case f: FieldAccess => getQuantifiedReference(f)
+      case _ =>
+        plugin.reportError(Internal(exp, FeatureUnsupported(exp, "Could not find quantified reference " + exp + " " + exp.rcv.getClass)))
+        LocalVar("COULD_NOT_FIND_REF")(Ref)
     }
   }
 

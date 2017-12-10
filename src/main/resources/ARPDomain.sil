@@ -129,7 +129,7 @@ function globalRd(): Perm
 function epsilonRd(): Perm
   ensures none < result && result < write
 
-function ARPHavocBool(): Bool
-function ARPHavocInt(): Int
-function ARPHavocRef(): Ref
-function ARPHavocPerm(): Perm
+method ARPHavocBool() returns(x: Bool)
+method ARPHavocInt() returns(x: Int)
+method ARPHavocRef() returns(x: Ref)
+method ARPHavocPerm() returns(x: Perm)

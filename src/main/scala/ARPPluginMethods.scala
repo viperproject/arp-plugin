@@ -25,9 +25,8 @@ class ARPPluginMethods(plugin: ARPPlugin) {
     val methodEndLabelName = plugin.naming.getNewName(m.name, "end_label")
     val logName = plugin.naming.getNameFor(m, m.name, "log")
     val rdArg = LocalVarDecl(methodRdName, Perm)(m.pos, m.info)
-    val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
-    val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]())
-    val arpLogNil = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainNil).get
+    val arpLogType = plugin.utils.getARPLogType(input)
+    val arpLogNil = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainNil)
 
     Method(
       m.name,
@@ -108,7 +107,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
                 PreconditionInCallFalse(m, reason, cached)
               case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
             }))) ++
-            m.targets.map(t => plugin.utils.havoc(t)) ++
+            m.targets.map(t => plugin.utils.havoc(t, ctx)) ++
             // inhale postconditions
             method.posts.map(p => Inhale(
               plugin.utils.rewriteOldExpr(labelName, fieldAccess = false)(argRenamer(p))

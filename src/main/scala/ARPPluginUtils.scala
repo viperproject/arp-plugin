@@ -7,8 +7,8 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.{StrategyBuilder, Traverse, TreeRegexBuilder, n}
-import viper.silver.verifier.reasons.ErrorNode
+import viper.silver.ast.utility.Rewriter._
+import viper.silver.plugin.ARPPlugin.ARPContext
 
 class ARPPluginUtils(plugin: ARPPlugin) {
 
@@ -32,6 +32,14 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     domain.functions.find(f => f.name == function)
   }
 
+  def getARPLogType(program: Program): DomainType ={
+    DomainType(getDomain(program, plugin.naming.logDomainName).get, Map[TypeVar, Type]())
+  }
+
+  def getARPLogFunction(program: Program, name: String): DomainFunc ={
+    getDomainFunction(getDomain(program, plugin.naming.logDomainName).get, name).get
+  }
+
   def constrainRdExp(methodRdName: String)(pos: Position = NoPosition, info: Info = NoInfo, errT: ErrorTrafo = NoTrafos): Exp =
     And(
       PermLtCmp(
@@ -48,6 +56,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     def rewriteFieldAccess(fa: FieldAccess): FieldAccess = {
       fa.rcv match {
         case _: LabelledOld => fa
+        case _: Old => fa
         case _: LocalVar => fa
         case rcv =>
           FieldAccess(
@@ -85,7 +94,9 @@ class ARPPluginUtils(plugin: ARPPlugin) {
         !pureNode.exists(n =>
           n.isInstanceOf[AccessPredicate] ||
             n.isInstanceOf[CurrentPerm] ||
-            n.isInstanceOf[ForPerm])
+            n.isInstanceOf[ForPerm] ||
+            n.isInstanceOf[MagicWand]
+        )
     }
 
     val nodePrimePrime = if (fieldAccess) {
@@ -130,10 +141,15 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     StrategyBuilder.Slim[Node]({
       case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(contextRdName)(Perm, f.pos, f.info, NodeTrafo(f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg: Exp)) =>
-        PermMul(
-          arg,
-          FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, NoTrafos)
-        )(f.pos, f.info, NodeTrafo(f))
+        arg match {
+          case IntLit(x) if x == 1 =>
+            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, NoTrafos)
+          case default =>
+            PermMul(
+              default,
+              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, NoTrafos)
+            )(f.pos, f.info, NodeTrafo(f))
+        }
       case f@FuncApp(plugin.naming.rdWildcardName, Seq()) =>
         val wildcardRdName = if (remainingWildcardRdNames.nonEmpty) {
           val head = remainingWildcardRdNames.head
@@ -156,34 +172,36 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     strat.execute[T](node)
   }
 
-  def havoc(lvar: LocalVar): Stmt = {
-    // this does not work (see method_havoc.sil)
-    //    if (plugin.naming.havocNames.contains(lvar.typ)) {
-    //      LocalVarAssign(lvar, FuncApp(plugin.naming.havocNames(lvar.typ), Seq())(lvar.pos, lvar.info, lvar.typ, Seq(), NoTrafos))(lvar.pos, lvar.info)
-    //    } else {
-    val tmpName = plugin.naming.getNewName(suffix = "havoc")
-    Seqn(
-      Seq(
-        // TODO: Why is this declStmt needed?
-        LocalVarDeclStmt(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))(lvar.pos, lvar.info),
-        LocalVarAssign(lvar, LocalVar(tmpName)(lvar.typ, lvar.pos, lvar.info))(lvar.pos, lvar.info)
-      ),
-      Seq(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))
-    )(lvar.pos, lvar.info)
-    //    }
+  def havoc(lvar: LocalVar, ctx: ContextC[Node, ARPContext]): Stmt = {
+    if (plugin.naming.havocNames.contains(lvar.typ)) {
+      ctx.noRec(MethodCall(plugin.naming.havocNames(lvar.typ), Seq(), Seq(lvar))(lvar.pos, lvar.info, lvar.errT))
+    } else {
+      val tmpName = plugin.naming.getNewName(suffix = "havoc")
+      Seqn(
+        Seq(
+          // TODO: Why is this declStmt needed?
+          LocalVarDeclStmt(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))(lvar.pos, lvar.info),
+          LocalVarAssign(lvar, LocalVar(tmpName)(lvar.typ, lvar.pos, lvar.info))(lvar.pos, lvar.info)
+        ),
+        Seq(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))
+      )(lvar.pos, lvar.info)
+    }
   }
 
-  def getAccessDomainFuncApp(input: Program, l: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): DomainFuncApp ={
+  def getAccessDomainFuncApp(input: Program, l: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): DomainFuncApp = {
     val arpFieldFunctionDomain = plugin.utils.getDomain(input, plugin.naming.fieldFunctionDomainName).get
+
     def getFieldFun(f: Field) = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getFieldFunctionName(f)).get
+
     def getPredicateFun(p: String) = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getPredicateFunctionName(getPredicate(input, p).get)).get
+
     l match {
       case FieldAccess(_, f) => DomainFuncApp(getFieldFun(f), Seq(), Map[TypeVar, Type]())(pos, info, errT)
       case PredicateAccess(args, p) => DomainFuncApp(getPredicateFun(p), args, Map[TypeVar, Type]())(pos, info, errT)
     }
   }
 
-  def getAccessRcv(l: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Exp ={
+  def getAccessRcv(l: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Exp = {
     l match {
       case f: FieldAccess => f.rcv
       case p: PredicateAccess => NullLit()(pos, info, errT)

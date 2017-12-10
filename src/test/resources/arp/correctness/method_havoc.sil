@@ -11,6 +11,6 @@ method bar()
     assume x != 0
     x := foo(x)
 
-    //:: ExpectedOutput(precondition.violated:assertion.false)
+    //:: ExpectedOutput(call.precondition:assertion.false)
     x := foo(x)
 }

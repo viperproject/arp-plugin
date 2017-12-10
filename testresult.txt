@@ -3,87 +3,376 @@
 [0m[[0minfo[0m] [0mLoading project definition from /home/developer/source/silver/project[0m
 [0m[[0minfo[0m] [0mSet current project to ARP (in build file:/home/developer/source/arp-plugin/)[0m
 [0m[[0minfo[0m] [0mCompiling 1 Scala source to /home/developer/source/silicon/target/scala-2.11/classes...[0m
-[0m[[0minfo[0m] [0mCompiling 3 Scala sources to /home/developer/source/arp-plugin/target/scala-2.11/classes...[0m
+[0m[[0minfo[0m] [0mCompiling 1 Scala source to /home/developer/source/arp-plugin/target/scala-2.11/classes...[0m
 [0m[[0minfo[0m] [0m[32mArpTests:[0m[0m
-[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_const.sil [Silicon-Silver][0m[0m
-[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 6.42 sec (parse), 5.37 sec (typecheck), 5.39 sec (translate), 15.99 sec (verify). [0m[0m
-[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_rd.sil [Silicon-Silver][0m[0m
-[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 14 msec (parse), 198 msec (typecheck), 407 msec (translate), 1.34 sec (verify). [0m[0m
-[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_rdc.sil [Silicon-Silver][0m[0m
-[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 9 msec (typecheck), 179 msec (translate), 1.04 sec (verify). [0m[0m
-[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_rdw.sil [Silicon-Silver][0m[0m
-[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 7 msec (typecheck), 88 msec (translate), 945 msec (verify). [0m[0m
-[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_implies.sil [Silicon-Silver][0m[0m
-[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 142 msec (parse), 303 msec (typecheck), 303 msec (translate), 1.75 sec (verify). [0m[0m
-[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_old.sil [Silicon-Silver][0m[0m
-[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 7 msec (parse), 16 msec (typecheck), 180 msec (translate), 871 msec (verify). [0m[0m
-[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_perm.sil [Silicon-Silver][0m[0m
-[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 13 msec (parse), 109 msec (typecheck), 133 msec (translate), 1.24 sec (verify). [0m[0m
-[0m[[0minfo[0m] [0m[31m- arp/correctness/arp_perm_ternary.sil [Silicon-Silver] *** FAILED ***[0m[0m
+No triggers available for quantifier at arp_quantified_rd.sil@6.9
+No triggers available for quantifier at arp_quantified_rd.sil@6.9
+[0m[[0minfo[0m] [0m[31m- arp/correctness/quantified/arp_quantified_rd.sil [Silicon-Silver] *** FAILED ***[0m[0m
 [0m[[0minfo[0m] [0m[31m  1 errors[0m[0m
 [0m[[0minfo[0m] [0m  [0m
 [0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
-[0m[[0minfo[0m] [0m[31m    [postcondition.violated:insufficient.permission] [postcondition.violated:insufficient.permission] Postcondition of foo might not hold. There might be insufficient permission to access x.g. (arp_assert_const.sil@6.9) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m    [assignment.failed:insufficient.permission] [assignment.failed:insufficient.permission] Assignment might fail. There might be insufficient permission to access b.f. (arp_quantified_rd.sil@8.5) (AnnotationBasedTestSuite.scala:64)[0m[0m
 [0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[31m  + Time required: 5 msec (parse), 73 msec (typecheck), 129 msec (translate), 1.63 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 9.27 sec (parse), 7.49 sec (typecheck), 6.32 sec (translate), 21.58 sec (verify). [0m[0m
+No triggers available for quantifier at arp_quantified_rd.sil@6.9
+No triggers available for quantifier at arp_quantified_rd.sil@6.9
+[0m[[0minfo[0m] [0m[31m- arp/correctness/quantified/arp_quantified_rdc.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  2 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [assignment.failed:insufficient.permission] [assignment.failed:insufficient.permission] Assignment might fail. There might be insufficient permission to access b.f. (arp_quantified_rd.sil@9.5)[0m[0m
+[0m[[0minfo[0m] [0m[31m    [not.wellformed:insufficient.permission] [not.wellformed:insufficient.permission] Contract might not be well-formed. There might be insufficient permission to access a.g. (arp_quantified_rd.sil@7.9) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 11 msec (parse), 24 msec (typecheck), 234 msec (translate), 1.74 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/correctness/quantified/quantified_update.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  1 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [call.precondition:insufficient.permission] [call.precondition:insufficient.permission] The precondition of method foo might not hold. There might be insufficient permission to access x.g. (arp_quantified_rd.sil@18.5) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 11 msec (parse), 39 msec (typecheck), 204 msec (translate), 2.51 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_const.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 6 msec (typecheck), 122 msec (translate), 666 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 6 msec (typecheck), 87 msec (translate), 676 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 6 msec (typecheck), 72 msec (translate), 643 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_assert_rdw.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 5 msec (typecheck), 83 msec (translate), 684 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_blacklist.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 39 msec (typecheck), 109 msec (translate), 870 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_frompredicate_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 47 msec (parse), 443 msec (typecheck), 701 msec (translate), 1.91 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_implies.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 57 msec (parse), 111 msec (typecheck), 84 msec (translate), 1.16 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_old.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 11 msec (typecheck), 105 msec (translate), 684 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_perm.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 12 msec (parse), 73 msec (typecheck), 153 msec (translate), 1.29 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_perm_ternary.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 59 msec (typecheck), 79 msec (translate), 919 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/arp_predicate_arg_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 15 msec (parse), 7 msec (typecheck), 185 msec (translate), 714 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_predicate_rd.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 87 msec (parse), 472 msec (typecheck), 384 msec (translate), 1.75 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 6 msec (typecheck), 65 msec (translate), 686 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_rd.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 13 msec (typecheck), 218 msec (translate), 745 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 17 msec (parse), 9 msec (typecheck), 77 msec (translate), 795 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_rdc.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 11 msec (typecheck), 95 msec (translate), 963 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 8 msec (typecheck), 71 msec (translate), 883 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_rdw.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 19 msec (typecheck), 122 msec (translate), 1.40 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 13 msec (parse), 9 msec (typecheck), 108 msec (translate), 957 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_rd_argname.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 22 msec (typecheck), 107 msec (translate), 923 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 9 msec (parse), 10 msec (typecheck), 69 msec (translate), 735 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_rd_retname.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 13 msec (parse), 68 msec (typecheck), 106 msec (translate), 778 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 78 msec (typecheck), 116 msec (translate), 1.05 sec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_rd_twice.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 18 msec (typecheck), 126 msec (translate), 1.02 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 11 msec (typecheck), 80 msec (translate), 747 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_rd_write.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 7 msec (parse), 20 msec (typecheck), 216 msec (translate), 1.08 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 9 msec (typecheck), 161 msec (translate), 866 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_sum.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 8 msec (parse), 36 msec (typecheck), 238 msec (translate), 1.01 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 16 msec (parse), 17 msec (typecheck), 128 msec (translate), 799 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_sum_neg_rd.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 15 msec (typecheck), 87 msec (translate), 1.03 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 11 msec (typecheck), 80 msec (translate), 934 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_sum_neg_rdc.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 9 msec (typecheck), 83 msec (translate), 903 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 14 msec (parse), 9 msec (typecheck), 68 msec (translate), 852 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_sum_neg_rd_rdc.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 11 msec (typecheck), 73 msec (translate), 927 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 9 msec (typecheck), 66 msec (translate), 839 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_ternary.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 12 msec (parse), 16 msec (typecheck), 98 msec (translate), 993 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 8 msec (parse), 11 msec (typecheck), 85 msec (translate), 861 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_while_noinvs_rd.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 37 msec (parse), 202 msec (typecheck), 191 msec (translate), 1.98 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 28 msec (parse), 157 msec (typecheck), 236 msec (translate), 1.70 sec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_while_rd.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 19 msec (typecheck), 148 msec (translate), 1.33 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 10 msec (parse), 13 msec (typecheck), 222 msec (translate), 1.40 sec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/arp_while_rd_notenough.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 12 msec (parse), 41 msec (typecheck), 627 msec (translate), 7.91 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 12 msec (typecheck), 89 msec (translate), 822 msec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/function_requires.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 3 msec (typecheck), 110 msec (translate), 4.41 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 4 msec (typecheck), 71 msec (translate), 1.24 sec (verify). [0m[0m
 [0m[[0minfo[0m] [0m[32m- arp/correctness/methods2.sil [Silicon-Silver][0m[0m
 [0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
-[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 51 msec (typecheck), 58 msec (translate), 3.18 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 9 msec (typecheck), 117 msec (translate), 561 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/methods3.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 61 msec (typecheck), 119 msec (translate), 934 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/method_args.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 8 msec (typecheck), 62 msec (translate), 743 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/correctness/method_havoc.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  2 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following outputs were expected according to the test annotations, but did not occur during testing:[0m[0m
+[0m[[0minfo[0m] [0m[31m    precondition.violated:assertion.false (method_havoc.sil:15)[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [call.precondition:assertion.false] [call.precondition:assertion.false] The precondition of method foo might not hold. Assertion x != 0 might not hold. (arp_quantified_rd.sil@15.5) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 2 msec (parse), 11 msec (typecheck), 71 msec (translate), 829 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/perm.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 2 msec (typecheck), 53 msec (translate), 577 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/perm_from_field.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 4 msec (typecheck), 127 msec (translate), 1.22 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/predicate1.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 28 msec (parse), 82 msec (typecheck), 161 msec (translate), 1.24 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/recursive.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 3 msec (typecheck), 57 msec (translate), 617 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/unfolding1.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 10 msec (parse), 16 msec (typecheck), 84 msec (translate), 1.90 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/while1.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 3 msec (typecheck), 71 msec (translate), 513 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/correctness/while2.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 3 msec (typecheck), 68 msec (translate), 579 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/invalid/arp_globalRd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 0 msec (parse), 3 msec (typecheck), 170 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/invalid/arp_nonlinear_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 2 msec (typecheck), 311 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/invalid/arp_nonlinear_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 2 msec (typecheck), 55 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/invalid/arp_nonlinear_rdw.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 4 msec (typecheck), 46 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/invalid/arp_perm.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 2 msec (typecheck), 96 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/invalid/arp_perm_ternary.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  4 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [internal:feature.unsupported] [internal:feature.unsupported] An internal error occurred. (old(x.f) > 0 ? rd() : 1 / 4) is not supported. Can't normalize expression. class viper.silver.ast.CondExp (arp_quantified_rd.sil@7.69)[0m[0m
+[0m[[0minfo[0m] [0m[31m    [internal:feature.unsupported] [internal:feature.unsupported] An internal error occurred. (old(x.f) == 4 ? none : 1 / 4) is not supported. Can't normalize expression. class viper.silver.ast.CondExp (arp_quantified_rd.sil@7.38)[0m[0m
+[0m[[0minfo[0m] [0m[31m    [internal:feature.unsupported] [internal:feature.unsupported] An internal error occurred. (old(x.f) > 0 ? rd() : 1 / 4) is not supported. Can't normalize expression. class viper.silver.ast.CondExp (arp_quantified_rd.sil@7.69)[0m[0m
+[0m[[0minfo[0m] [0m[31m    [internal:feature.unsupported] [internal:feature.unsupported] An internal error occurred. (old(x.f) == 4 ? none : 1 / 4) is not supported. Can't normalize expression. class viper.silver.ast.CondExp (arp_quantified_rd.sil@7.38) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 6 msec (parse), 40 msec (typecheck), 180 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/invalid/arp_rdw_exp.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 4 msec (typecheck), 202 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/invalid/store_rd.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  4 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following outputs were expected according to the test annotations, but did not occur during testing:[0m[0m
+[0m[[0minfo[0m] [0m[31m    internal:feature.unsupported (store_rd.sil:74)[0m[0m
+[0m[[0minfo[0m] [0m[31m    internal:feature.unsupported (store_rd.sil:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m    internal:feature.unsupported (store_rd.sil:54)[0m[0m
+[0m[[0minfo[0m] [0m[31m    internal:feature.unsupported (store_rd.sil:44) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 14 msec (parse), 18 msec (typecheck), 188 msec (translate), 1.18 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_implies.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 21 msec (typecheck), 72 msec (translate), 846 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_perm_ternary.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 17 msec (typecheck), 72 msec (translate), 783 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 8 msec (parse), 14 msec (typecheck), 51 msec (translate), 787 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 7 msec (typecheck), 70 msec (translate), 745 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_rdw.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 7 msec (typecheck), 53 msec (translate), 1.10 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_rd_argname.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 10 msec (typecheck), 134 msec (translate), 788 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_rd_retname.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 9 msec (typecheck), 63 msec (translate), 998 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_rd_twice.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 30 msec (typecheck), 65 msec (translate), 768 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_rd_write.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 12 msec (typecheck), 108 msec (translate), 1.11 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_sum.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 10 msec (typecheck), 72 msec (translate), 912 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_sum_neg_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 8 msec (typecheck), 90 msec (translate), 882 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_sum_neg_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 14 msec (typecheck), 76 msec (translate), 753 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_sum_neg_rd_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 9 msec (typecheck), 68 msec (translate), 871 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_ternary.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 9 msec (typecheck), 63 msec (translate), 800 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/callee/arp_while_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 13 msec (typecheck), 69 msec (translate), 924 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_implies.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 20 msec (parse), 8 msec (typecheck), 85 msec (translate), 883 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/soundness/caller/arp_perm_ternary.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  1 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [postcondition.violated:insufficient.permission] [postcondition.violated:insufficient.permission] Postcondition of foo might not hold. There might be insufficient permission to access x.g. (arp_quantified_rd.sil@6.9) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 8 msec (parse), 10 msec (typecheck), 72 msec (translate), 694 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_predicate_arg_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 5 msec (typecheck), 62 msec (translate), 611 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_predicate_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 6 msec (typecheck), 106 msec (translate), 1.03 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 7 msec (typecheck), 86 msec (translate), 712 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 9 msec (typecheck), 84 msec (translate), 691 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_rdw.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 8 msec (typecheck), 51 msec (translate), 918 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_rd_argname.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 9 msec (typecheck), 98 msec (translate), 965 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_rd_retname.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 9 msec (typecheck), 60 msec (translate), 694 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/soundness/caller/arp_rd_twice.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  1 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following outputs were expected according to the test annotations, but did not occur during testing:[0m[0m
+[0m[[0minfo[0m] [0m[31m    postcondition.violated:assertion.false (arp_rd_twice.sil:16) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 4 msec (parse), 11 msec (typecheck), 63 msec (translate), 976 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_rd_write.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 9 msec (typecheck), 57 msec (translate), 802 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_sum.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 10 msec (typecheck), 59 msec (translate), 902 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/soundness/caller/arp_sum_neg_rd.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  2 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following outputs were expected according to the test annotations, but did not occur during testing:[0m[0m
+[0m[[0minfo[0m] [0m[31m    postcondition.violated:assertion.false (arp_sum_neg_rd.sil:16)[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [call.precondition:insufficient.permission] [call.precondition:insufficient.permission] The precondition of method foo might not hold. There might be insufficient permission to access x.g. (arp_quantified_rd.sil@20.5) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 4 msec (parse), 23 msec (typecheck), 128 msec (translate), 868 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_sum_neg_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 13 msec (typecheck), 65 msec (translate), 879 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_sum_neg_rd_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 12 msec (typecheck), 58 msec (translate), 787 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_ternary.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 8 msec (parse), 9 msec (typecheck), 74 msec (translate), 950 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/caller/arp_while_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 4 msec (parse), 16 msec (typecheck), 108 msec (translate), 1.53 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/arp_assert_const.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 2 msec (typecheck), 49 msec (translate), 794 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/arp_assert_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 2 msec (typecheck), 71 msec (translate), 995 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/arp_assert_rdc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 3 msec (typecheck), 60 msec (translate), 907 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/arp_assert_rdw.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 1 msec (parse), 2 msec (typecheck), 60 msec (translate), 804 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/arp_predicate_rd.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 4 msec (typecheck), 65 msec (translate), 1.05 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/arp_rd_exhale.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 8 msec (typecheck), 53 msec (translate), 594 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/methods1.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 30 msec (typecheck), 54 msec (translate), 558 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/soundness/method_args.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 2 msec (parse), 3 msec (typecheck), 59 msec (translate), 657 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/arp1.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 38 msec (parse), 276 msec (typecheck), 135 msec (translate), 1.15 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/arp_debug.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  3 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [typechecker.error] Duplicate function 'epsilonRd' (arp_quantified_rd.sil@101.1)[0m[0m
+[0m[[0minfo[0m] [0m[31m    [typechecker.error] Duplicate function 'globalRd' (arp_quantified_rd.sil@97.1)[0m[0m
+[0m[[0minfo[0m] [0m[31m    [typechecker.error] Duplicate domain 'ARPLog' (arp_quantified_rd.sil@1.1) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 31 msec (parse), 140 msec (typecheck), 85 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- arp/labelledold.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  1 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following output occurred during testing, but should not have according to the test annotations:[0m[0m
+[0m[[0minfo[0m] [0m[31m    [exhale.failed:insufficient.permission] [exhale.failed:insufficient.permission] Exhale might fail. There might be insufficient permission to access old[end_label](x).f. (arp_quantified_rd.sil@10.5) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 2 msec (parse), 9 msec (typecheck), 144 msec (translate), 682 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/rdrec1.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 6 msec (parse), 38 msec (typecheck), 77 msec (translate), 2.94 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- arp/rdrec1_conc.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 5 msec (parse), 30 msec (typecheck), 134 msec (translate), 1.59 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[31m- consistency/consistency.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  2 errors[0m[0m
+[0m[[0minfo[0m] [0m  [0m
+[0m[[0minfo[0m] [0m[31m  The following outputs were expected according to the test annotations, but did not occur during testing:[0m[0m
+[0m[[0minfo[0m] [0m[31m    internal:feature.unsupported (consistency.sil:32)[0m[0m
+[0m[[0minfo[0m] [0m[31m    internal:feature.unsupported (consistency.sil:26) (AnnotationBasedTestSuite.scala:64)[0m[0m
+[0m[[0minfo[0m] [0m[31m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[31m  + Time required: 12 msec (parse), 125 msec (typecheck), 80 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- all/basic/abstract_funcs_and_preds.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 11 msec (parse), 72 msec (typecheck), 153 msec (translate), 2.64 sec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- all/basic/abstract_funcs_and_preds_consistency.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 124 msec (typecheck), 0 msec (translate), 0 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- all/basic/arithmetic.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 12 msec (parse), 231 msec (typecheck), 57 msec (translate), 770 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- all/basic/assert.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 9 msec (parse), 4 msec (typecheck), 46 msec (translate), 629 msec (verify). [0m[0m
+[0m[[0minfo[0m] [0m[32m- all/basic/consistency1.sil [Silicon-Silver][0m[0m
+[0m[[0minfo[0m] [0m[32m  + Verifier used: Silicon 1.1-SNAPSHOT (2102a44fa585+). [0m[0m
+[0m[[0minfo[0m] [0m[32m  + Time required: 3 msec (parse), 7 msec (typecheck), 0 msec (translate), 0 msec (verify). [0m[0m

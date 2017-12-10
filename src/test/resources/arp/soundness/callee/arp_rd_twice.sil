@@ -20,8 +20,8 @@ ensures acc(x.f, write) && acc(x.g, 1/2)
     foo(x)
     assert x.g == 5
     assert x.f == 6
-    inhale x.g == 6
+    x.f := 4
     foo(x)
-    assert x.g == 6
-    assert x.f == 7
+    assert x.g == 5
+    assert x.f == 6
 }

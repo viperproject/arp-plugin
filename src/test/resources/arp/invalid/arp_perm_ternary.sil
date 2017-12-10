@@ -4,6 +4,7 @@ field g : Int
 method foo(x: Ref)
 //:: ExpectedOutput(internal:feature.unsupported)
 requires acc(x.f, write) && acc(x.g, (x.f == 4 ? none : 1/4) + (x.f > 0 ? rd : 1/4))
+//:: ExpectedOutput(internal:feature.unsupported)
 ensures acc(x.f, write) && acc(x.g, (old(x.f) == 4 ? none : 1/4) + (old(x.f) > 0 ? rd : 1/4))
 ensures x.f == x.g + 1
 {

@@ -19,13 +19,11 @@ class ARPPluginMisc(plugin: ARPPlugin) {
     if (a.lhs.typ == Perm) {
       var perms = Seq[Stmt]()
 
-      // ARPLog
-      val arpLogDomain = plugin.utils.getDomain(input, plugin.naming.logDomainName).get
-      val arpLogType = DomainType(arpLogDomain, Map[TypeVar, Type]())
+      val arpLogType = plugin.utils.getARPLogType(input)
       val arpLog = LocalVar(ctx.c.logName)(arpLogType, a.pos, a.info)
-      val arpLogSumGt = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainSumGt).get
-      val arpLogSum = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainSum).get
-      val maxLevelFunction = plugin.utils.getDomainFunction(arpLogDomain, plugin.naming.logDomainMaxLevel).get
+      val arpLogSumGt = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSumGt)
+      val arpLogSum = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSum)
+      val maxLevelFunction = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainMaxLevel)
 
       val arpFieldFunctionDomain = plugin.utils.getDomain(input, plugin.naming.fieldFunctionDomainName).get
 

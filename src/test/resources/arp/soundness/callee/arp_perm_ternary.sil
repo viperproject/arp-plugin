@@ -3,7 +3,7 @@ field g : Int
 
 method foo(x: Ref)
 requires acc(x.f, write) && acc(x.g, x.f > 0 ? rd : 1/4)
-ensures acc(x.f, write) && acc(x.g, x.f > 0 ? rd : 1/4)
+ensures acc(x.f, write) && acc(x.g, old(x.f) > 0 ? rd : 1/4)
 ensures x.f == x.g + 1
 //:: ExpectedOutput(postcondition.violated:assertion.false)
 ensures false

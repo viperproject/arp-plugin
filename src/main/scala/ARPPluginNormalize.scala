@@ -7,17 +7,18 @@
 package viper.silver.plugin
 
 import viper.silver.ast.utility.Rewriter.StrategyBuilder
-import viper.silver.ast.{Add, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
+import viper.silver.ast.{Add, CondExp, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermLtCmp, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
+import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
 import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPluginNormalize(plugin: ARPPlugin) {
 
-  def normalizeExpression(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression, ignoreErrors : Boolean = false): Option[NormalizedExpression] = {
+  def normalizeExpression(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression, ignoreErrors: Boolean = false): Option[NormalizedExpression] = {
     collect(exp, rdPerm, ignoreErrors)
   }
 
-  def collect(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression, ignoreErrors : Boolean = false): Option[NormalizedExpression] = {
+  def collect(exp: Exp, rdPerm: (Exp, FuncApp) => NormalizedExpression, ignoreErrors: Boolean = false): Option[NormalizedExpression] = {
     def recursive(e: Exp) = collect(e, rdPerm, ignoreErrors)
 
     exp match {
@@ -57,7 +58,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
     }
   }
 
-  def containsNonConst(exp: Exp): Boolean ={
+  def containsNonConst(exp: Exp): Boolean = {
     var nonConst = true
 
     StrategyBuilder.SlimVisitor[Node]({
@@ -73,7 +74,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
   def op(a: Option[NormalizedExpression], b: Option[NormalizedExpression], f: (NormalizedExpression, NormalizedExpression) => Option[NormalizedExpression], exp: Exp): Option[NormalizedExpression] =
     if (a.isDefined && b.isDefined) {
       val result = f(a.get, b.get)
-      if (result.isEmpty){
+      if (result.isEmpty) {
         plugin.reportError(Internal(exp, FeatureUnsupported(exp, "Nonlinear expression")))
       }
       result
@@ -104,32 +105,71 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
   def wildcardPerm(exp: Exp, f: FuncApp): NormalizedExpression = {
     NormalizedExpression(Seq(), None, Some(NormalizedPart(exp, 2, 0, Some(f))))
   }
+}
+
+object ARPPluginNormalize {
 
   case class NormalizedPart(exp: Exp, store: Int, check: Int, unit: Option[Exp]) {
-    def setExp(e: Exp): NormalizedPart ={
+    def setExp(e: Exp): NormalizedPart = {
       NormalizedPart(e, store, check, unit)
     }
 
-    def setStore(s: Int): NormalizedPart ={
+    def setStore(s: Int): NormalizedPart = {
       NormalizedPart(exp, s, check, unit)
     }
 
-    def setCheck(c: Int): NormalizedPart ={
+    def setCheck(c: Int): NormalizedPart = {
       NormalizedPart(exp, store, c, unit)
     }
 
-    def setUnit(u: Option[Exp]): NormalizedPart ={
+    def setUnit(u: Option[Exp]): NormalizedPart = {
       NormalizedPart(exp, store, check, u)
     }
 
-    def getTotal(pos: Position, info: Info, errT: ErrorTrafo): Exp = {
+    def getAbsTotal(plugin: ARPPlugin)(pos: Position, info: Info, errT: ErrorTrafo): Exp = {
+      def negate(e: Exp): Exp ={
+        e match {
+          case Minus(ee) => ee
+          case PermMinus(ee) => ee
+          case IntLit(x) => IntLit(-x)(e.pos, e.info, e.errT)
+          case default => Minus(default)(e.pos, e.info, e.errT)
+        }
+      }
+
+      val simplified = plugin.utils.simplify(exp)
+      val absVal = simplified match {
+        case IntLit(x) if x >= 0 => simplified
+        case IntLit(x) if x < 0 => negate(simplified)
+        case PermDiv(IntLit(x), IntLit(y)) if (x >= 0) == (y >= 0) => simplified
+        case PermDiv(IntLit(x), IntLit(y)) if (x >= 0) != (y >= 0) => negate(simplified)
+        case FullPerm() => simplified
+        case NoPerm() => simplified
+        case default =>
+          CondExp(
+            PermLtCmp(default, plugin.utils.getZeroEquivalent(default))(pos, info, errT),
+            Minus(default)(pos, info, errT),
+            default
+          )(pos, info, errT)
+      }
       if (unit.isDefined) {
-        exp match {
+        absVal match {
           case IntLit(x) if x == 1 => unit.get
-          case default => PermMul(plugin.utils.simplify(default), unit.get)(pos, info, errT)
+          case default => PermMul(default, unit.get)(pos, info, errT)
         }
       } else {
-        exp
+        absVal
+      }
+    }
+
+    def getTotal(plugin: ARPPlugin)(pos: Position, info: Info, errT: ErrorTrafo): Exp = {
+      val simplified = plugin.utils.simplify(exp)
+      if (unit.isDefined) {
+        simplified match {
+          case IntLit(x) if x == 1 => unit.get
+          case default => PermMul(default, unit.get)(pos, info, errT)
+        }
+      } else {
+        simplified
       }
     }
   }
@@ -141,7 +181,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
     def isconst() = !isnonconst()
 
     def +?(other: NormalizedExpression): Option[NormalizedExpression] = {
-      if (wildcard.isDefined || other.wildcard.isDefined){
+      if (wildcard.isDefined || other.wildcard.isDefined) {
         None
       } else {
         var exps1 = exps
@@ -197,13 +237,11 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
         None
       } else {
         val (const, nonconst) = if (other.isconst()) (other, this) else (this, other)
-        if (const.const.isEmpty) {
-          Some(constPerm(NoPerm()()))
-        } else {
-          val exp = const.const.get.exp
-          def multiply(e: NormalizedPart) = e.setExp(PermMul(e.exp, exp)())
-          Some(NormalizedExpression(nonconst.exps.map(e => multiply(e)), nonconst.const.map(e => multiply(e)), nonconst.wildcard.map(e => multiply(e))))
-        }
+        val exp = const.const.get.exp
+
+        def multiply(e: NormalizedPart) = e.setExp(PermMul(e.exp, exp)())
+
+        Some(NormalizedExpression(nonconst.exps.map(e => multiply(e)), nonconst.const.map(e => multiply(e)), nonconst.wildcard.map(e => multiply(e))))
       }
     }
 
@@ -212,6 +250,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
         None
       } else {
         val exp = other.const.get.exp
+
         def divide(e: NormalizedPart) = e.setExp(PermDiv(e.exp, exp)())
 
         Some(NormalizedExpression(exps.map(e => divide(e)), const.map(e => divide(e)), wildcard.map(e => divide(e))))

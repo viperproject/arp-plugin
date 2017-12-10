@@ -23,6 +23,6 @@ requires acc(r.f, 1/2)
 method bar2(r: Ref)
 requires acc(r.g, 1/2)
 {
-    //:: ExpectedOutput(call.failed:insufficient.permission)
+    //:: ExpectedOutput(call.precondition:insufficient.permission)
     foo2(r)
 }

@@ -2,8 +2,8 @@ field f : Int
 field g : Int
 
 method foo(x: Ref)
-requires acc(x.f, write) && acc(x.g, x.f > 0 ? rd : 1/4)
-ensures acc(x.f, write) && acc(x.g, old(x.f) > 0 ? rd : 1/4)
+requires acc(x.f, write) && acc(x.g, 1/2 - rd + rdc(1))
+ensures acc(x.f, write) && acc(x.g, 1/2 - rd + rdc(1))
 ensures x.f == x.g + 1
 {
     x.f := x.g + 1
@@ -12,8 +12,6 @@ ensures x.f == x.g + 1
 method client(x: Ref)
 requires acc(x.f, write) && acc(x.g, 1/2)
 ensures acc(x.f, write) && acc(x.g, 1/2)
-//:: ExpectedOutput(postcondition.violated:assertion.false)
-ensures false
 {
     x.f := 4
     inhale x.g == 5

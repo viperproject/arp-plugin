@@ -12,8 +12,8 @@ method bar(a: Ref, b: Ref)
 requires acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, 1/2)
 ensures acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, 1/2)
 {
-    a.g := 4
-    inhale a.f == 5 && a.g == 6
+    a.g := 6
+    inhale a.f == 5
     foo(a, b)
     assert a.g == 11
 }

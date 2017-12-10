@@ -18,14 +18,15 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
-  // TODO: Handle magic wands
   // TODO: Implement log update for quantified expressions
-  // TODO: Check c := perm(x.f) calls (Rewriter thinks assignment was already rewritten)
   // TODO: Fix nested old
+  // TODO: Constraining in quantified expressions
+  // TODO: Test quantified predicates
+  // TODO: Check c := perm(x.f) calls (Rewriter thinks assignment was already rewritten)
+  // TODO: Handle magic wands
   // TODO: fix all/issues/silicon/unofficial006.sil (LocalVarDecl gets lost)
   // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions)
   // TODO: Maybe handle acc(x.f, write - perm(x.g))
-  // TODO: Constraining in quantified expressions
   // TODO: Make sure error transformation works everywhere
   // TODO: implement globalRd in predicates
   // TODO: Maybe Conjunct conditions to get rid of duplicate labels
@@ -37,6 +38,8 @@ class ARPPlugin extends SilverPlugin {
   val loops = new ARPPluginWhile(this)
   val breathe = new ARPPluginBreathe(this)
   val normalize = new ARPPluginNormalize(this)
+  val quantified = new ARPPluginQuantified(this)
+  val wands = new ARPPluginWands(this)
   val misc = new ARPPluginMisc(this)
   var ignoredFields = Seq[String]()
 
@@ -155,7 +158,8 @@ class ARPPlugin extends SilverPlugin {
         case (a: AbstractAssign, ctx) =>
           misc.handleAssignment(enhancedInput, a, ctx)
         case (c: Constraining, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, c))
-        case (p: Package, ctx) => p
+        case (a: Apply, ctx) => wands.handleApply(enhancedInput, a, ctx)
+        case (p: Package, ctx) => wands.handlePackage(enhancedInput, p, ctx)
       },
       ARPContext("", "", ""), // default context
       {

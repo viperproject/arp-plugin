@@ -1,0 +1,46 @@
+field f: Int
+
+predicate p1()
+
+predicate p2(x: Ref)
+{
+	acc(x.f, 1/2)
+}
+
+predicate p3(x: Ref, y: Ref)
+{
+	acc(x.f, 1/2)
+	acc(x.f, 1/2)
+}
+
+method foo(x: Ref, y: Ref)
+requires acc(p1()) && acc(p2(x), rd) && acc(p2(y), rd)
+ensures acc(p1()) && acc(p2(x), rd) && acc(p2(y), rd)
+
+method bar(x: Ref, y: Ref)
+requires acc(p1()) && acc(p3(x, y))
+ensures acc(p1()) && acc(p3(x, y))
+{
+	unfold p3(x, y)
+	fold p2(x)
+	fold p2(y)
+	foo(x, y)
+	foo(y, x)
+	unfold p2(x)
+	unfold p2(y)
+	fold p3(x, y)
+}
+
+method foobar(x: Ref, y: Ref)
+requires acc(p1()) && acc(x.f, rd) && acc(y.f, rd) && x.f == 4 && y.f == 5
+ensures acc(p1()) && acc(x.f, rd) && acc(y.f, rd) && x.f == 4 && y.f == 5
+{
+	fold p3(x, y)
+	bar(x, y)
+	unfold p3(x, y)
+	fold p2(x)
+	fold p2(y)
+	foo(x, y)
+	unfold p2(x)
+	unfold p2(y)
+}

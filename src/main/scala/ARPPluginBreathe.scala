@@ -32,9 +32,13 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         Seq(Inhale(rdRewriter(inhale.exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale))) ++
           splitBreathing(inhale.exp, Some(true), {
             case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
+              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
             case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
+              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => e, minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
+            case f@FieldAccessPredicate(floc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isFieldIgnored(floc.field) =>
+              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => PermSub(FullPerm()(f.pos, f.info), e)(f.pos, f.info), minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
+            case p@PredicateAccessPredicate(ploc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => PermSub(FullPerm()(p.pos, p.info), e)(p.pos, p.info), minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
             case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
               assumeAndLog(input, isInhale = true, accessPredicate, getRdLevel(inhale), rdRewriter, "", nextWildcardName, ctx)
             case f: Forall =>
@@ -71,10 +75,16 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         Seq(Label(labelName, Seq())(exhale.pos, exhale.info)) ++
           splitBreathing(exhale.exp, Some(false), {
             case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, minus = true, ctx)(f.pos, f.info, NodeTrafo(f)) ++
+              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = true, ctx)(f.pos, f.info, NodeTrafo(f)) ++
                 Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
             case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, minus = true, ctx)(p.pos, p.info, NodeTrafo(p)) ++
+              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => e, minus = true, ctx)(p.pos, p.info, NodeTrafo(p)) ++
+                Seq(Exhale(oldRewriter(rdRewriter(p)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
+            case f@FieldAccessPredicate(floc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isFieldIgnored(floc.field) =>
+              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => PermSub(FullPerm()(f.pos, f.info), e)(f.pos, f.info), minus = false, ctx)(f.pos, f.info, NodeTrafo(f)) ++
+                Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
+            case p@PredicateAccessPredicate(ploc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => PermSub(FullPerm()(p.pos, p.info), e)(p.pos, p.info), minus = false, ctx)(p.pos, p.info, NodeTrafo(p)) ++
                 Seq(Exhale(oldRewriter(rdRewriter(p)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
             case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
               val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)

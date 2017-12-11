@@ -19,11 +19,11 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 class ARPPlugin extends SilverPlugin {
 
   // TODO: Implement log update for quantified expressions
+  // TODO: Fix quantified x.f.g
+  // TODO: Fix quantified xs[i]
   // TODO: Fix nested old
-  // TODO: Constraining in quantified expressions
-  // TODO: Test quantified predicates
   // TODO: Check c := perm(x.f) calls (Rewriter thinks assignment was already rewritten)
-  // TODO: Handle magic wands
+  // TODO: Handle magic wands correctly
   // TODO: fix all/issues/silicon/unofficial006.sil (LocalVarDecl gets lost)
   // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions)
   // TODO: Maybe handle acc(x.f, write - perm(x.g))

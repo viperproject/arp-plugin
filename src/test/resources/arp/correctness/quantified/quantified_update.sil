@@ -10,8 +10,9 @@ ensures r.f == r.g + 1
 }
 
 method bar(x: Ref)
-requires acc(x.f) && forall r: Ref :: r != null ==> acc(r.g, 1/2)
-ensures acc(x.f) && forall r: Ref :: r != null ==> acc(r.g, 1/2)
+requires b != null
+requires acc(x.f) && (forall r: Ref :: r != null ==> acc(r.g, 1/2))
+ensures acc(x.f) && (forall r: Ref :: r != null ==> acc(r.g, 1/2))
 {
     x.f := 4
     inhale x.g == 5

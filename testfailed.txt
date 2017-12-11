@@ -1,0 +1,87 @@
+[0m[[0minfo[0m] [0m[31m- arp/correctness/quantified/arp_quantified_rd.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/correctness/quantified/arp_quantified_rdc.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/correctness/quantified/quantified_update.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/invalid/store_rd.sil [Silicon-Silver] *** FAILED ***[0m[0m Rewriter Broken
+[0m[[0minfo[0m] [0m[31m- arp/performance/arp/fields1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/performance/arp/predicates1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/performance/arp/predicates2.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/performance/arp/quantifiers1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/performance/arp/sum1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/performance/noarp/predicates1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- arp/performance/noarp/quantifiers1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- consistency/consistency.sil [Silicon-Silver] *** FAILED ***[0m[0m Error in Plugin prevents expected error
+[0m[[0minfo[0m] [0m[31m- all/issues/carbon/0160.sil [Silicon-Silver] *** FAILED ***[0m[0m Quantified variable in acc
+[0m[[0minfo[0m] [0m[31m- all/issues/carbon/0165.sil [Silicon-Silver] *** FAILED ***[0m[0m Forall acc(..., perm(...))
+[0m[[0minfo[0m] [0m[31m- all/issues/carbon/0177.sil [Silicon-Silver] *** FAILED ***[0m[0m Forall acc(..., perm(...))
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0004.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0120a.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0144.sil [Silicon-Silver] *** FAILED ***[0m[0m Wrong annotation
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0152.sil [Silicon-Silver] *** FAILED ***[0m[0m Wrong annotation
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0197.sil [Silicon-Silver] *** FAILED ***[0m[0m Package
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0213.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0229.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0252.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0285.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/issues/silver/0204.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/permissions/loops.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/permissions/possibly_none_perms.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/third_party/stefan_recent/testLockSetDemo.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- all/third_party/stefan_recent/test_example2.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/issues/issue_0067.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/issues/issue_0070.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/issues/issue_0081.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/issues/issue_0081b.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/issues/issue_0096.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/issues/issue_0102.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sequences/mergesort.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sequences/parallel_qsort.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sequences/random_access.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sequences/wildcardedold.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sets/access.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sets/constraining_permissions.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sets/generalised_shape.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sets/unionfind.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/third_party/max-two-range.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpermissions/third_party/trigger-z3-bug.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/examples/list_sum_verbose.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/examples/tree_delete_min_no_assert.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/examples_new_syntax/ListIterator.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/examples_paper/list_sum_heuristics.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/examples_paper/tree_delete_min_heuristics.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/ApplyingBranching.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/ApplyingExpression.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/Assume.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/IfElsePackage.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/MethodCall.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/Old.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/QPWands.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/new_syntax/UnfoldTwice.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/eval_states.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/exec_unfolding.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/issue007.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/issue009.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/issue012.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/issue017.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/let_wands.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/loop_sum_ghostvar_old.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/packaging_cond_perm.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/packaging_nested.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/transfer_naive_issue_1.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/wand_shapes_1.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- wands/regression/well_formedness_wand_1.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/binary-search/binary-search-array.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/graph-copy/graph-copy.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/longest-common-prefix/longest-common-prefix.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/max_array/max-array-elimination.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/max_array/max-array-standard.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/quickselect/arrays_quickselect_rec.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/quickselect/arrays_quickselect_rec_index-shifting.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/vmcai2016/arraylist-quantified-permissions.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- examples/vmcai2016/linked-list-predicates.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpredicates/arity/unfolding_arity.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpredicates/basic/partial_permissions.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedpredicates/issues/wildcards.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedcombinations/dependency.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedcombinations/multiple_quantifiers.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- quantifiedcombinations/no_condition.sil [Silicon-Silver] *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m*** 88 TESTS FAILED ***[0m[0m

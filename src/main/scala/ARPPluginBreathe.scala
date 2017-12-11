@@ -42,7 +42,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
             case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
               assumeAndLog(input, isInhale = true, accessPredicate, getRdLevel(inhale), rdRewriter, "", nextWildcardName, ctx)
             case f: Forall =>
-              plugin.quantified.handleForallBreathe(input, isInhale = true, f, getRdLevel(inhale), nextWildcardName, ctx)
+              plugin.quantified.handleForallBreathe(input, isInhale = true, f, rdRewriter, "", getRdLevel(inhale), nextWildcardName, ctx)
             case _ => Seq()
           }),
         wildcardNames.map(n => LocalVarDecl(n, Perm)(inhale.pos, inhale.info))
@@ -98,7 +98,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined) {
                 Seq()
               } else {
-                plugin.quantified.handleForallBreathe(input, isInhale = false, forall = f, rdPerm = getRdLevel(exhale), nextWildcardName, ctx = ctx)
+                plugin.quantified.handleForallBreathe(input, isInhale = false, f, rdRewriter, labelName, getRdLevel(exhale), nextWildcardName, ctx)
               }) ++
                 Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
             case default =>
@@ -118,9 +118,14 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     if (normalized.isDefined) {
       if (normalized.get.wildcard.isDefined) {
         val wildcardName = nextWildcardName()
-        (generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, negativeOnly = isInhale, wildcardName = wildcardName)(accessPredicate.pos, accessPredicate.info, NodeTrafo(accessPredicate)) ++
+        val stmts = (generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, negativeOnly = isInhale, wildcardName = wildcardName)(accessPredicate.pos, accessPredicate.info, NodeTrafo(accessPredicate)) ++
           generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = !isInhale, ctx)(accessPredicate.pos, accessPredicate.info, NodeTrafo(accessPredicate)))
           .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
+        if (isInhale) {
+          stmts
+        } else {
+          stmts.map(oldRewriter)
+        }
       } else {
         val stmts = (generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName, negativeOnly = isInhale)(accessPredicate.pos, accessPredicate.info, NoTrafos) ++
           generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = !isInhale, ctx)(accessPredicate.pos, accessPredicate.info, NoTrafos)).map(rdRewriter)
@@ -166,7 +171,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               Seq()
             }
           case f: Forall =>
-            plugin.quantified.handleForallAssert(input, f, getRdLevel(assert), nextWildcardName, ctx)
+            plugin.quantified.handleForallAssert(input, f, rdRewriter, getRdLevel(assert), nextWildcardName, ctx)
           case _ => Seq()
         }) ++
           Seq(

@@ -2,15 +2,17 @@ field f: Int
 field g: Int
 
 method foo(a: Ref, b: Ref)
-requires acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, rd)
-ensures forall x: Ref :: x != null ==> acc(x.f, rd) && acc(a.g)
+requires b != null
+requires acc(a.g) && (forall x: Ref :: x != null ==> acc(x.f, rd))
+ensures (forall x: Ref :: x != null ==> acc(x.f, rd)) && acc(a.g)
 {
     a.g := a.f + b.f
 }
 
 method bar(a: Ref, b: Ref)
-requires acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, 1/2)
-ensures acc(a.g) && forall x: Ref :: x != null ==> acc(x.f, 1/2)
+requires b != null
+requires acc(a.g) && (forall x: Ref :: x != null ==> acc(x.f, 1/2))
+ensures acc(a.g) && (forall x: Ref :: x != null ==> acc(x.f, 1/2))
 {
     a.g := 6
     inhale a.f == 5

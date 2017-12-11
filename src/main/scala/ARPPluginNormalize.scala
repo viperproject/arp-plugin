@@ -59,14 +59,14 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
   }
 
   def containsNonConst(exp: Exp): Boolean = {
-    var nonConst = true
+    var nonConst = false
 
     StrategyBuilder.SlimVisitor[Node]({
-      case FuncApp(plugin.naming.rdName, _) => nonConst = false
-      case FuncApp(plugin.naming.rdCountingName, Seq(_)) => nonConst = false
-      case FuncApp(plugin.naming.rdWildcardName, _) => nonConst = false
+      case FuncApp(plugin.naming.rdName, _) => nonConst = true
+      case FuncApp(plugin.naming.rdCountingName, Seq(_)) => nonConst = true
+      case FuncApp(plugin.naming.rdWildcardName, _) => nonConst = true
       case _ =>
-    })
+    }).visit(exp)
 
     nonConst
   }

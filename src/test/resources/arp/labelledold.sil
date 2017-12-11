@@ -7,7 +7,7 @@ method test(x: Ref)
 
     label end_label
     exhale acc(x.f, write)
-    exhale old[end_label](x).f == 5
+    exhale old[end_label](x.f) == 5
 }
 
 method test2(x: Ref)

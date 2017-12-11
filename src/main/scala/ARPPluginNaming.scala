@@ -89,7 +89,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
       case DomainFunc(name, _, _, _) => names += name
       case DomainAxiom(name, _) => names += name
       case _ =>
-    }.execute(node)
+    }.visit(node)
 
     names
   }

@@ -24,7 +24,7 @@ class ARPPluginWands(plugin: ARPPlugin) {
               plugin.reportError(Internal(a, FeatureUnsupported(a, "Rdc is not allowed in wands")))
               Seq(Assert(BoolLit(b = false)())())
             } else {
-              plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = true, ctx)(a.pos, a.info, NodeTrafo(a))
+              plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = true, ctx)(a.pos, a.info, NoTrafos)
             }
           } else {
             Seq(Assert(BoolLit(b = false)())())
@@ -40,7 +40,7 @@ class ARPPluginWands(plugin: ARPPlugin) {
                 plugin.reportError(Internal(a, FeatureUnsupported(a, "Rdc is not allowed in wands")))
                 Seq(Assert(BoolLit(b = false)())())
               } else {
-                plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = false, ctx)(a.pos, a.info, NodeTrafo(a))
+                plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = false, ctx)(a.pos, a.info, NoTrafos)
               }
             } else {
               Seq(Assert(BoolLit(b = false)())())
@@ -52,7 +52,7 @@ class ARPPluginWands(plugin: ARPPlugin) {
   }
 
   def handlePackage(input: Program, p: Package, ctx: ContextC[Node, ARPContext]): Node = {
-    // TODO: Log proof script
+    // TODO: Log proof script, fix order of log updates
 
     Seqn(
       plugin.breathe.splitBreathing(p.wand.right, Some(false), {
@@ -63,7 +63,7 @@ class ARPPluginWands(plugin: ARPPlugin) {
               plugin.reportError(Internal(p, FeatureUnsupported(p, "Rdc is not allowed in wands")))
               Seq(Assert(BoolLit(b = false)())())
             } else {
-              plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = true, ctx)(p.pos, p.info, NodeTrafo(p))
+              plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = true, ctx)(p.pos, p.info, NoTrafos)
             }
           } else {
             Seq(Assert(BoolLit(b = false)())())
@@ -79,7 +79,7 @@ class ARPPluginWands(plugin: ARPPlugin) {
                 plugin.reportError(Internal(p, FeatureUnsupported(p, "Rdc is not allowed in wands")))
                 Seq(Assert(BoolLit(b = false)())())
               } else {
-                plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
+                plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = false, ctx)(p.pos, p.info, NoTrafos)
               }
             } else {
               Seq(Assert(BoolLit(b = false)())())

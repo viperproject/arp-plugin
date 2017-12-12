@@ -18,11 +18,9 @@
 //  */
 //class ArpTestsCarbon extends SilSuite {
 //  private val arpTestDirectories = Seq("arp")
-//  private val siliconTestDirectories = Seq("consistency")
 //  private val silTestDirectories = Seq("all", "quantifiedpermissions", "wands", "examples", "quantifiedpredicates" ,"quantifiedcombinations")
 //  //  val testDirectories = arpTestDirectories
-//  //  val testDirectories = siliconTestDirectories ++ silTestDirectories
-//  val testDirectories = arpTestDirectories ++ siliconTestDirectories ++ silTestDirectories
+//  val testDirectories = arpTestDirectories ++ silTestDirectories
 //    //, "generated"
 //
 //  override def frontend(verifier: Verifier, files: Seq[Path]): Frontend = {

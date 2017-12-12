@@ -81,11 +81,11 @@ domain ARPLog {
 
     axiom sum_gt_of_log {
         forall ref: Ref, fieldId: Int, level: Int, log: ARPLog :: { ARPLog_sum_gt(ref, fieldId, level, log) }
-            (level > ARPLog_max_level(log) ==> ARPLog_sum_gt(ref, fieldId, level, log) == none)
-         && (level <= ARPLog_max_level(log) ==>
+            (level >= ARPLog_max_level(log) ==> ARPLog_sum_gt(ref, fieldId, level, log) == none)
+         && (level < ARPLog_max_level(log) ==>
                 ARPLog_sum_gt(ref, fieldId, level, log) ==
                 (
-                    ARPLog_sum_gt(ref, fieldId, level + 1, log) + ARPLog_sum(ref, fieldId, level, log)
+                    ARPLog_sum_gt(ref, fieldId, level + 1, log) + ARPLog_sum(ref, fieldId, level + 1, log)
                 )
             )
     }
@@ -162,4 +162,19 @@ method test (x: Ref)
     assert ARPLog_sum(x, field_f(), 5, pl2) == none
     assert ARPLog_sum(x, field_f(), 6, pl2) == write
 
+}
+
+method test2(x: Ref)
+{
+    var pl0: ARPLog
+
+    inhale (forall quantRef: Ref, quantLevel: Int, quantField: Int :: { ARPLog_sum(quantRef, quantField, quantLevel, pl0) } ARPLog_sum(quantRef, quantField, quantLevel, pl0) == ((exists r: Ref :: r != null && (quantRef == r && quantField == field_f())) ? (quantLevel == 4 ? 1 / 2 : none) : none))
+
+    assert forall ii: Int :: (exists i: Int :: i == ii)
+    assert forall rr: Ref :: (exists r: Ref :: r == rr)
+    assert ARPLog_sum(x, field_f(), 5, pl0) == none
+    assert ARPLog_sum(x, field_f(), 4, pl0) == 1/2
+    assert ARPLog_sum(x, field_f(), 3, pl0) == none
+    assert ARPLog_is_Cons(pl0)
+    assert false
 }

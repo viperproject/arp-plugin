@@ -10,7 +10,7 @@ ensures r.f == r.g + 1
 }
 
 method bar(x: Ref)
-requires b != null
+requires x != null
 requires acc(x.f) && (forall r: Ref :: r != null ==> acc(r.g, 1/2))
 ensures acc(x.f) && (forall r: Ref :: r != null ==> acc(r.g, 1/2))
 {

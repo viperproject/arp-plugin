@@ -26,6 +26,7 @@
 //  override def frontend(verifier: Verifier, files: Seq[Path]): Frontend = {
 //    require(files.length == 1, "tests should consist of exactly one file")
 //    val fe = new CarbonFrontend(new StdIOReporter("carbon_for_testing"))
+//    fe.prepare(Seq("--plugin", "ARPPlugin"))
 //    fe.init(verifier)
 //    fe.reset(files.head)
 //    fe

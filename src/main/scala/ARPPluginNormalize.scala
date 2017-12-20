@@ -142,6 +142,8 @@ object ARPPluginNormalize {
         case IntLit(x) if x < 0 => negate(simplified)
         case PermDiv(IntLit(x), IntLit(y)) if (x >= 0) == (y >= 0) => simplified
         case PermDiv(IntLit(x), IntLit(y)) if (x >= 0) != (y >= 0) => negate(simplified)
+        case FractionalPerm(IntLit(x), IntLit(y)) if (x >= 0) == (y >= 0) => simplified
+        case FractionalPerm(IntLit(x), IntLit(y)) if (x >= 0) != (y >= 0) => negate(simplified)
         case FullPerm() => simplified
         case NoPerm() => simplified
         case default =>
@@ -251,7 +253,10 @@ object ARPPluginNormalize {
       } else {
         val exp = other.const.get.exp
 
-        def divide(e: NormalizedPart) = e.setExp(PermDiv(e.exp, exp)())
+        def divide(e: NormalizedPart) = e.exp match {
+          case _: IntLit => e.setExp(FractionalPerm(e.exp, exp)())
+          case default => e.setExp(PermDiv(e.exp, exp)())
+        }
 
         Some(NormalizedExpression(exps.map(e => divide(e)), const.map(e => divide(e)), wildcard.map(e => divide(e))))
       }

@@ -53,41 +53,43 @@ class ARPPluginWands(plugin: ARPPlugin) {
 
   def handlePackage(input: Program, p: Package, ctx: ContextC[Node, ARPContext]): Node = {
     // TODO: Log proof script, fix order of log updates
+    // does not really work (see issues/silicon/0213.sil)
 
-    Seqn(
-      plugin.breathe.splitBreathing(p.wand.right, Some(false), {
-        case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
-          val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
-          if (normalized.isDefined) {
-            if (normalized.get.wildcard.isDefined) {
-              plugin.reportError(Internal(p, FeatureUnsupported(p, "Rdc is not allowed in wands")))
-              Seq(Assert(BoolLit(b = false)())())
-            } else {
-              plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = true, ctx)(p.pos, p.info, NoTrafos)
-            }
-          } else {
-            Seq(Assert(BoolLit(b = false)())())
-          }
-        case _ => Seq()
-      }) ++
-        Seq[Stmt](ctx.noRec(p)) ++
-        plugin.breathe.splitBreathing(p.wand.left, Some(true), {
-          case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
-            val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
-            if (normalized.isDefined) {
-              if (normalized.get.wildcard.isDefined) {
-                plugin.reportError(Internal(p, FeatureUnsupported(p, "Rdc is not allowed in wands")))
-                Seq(Assert(BoolLit(b = false)())())
-              } else {
-                plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = false, ctx)(p.pos, p.info, NoTrafos)
-              }
-            } else {
-              Seq(Assert(BoolLit(b = false)())())
-            }
-          case _ => Seq()
-        }),
-      Seq()
-    )(p.pos, p.info)
+//    Seqn(
+//      plugin.breathe.splitBreathing(p.wand.right, Some(false), {
+//        case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
+//          val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
+//          if (normalized.isDefined) {
+//            if (normalized.get.wildcard.isDefined) {
+//              plugin.reportError(Internal(p, FeatureUnsupported(p, "Rdc is not allowed in wands")))
+//              Seq(Assert(BoolLit(b = false)())())
+//            } else {
+//              plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = true, ctx)(p.pos, p.info, NoTrafos)
+//            }
+//          } else {
+//            Seq(Assert(BoolLit(b = false)())())
+//          }
+//        case _ => Seq()
+//      }) ++
+//        Seq[Stmt](ctx.noRec(p)) ++
+//        plugin.breathe.splitBreathing(p.wand.left, Some(true), {
+//          case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
+//            val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
+//            if (normalized.isDefined) {
+//              if (normalized.get.wildcard.isDefined) {
+//                plugin.reportError(Internal(p, FeatureUnsupported(p, "Rdc is not allowed in wands")))
+//                Seq(Assert(BoolLit(b = false)())())
+//              } else {
+//                plugin.breathe.generateLogUpdate(input, accessPredicate.loc, normalized.get, minus = false, ctx)(p.pos, p.info, NoTrafos)
+//              }
+//            } else {
+//              Seq(Assert(BoolLit(b = false)())())
+//            }
+//          case _ => Seq()
+//        }),
+//      Seq()
+//    )(p.pos, p.info)
+    ctx.noRec(p)
   }
 
 }

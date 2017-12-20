@@ -47,7 +47,14 @@ class ARPPluginWhile(plugin: ARPPlugin) {
                   WhileFailed(w.cond, reason, cached)
                 case error: AbstractVerificationError => error.withNode(w.cond).asInstanceOf[AbstractVerificationError]
               })),
-              w.body,
+              w.body
+            ) ++
+            w.invs.map(i => Assert(i)(i.pos, i.info, ErrTrafo({
+              case AssertFailed(_, reason, cached) =>
+                LoopInvariantNotPreserved(i, reason, cached)
+              case error: AbstractVerificationError => error.withNode(i).asInstanceOf[AbstractVerificationError]
+            }))) ++
+            Seq(
               LocalVarAssign(condVar, w.cond)(w.cond.pos, w.cond.info, ErrTrafo({
                 case AssignmentFailed(_, reason, cached) =>
                   WhileFailed(w.cond, reason, cached)
@@ -75,8 +82,15 @@ class ARPPluginWhile(plugin: ARPPlugin) {
       Seqn(
         Seq(
           // TODO: Why is this declStmt needed? (see test all/issues/silicon/0285.sil)
-          LocalVarDeclStmt(LocalVarDecl(whileRdName, Perm)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info),
-          Inhale(plugin.utils.constrainRdExp(whileRdName)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info),
+          // LocalVarDeclStmt(LocalVarDecl(whileRdName, Perm)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info),
+          Inhale(plugin.utils.constrainRdExp(whileRdName)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info)
+        ) ++
+          w.invs.map(i => Assert(i)(i.pos, i.info, ErrTrafo({
+            case AssertFailed(_, reason, cached) =>
+              LoopInvariantNotEstablished(i, reason, cached)
+            case error: AbstractVerificationError => error.withNode(i).asInstanceOf[AbstractVerificationError]
+          }))) ++
+          Seq(
           LocalVarAssign(condVar, w.cond)(w.cond.pos, w.cond.info, ErrTrafo({
             case AssignmentFailed(_, reason, cached) =>
               WhileFailed(w.cond, reason, cached)

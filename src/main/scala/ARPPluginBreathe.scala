@@ -194,6 +194,12 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
   def handlePredicateFolding(input: Program, fold: Stmt, acc: PredicateAccessPredicate, foldBefore: Boolean, minus: Boolean, ctx: ContextC[Node, ARPContext]): Node = {
     val wildcardNames = getWildcardNames(acc)
+    val normalizedPred = plugin.normalize.normalizeExpression(acc.perm, plugin.normalize.rdPermContext)
+    val predLogUpdate = if (normalizedPred.isDefined) {
+      generateLogUpdate(input, acc.loc, normalizedPred.get, minus = !minus, ctx)(fold.pos, fold.info, NoTrafos)
+    } else {
+      Seq(Assert(BoolLit(b = false)())())
+    }
 
     def newPerm(exp: Exp) = plugin.utils.simplify(PermMul(acc.perm, exp)(exp.pos, exp.info))
 
@@ -220,6 +226,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               case _ =>
                 Seq()
             }) ++
+            predLogUpdate ++
             (if (!foldBefore) {
               Seq(
                 fold
@@ -229,7 +236,23 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
             }),
           wildcardNamesAll.map(n => LocalVarDecl(n, Perm)(fold.pos, fold.info))
         )(fold.pos, fold.info, NodeTrafo(fold))
-      case None => fold
+      case None =>
+        Seqn(
+          (if (foldBefore) {
+            Seq(fold)
+          } else {
+            Seq()
+          }) ++
+            predLogUpdate ++
+            (if (!foldBefore) {
+              Seq(
+                fold
+              )
+            } else {
+              Seq()
+            }),
+          Seq()
+        )(fold.pos, fold.info, NodeTrafo(fold))
     }
   }
 

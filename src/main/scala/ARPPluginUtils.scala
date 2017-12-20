@@ -166,8 +166,8 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     val strat = TreeRegexBuilder.simple[Node] &> n.r[AccessPredicate] >> n.P[FuncApp](f =>
       f.funcname == plugin.naming.rdName || f.funcname == plugin.naming.rdCountingName || f.funcname == plugin.naming.rdWildcardName
     ) |-> {
-      case f@FieldAccessPredicate(loc, perm) => FieldAccessPredicate(loc, PermDiv(IntLit(1)(), IntLit(2)())())(f.pos, f.info, NodeTrafo(f))
-      case p@PredicateAccessPredicate(loc, perm) => PredicateAccessPredicate(loc, PermDiv(IntLit(1)(), IntLit(2)())())(p.pos, p.info, NodeTrafo(p))
+      case f@FieldAccessPredicate(loc, perm) => FieldAccessPredicate(loc, FractionalPerm(IntLit(1)(), IntLit(2)())())(f.pos, f.info, NodeTrafo(f))
+      case p@PredicateAccessPredicate(loc, perm) => PredicateAccessPredicate(loc, FractionalPerm(IntLit(1)(), IntLit(2)())())(p.pos, p.info, NodeTrafo(p))
     }
     strat.execute[T](node)
   }
@@ -180,7 +180,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       Seqn(
         Seq(
           // TODO: Why is this declStmt needed?
-          LocalVarDeclStmt(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))(lvar.pos, lvar.info),
+          // LocalVarDeclStmt(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))(lvar.pos, lvar.info),
           LocalVarAssign(lvar, LocalVar(tmpName)(lvar.typ, lvar.pos, lvar.info))(lvar.pos, lvar.info)
         ),
         Seq(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))
@@ -252,6 +252,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       case _: PermSub => permLit
       case _: PermMul => permLit
       case _: PermDiv => permLit
+      case _: FractionalPerm => permLit
       case _: AbstractConcretePerm => permLit
       case v: LocalVar if v.typ == Perm => permLit
       case _: CurrentPerm => permLit

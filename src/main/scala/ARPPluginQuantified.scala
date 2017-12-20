@@ -119,7 +119,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
         (_ => cond, forall.variables)
     }
 
-    if ((normalized.const ++ normalized.exps).isEmpty){
+    if ((normalized.const ++ normalized.wildcard ++ normalized.exps).isEmpty){
       plugin.reportError(Internal(forall, FeatureUnsupported(forall, "Normalized permission is not wellformed")))
       Seq()
     } else {
@@ -128,7 +128,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
         plugin.utils.getAccessRcv(accAccess)(pos, info, errT),
         vars,
         condPrime,
-        (_, level, _) => generateNorm(normalized.const.toSeq ++ normalized.exps, level),
+        (_, level, _) => generateNorm(normalized.const.toSeq ++ normalized.wildcard.toSeq ++ normalized.exps, level),
         accAccess,
         minus,
         ctx

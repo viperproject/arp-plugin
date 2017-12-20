@@ -18,6 +18,8 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
+  // TODO: Missing labelled old in forall log update (quantifiedpermissions/sets/access.sil)
+  // TODO: old in while loops?
   // TODO: Fix log update for quantified expressions
   // TODO: Fix quantified x.f.g
   // TODO: Fix quantified xs[i]
@@ -179,6 +181,10 @@ class ARPPlugin extends SilverPlugin {
 
     checkAllRdTransformed(inputPrime)
 
+    if (inputPrime.checkTransitively.nonEmpty){
+      inputPrime.checkTransitively.foreach(ce => reportError(ConsistencyError(ce.message + s" (${ce.pos})", ce.pos)))
+    }
+
     if (System.getProperty("DEBUG", "").equals("1")) {
       println(inputPrime)
     }
@@ -192,7 +198,7 @@ class ARPPlugin extends SilverPlugin {
       case Failure(errors) =>
         val errorsPrime = errors.map({
           case ParseError(msg, pos) => ParseError(msg + s" ($pos)", pos)
-          case AbortedExceptionally(cause) => ParseError(s"Exception: $cause", NoPosition) // Is not really a parse error...
+          case AbortedExceptionally(cause) => ParseError(s"Exception: $cause (${cause.getStackTrace})", NoPosition) // Is not really a parse error...
           case TypecheckerError(msg, pos) => TypecheckerError(msg.replace("<undefined position>", "<ARP Plugin>"), pos)
           case error: AbstractVerificationError => error.transformedError()
           case default => default
@@ -326,23 +332,29 @@ class ARPPlugin extends SilverPlugin {
 
   def addDummyMethods(originalInput: Program, input: Program): Program = {
     // ensures false is not checked if there is no body, so would not need handle this
+    // invariants have other rules for wellformedness than methods, so this does not always work (see issues/silicon/0285.sil)
 
     var whileMethods = Seq[Method]()
     StrategyBuilder.AncestorVisitor[Node]({
       case (w: While, ctx) if w.invs.nonEmpty =>
         var args = Seq[LocalVarDecl]()
+        var quantified = Seq[LocalVarDecl]()
         w.invs.foreach(wi =>
           StrategyBuilder.SlimVisitor[Node]({
             case l@LocalVar(name) => if (!args.exists(a => a.localVar.name == name)) args :+= LocalVarDecl(name, l.typ)(l.pos, l.info)
+            case Forall(vars, _, _) => quantified ++= vars
+            case Exists(vars, _) => quantified ++= vars
             case _ =>
           }).visit(wi)
         )
+        args = args.filterNot(l => quantified.contains(l))
         whileMethods :+= Method(
           naming.getNameFor(w, suffix = "invariant_wellformed_dummy_method"),
           args,
           Seq(),
           Seq(),
           w.invs.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+//          Seq(utils.rewriteRdForDummyMethod(w.invs.filterNot(_.isInstanceOf[BoolLit]).reduce((a, b) => And(a, b)(a.pos, a.info)))),
           None
         )(w.pos, w.info)
       case _ =>
@@ -374,7 +386,7 @@ class ARPPlugin extends SilverPlugin {
     StrategyBuilder.Slim[Node]({
       case m@MethodCall(methodName, args, targets) =>
         val maybeMethod = utils.getMethod(input, methodName)
-        if (maybeMethod.isDefined) {
+        if (maybeMethod.isDefined && (maybeMethod.get.pres ++ maybeMethod.get.posts).nonEmpty) {
           MethodCall(
             naming.getNameFor(maybeMethod.get, methodName, "contract_wellformed_dummy_method"),
             args,

@@ -53,6 +53,12 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       )(pos, info, errT)
     )(pos, info, errT)
 
+  def rewriteLabelledOldExpr[T <: Node](node: T): T = {
+    StrategyBuilder.Slim[Node]({
+      case l@LabelledOld(exp, _) => Old(exp)(l.pos, l.info, NodeTrafo(l))
+    }).execute[T](node)
+  }
+
   def rewriteOldExpr[T <: Node](labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true, includeNonpure: Boolean = false)(node: T): T = {
     def rewriteFieldAccess(fa: FieldAccess): FieldAccess = {
       fa.rcv match {
@@ -114,6 +120,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           ctx.noRec(CurrentPerm(rewriteFieldAccess(fa))(c.pos, c.info, NodeTrafo(c)))
         case (c: CurrentPerm, ctx) => ctx.noRec(c)
         case (f: ForPerm, ctx) => ctx.noRec(f)
+        case (m: MagicWand, ctx) => ctx.noRec(m)
         case (u: Unfolding, ctx) =>
           ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u)))
         case (f: Forall, ctx) =>
@@ -250,16 +257,9 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     val intLit = IntLit(bigIntZero)(exp.pos, exp.info)
     val permLit = NoPerm()(exp.pos, exp.info)
     exp match {
-      case _: PermAdd => permLit
-      case _: PermSub => permLit
-      case _: PermMul => permLit
-      case _: PermDiv => permLit
-      case _: FractionalPerm => permLit
-      case _: AbstractConcretePerm => permLit
+      case _: PermExp => permLit
       case v: LocalVar if v.typ == Perm => permLit
-      case _: CurrentPerm => permLit
-      case _ =>
-        intLit
+      case _ => intLit
     }
   }
 

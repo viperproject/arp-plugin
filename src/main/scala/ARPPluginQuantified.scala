@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder}
+import viper.silver.ast.utility.Rewriter.{ContextC, SimpleContext, Strategy, StrategyBuilder}
 import viper.silver.plugin.ARPPlugin.ARPContext
 import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
 import viper.silver.verifier.AbstractVerificationError
@@ -102,25 +102,36 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
   }
 
   def generateLogUpdateQuantifiedFromNormalized(input: Program, forall: Forall, cond: Exp, normalized: NormalizedExpression, accAccess: LocationAccess, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
-    def generateNorm(norms: Seq[NormalizedPart], level: LocalVar): Exp = {
+    def getRewriter(quantVar: LocalVar): LocalVar => Strategy[Node, SimpleContext[Node]] ={
+      def rewriter(quantifiedRef: LocalVar): Strategy[Node, SimpleContext[Node]] ={
+        StrategyBuilder.Slim[Node]({
+          case LocalVar(quantVar.name) => quantifiedRef
+        })
+      }
+      rewriter
+    }
+
+    def condRewriter(v: LocalVar)(quantifiedRef: LocalVar) = getRewriter(v)(quantifiedRef).execute[Exp](cond)
+
+    val (quantVar, condPrime, vars): (Option[LocalVar], LocalVar => Exp, Seq[LocalVarDecl]) = accAccess match {
+      case FieldAccess(v: LocalVar, _: Field) =>
+        (Some(v), ref => condRewriter(v)(ref), Seq())
+      case default =>
+        (None, _ => cond, forall.variables)
+    }
+
+    def generateNorm(norms: Seq[NormalizedPart], quantifiedRef: LocalVar, level: LocalVar): Exp = {
       val e = norms.head
-      val total = e.getTotal(plugin)(pos, info, errT)
+      val total = if (quantVar.isDefined){
+        getRewriter(quantVar.get)(quantifiedRef).execute[Exp](e.getTotal(plugin)(pos, info, errT))
+      } else {
+        e.getTotal(plugin)(pos, info, errT)
+      }
       CondExp(
         EqCmp(level, IntLit(e.store)(pos, info, errT))(pos, info, errT),
         if (minus) PermMinus(total)(pos, info, errT) else total,
-        if (norms.size == 1) NoPerm()(pos, info, errT) else generateNorm(norms.tail, level)
+        if (norms.size == 1) NoPerm()(pos, info, errT) else generateNorm(norms.tail, quantifiedRef, level)
       )(pos, info, errT)
-    }
-
-    def condRewriter(v: LocalVar)(quantifiedRef: LocalVar) = StrategyBuilder.Slim[Node]({
-      case LocalVar(v.name) => quantifiedRef
-    }).execute[Exp](cond)
-
-    val (condPrime, vars): (LocalVar => Exp, Seq[LocalVarDecl]) = accAccess match {
-      case FieldAccess(v: LocalVar, _: Field) =>
-        (ref => condRewriter(v)(ref), Seq())
-      case default =>
-        (_ => cond, forall.variables)
     }
 
     if ((normalized.const ++ normalized.wildcard ++ normalized.exps).isEmpty){
@@ -132,7 +143,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
         plugin.utils.getAccessRcv(accAccess)(pos, info, errT),
         vars,
         condPrime,
-        (_, level, _) => generateNorm(normalized.const.toSeq ++ normalized.wildcard.toSeq ++ normalized.exps, level),
+        (quantifiedRef, level, _) => generateNorm(normalized.const.toSeq ++ normalized.wildcard.toSeq ++ normalized.exps, quantifiedRef, level),
         accAccess,
         minus,
         ctx
@@ -141,7 +152,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
   }
 
 
-  def generateLogUpdateQuantified(input: Program, quantifiedRefVal: Exp, additionalQuantified: Seq[LocalVarDecl], condition: LocalVar => Exp, addval: (Exp, LocalVar, LocalVar) => Exp, accAccess: LocationAccess, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def generateLogUpdateQuantified(input: Program, quantifiedRefVal: Exp, additionalQuantified: Seq[LocalVarDecl], condition: LocalVar => Exp, addval: (LocalVar, LocalVar, LocalVar) => Exp, accAccess: LocationAccess, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     val arpLogType = plugin.utils.getARPLogType(input)
     val arpLog = LocalVar(ctx.c.logName)(arpLogType, pos, info)
     val arpLogSum = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSum)

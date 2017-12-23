@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast.utility.Rewriter.StrategyBuilder
-import viper.silver.ast.{Add, CondExp, Div, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermLtCmp, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
+import viper.silver.ast.{Add, CondExp, Div, DomainBinExp, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermExp, PermLtCmp, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
 import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
 import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported
@@ -127,11 +127,12 @@ object ARPPluginNormalize {
     }
 
     def getAbsTotal(plugin: ARPPlugin)(pos: Position, info: Info, errT: ErrorTrafo): Exp = {
-      def negate(e: Exp): Exp ={
+      def negate(e: Exp): Exp = {
         e match {
           case Minus(ee) => ee
           case PermMinus(ee) => ee
           case IntLit(x) => IntLit(-x)(e.pos, e.info, e.errT)
+          case default: PermExp => PermMinus(default)(e.pos, e.info, e.errT)
           case default => Minus(default)(e.pos, e.info, e.errT)
         }
       }
@@ -183,6 +184,14 @@ object ARPPluginNormalize {
     def isconst() = !isnonconst()
 
     def +?(other: NormalizedExpression): Option[NormalizedExpression] = {
+      def add(a: Exp, b: Exp): Exp = {
+        if (a.typ == Perm && b.typ == Perm) {
+          PermAdd(a, b)()
+        } else {
+          Add(a, b)()
+        }
+      }
+
       if (wildcard.isDefined || other.wildcard.isDefined) {
         None
       } else {
@@ -194,7 +203,7 @@ object ARPPluginNormalize {
           val h2 = exps2.head
           if (h1.store == h2.store) {
             if (h1.check == h2.check) {
-              newExps :+= h1.setExp(Add(h1.exp, h2.exp)())
+              newExps :+= h1.setExp(add(h1.exp, h2.exp))
               exps1 = exps1.tail
               exps2 = exps2.tail
             } else if (h1.check < h2.check) {
@@ -216,14 +225,14 @@ object ARPPluginNormalize {
 
         val newConst =
           if (const.isDefined && other.const.isDefined) {
-            Some(const.get.setExp(PermAdd(const.get.exp, other.const.get.exp)()))
+            Some(const.get.setExp(add(const.get.exp, other.const.get.exp)))
           } else if (const.isDefined) {
             const
           } else {
             other.const
           }
         val newWildcard = if (wildcard.isDefined && other.wildcard.isDefined) {
-          Some(wildcard.get.setExp(PermAdd(wildcard.get.exp, other.wildcard.get.exp)()))
+          Some(wildcard.get.setExp(add(wildcard.get.exp, other.wildcard.get.exp)))
         } else if (wildcard.isDefined) {
           wildcard
         } else {
@@ -241,7 +250,15 @@ object ARPPluginNormalize {
         val (const, nonconst) = if (other.isconst()) (other, this) else (this, other)
         val exp = const.const.get.exp
 
-        def multiply(e: NormalizedPart) = e.setExp(PermMul(e.exp, exp)())
+        def multiply(e: NormalizedPart): NormalizedPart = {
+          if (e.exp.typ == Perm && exp.typ == Perm) {
+            e.setExp(PermMul(e.exp, exp)())
+          } else if (e.exp.typ == Perm || exp.typ == Perm) {
+            e.setExp(IntPermMul(e.exp, exp)())
+          } else {
+            e.setExp(Mul(e.exp, exp)())
+          }
+        }
 
         Some(NormalizedExpression(nonconst.exps.map(e => multiply(e)), nonconst.const.map(e => multiply(e)), nonconst.wildcard.map(e => multiply(e))))
       }
@@ -253,9 +270,12 @@ object ARPPluginNormalize {
       } else {
         val exp = other.const.get.exp
 
-        def divide(e: NormalizedPart) = e.exp match {
-          case _: IntLit => e.setExp(FractionalPerm(e.exp, exp)())
-          case default => e.setExp(PermDiv(e.exp, exp)())
+        def divide(e: NormalizedPart): NormalizedPart = {
+          if (e.exp.typ == Perm && exp.typ == Perm) {
+            e.setExp(PermDiv(e.exp, exp)())
+          } else {
+            e.setExp(FractionalPerm(e.exp, exp)())
+          }
         }
 
         Some(NormalizedExpression(exps.map(e => divide(e)), const.map(e => divide(e)), wildcard.map(e => divide(e))))

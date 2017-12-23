@@ -20,16 +20,13 @@ import scala.collection.immutable
 
 class ARPPlugin extends SilverPlugin {
 
-  // TODO: Fix Perm/Int mess
   // TODO: old in while loops?
   // TODO: Fix log update for quantified expressions
   // TODO: Fix quantified x.f.g
   // TODO: Fix quantified xs[i]
   // TODO: Fix quantified predicates
-  // TODO: Fix nested old (e.g. issues/silicon/0120a.sil)
   // TODO: Check c := perm(x.f) calls (Rewriter thinks assignment was already rewritten)
   // TODO: Handle magic wands correctly
-  // TODO: fix all/issues/silicon/unofficial006.sil (LocalVarDecl gets lost)
   // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions)
   // TODO: Make sure error transformation works everywhere
   // TODO: implement globalRd in predicates
@@ -163,7 +160,7 @@ class ARPPlugin extends SilverPlugin {
           misc.handleAssignment(enhancedInput, a, ctx)
         case (c: Constraining, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, c))
         case (a: Apply, ctx) => wands.handleApply(enhancedInput, a, ctx)
-        case (p: Package, ctx) => wands.handlePackage(enhancedInput, p, ctx)
+        case (p: Package, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, wands.handlePackage(enhancedInput, p, ctx)))
       },
       ARPContext("", "", ""), // default context
       {
@@ -352,7 +349,7 @@ class ARPPlugin extends SilverPlugin {
     // invariants have other rules for wellformedness than methods, so this does not always work (see issues/silicon/0285.sil)
 
     var whileMethods = Seq[Method]()
-    StrategyBuilder.AncestorVisitor[Node]({
+    StrategyBuilder.ContextVisitor[Node, Method]({
       case (w: While, ctx) if w.invs.nonEmpty =>
         var args = Seq[LocalVarDecl]()
         var quantified = Seq[LocalVarDecl]()
@@ -364,18 +361,23 @@ class ARPPlugin extends SilverPlugin {
             case _ =>
           }).visit(wi)
         )
-        args = args.filterNot(l => quantified.contains(l))
+        args = args.filterNot(quantified.contains) ++ ctx.c.formalArgs.filterNot(args.contains)
         whileMethods :+= Method(
           naming.getNameFor(w, suffix = "invariant_wellformed_dummy_method"),
           args,
           Seq(),
-          Seq(),
-          w.invs.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+          ctx.c.pres.map(utils.rewriteRdForDummyMethod), // precondition of the current method seem to play a role for the contracts as well
+          w.invs.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod).map(utils.rewriteLabelledOldExpr),
 //          Seq(utils.rewriteRdForDummyMethod(w.invs.filterNot(_.isInstanceOf[BoolLit]).reduce((a, b) => And(a, b)(a.pos, a.info)))),
           None
         )(w.pos, w.info)
       case _ =>
-    }).visit(originalInput)
+    },
+      null,
+      {
+        case (m: Method, ctx) => m
+      }
+    ).visit(originalInput)
 
     val newProgram = Program(
       input.domains,

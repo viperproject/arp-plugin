@@ -34,7 +34,7 @@ domain ARPLog {
 
     // Axioms
 
-    axiom destruct_over_construct_Cons {
+    axiom ARPLog_destruct_over_construct_Cons {
         forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: { ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail) }
             ARPLog_head_ref_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_ref
          && ARPLog_head_fieldId_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_fieldId
@@ -43,43 +43,43 @@ domain ARPLog {
          && ARPLog_tail_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_tail
     }
 
-    axiom construct_over_destruct_Cons {
+    axiom ARPLog_construct_over_destruct_Cons {
         forall arp_quant_log: ARPLog :: { ARPLog_head_ref_Cons(arp_quant_log) } { ARPLog_head_fieldId_Cons(arp_quant_log) } { ARPLog_head_permission_Cons(arp_quant_log) } { ARPLog_head_level_Cons(arp_quant_log) } { ARPLog_tail_Cons(arp_quant_log) }
             ARPLog_is_Cons(arp_quant_log) ==> arp_quant_log == ARPLog_Cons(ARPLog_head_ref_Cons(arp_quant_log), ARPLog_head_fieldId_Cons(arp_quant_log), ARPLog_head_permission_Cons(arp_quant_log), ARPLog_head_level_Cons(arp_quant_log), ARPLog_tail_Cons(arp_quant_log))
     }
 
-    axiom type_of_Nil {
+    axiom ARPLog_type_of_Nil {
         ARPLog_type(ARPLog_Nil()) == ARPLog_type_Nil()
     }
 
-    axiom type_of_Cons {
+    axiom ARPLog_type_of_Cons {
         forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog ::
             ARPLog_type(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == ARPLog_type_Cons()
     }
 
-    axiom type_existence {
+    axiom ARPLog_type_existence {
         forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) }{ ARPLog_is_Cons(arp_quant_log) }{ ARPLog_type(arp_quant_log) }
             ARPLog_type(arp_quant_log) == ARPLog_type_Nil()
          || ARPLog_type(arp_quant_log) == ARPLog_type_Cons()
     }
 
-    axiom type_is_Nil {
+    axiom ARPLog_type_is_Nil {
         forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) }{ ARPLog_type(arp_quant_log) }
             ARPLog_type(arp_quant_log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(arp_quant_log)
     }
 
-    axiom type_is_Cons {
+    axiom ARPLog_type_is_Cons {
         forall arp_quant_log: ARPLog :: { ARPLog_is_Cons(arp_quant_log) }{ ARPLog_type(arp_quant_log) }
             ARPLog_type(arp_quant_log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(arp_quant_log)
     }
 
     // could be made more generic, but this is probably faster
-    axiom log_max_level {
+    axiom ARPLog_log_max_level {
         forall arp_quant_log: ARPLog :: { ARPLog_max_level(arp_quant_log) }
             ARPLog_max_level(arp_quant_log) == 6
     }
 
-    axiom sum_gt_of_log {
+    axiom ARPLog_sum_gt_of_log {
         forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) }
             (arp_quant_level >= ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none)
          && (arp_quant_level < ARPLog_max_level(arp_quant_log) ==>
@@ -90,7 +90,7 @@ domain ARPLog {
             )
     }
 
-    axiom sum_of_log {
+    axiom ARPLog_sum_of_log {
         forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) }
             (ARPLog_is_Nil(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none)
          && (ARPLog_is_Cons(arp_quant_log) ==>

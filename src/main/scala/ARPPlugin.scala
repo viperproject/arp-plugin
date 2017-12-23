@@ -16,9 +16,11 @@ import viper.silver.verifier._
 import viper.silver.verifier.errors._
 import viper.silver.verifier.reasons.FeatureUnsupported
 
+import scala.collection.immutable
+
 class ARPPlugin extends SilverPlugin {
 
-  // TODO: Missing labelled old in forall log update (quantifiedpermissions/sets/access.sil)
+  // TODO: Fix Perm/Int mess
   // TODO: old in while loops?
   // TODO: Fix log update for quantified expressions
   // TODO: Fix quantified x.f.g
@@ -177,16 +179,18 @@ class ARPPlugin extends SilverPlugin {
     )
 
     val rewrittenInput = arpRewriter.execute[Program](enhancedInput)
-    val inputPrime = addDummyMethods(input, rewrittenInput)
+    val inputPrime = addHavocMethods(addDummyMethods(input, rewrittenInput))
 
     checkAllRdTransformed(inputPrime)
 
-    if (inputPrime.checkTransitively.nonEmpty){
-      inputPrime.checkTransitively.foreach(ce => reportError(ConsistencyError(ce.message + s" (${ce.pos})", ce.pos)))
-    }
-
     if (System.getProperty("DEBUG", "").equals("1")) {
       println(inputPrime)
+    }
+
+    if (_errors.isEmpty) {
+      if (inputPrime.checkTransitively.nonEmpty) {
+        inputPrime.checkTransitively.foreach(ce => reportError(ConsistencyError(ce.message + s" (${ce.pos})", ce.pos)))
+      }
     }
 
     inputPrime
@@ -290,7 +294,7 @@ class ARPPlugin extends SilverPlugin {
           predicates.filterNot(_ == p).map(pp => {
             val args3 = pp.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
             val localArgs3 = args3.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
-            val app3 = DomainFuncApp(naming.getPredicateFunctionName(pp), localArgs3, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
+            val app3 = DomainFuncApp(naming.getPredicateFunctionName(pp), localArgs3, Map[TypeVar, Type]())(input.pos, input.info, Int, pp.formalArgs, domainName, NoTrafos)
             DomainAxiom(
               naming.getNewName(suffix = p.name + "_" + pp.name),
               Forall(
@@ -330,6 +334,19 @@ class ARPPlugin extends SilverPlugin {
     newProgram
   }
 
+  def addHavocMethods(input: Program): Program = {
+    val newMethods = naming.havocNames.toList.map(kv => {
+      Method(kv._2, Seq(), Seq(LocalVarDecl(naming.getNewName("returnval"), kv._1)(input.pos, input.info)), Seq(), Seq(), None)(input.pos, input.info)
+    })
+    Program(
+      input.domains,
+      input.fields,
+      input.functions,
+      input.predicates,
+      input.methods ++ newMethods
+    )(input.pos, input.info, input.errT)
+  }
+
   def addDummyMethods(originalInput: Program, input: Program): Program = {
     // ensures false is not checked if there is no body, so would not need handle this
     // invariants have other rules for wellformedness than methods, so this does not always work (see issues/silicon/0285.sil)
@@ -366,7 +383,7 @@ class ARPPlugin extends SilverPlugin {
       input.functions,
       input.predicates,
       input.methods ++ whileMethods ++ originalInput.methods
-        .filter(m => m.pres.nonEmpty || m.posts.nonEmpty)
+//        .filter(m => m.pres.nonEmpty || m.posts.nonEmpty) // cant't do this as we need the method for constraining blocks
         .map(m =>
           Method(
             naming.getNameFor(m, m.name, "contract_wellformed_dummy_method"),
@@ -386,7 +403,7 @@ class ARPPlugin extends SilverPlugin {
     StrategyBuilder.Slim[Node]({
       case m@MethodCall(methodName, args, targets) =>
         val maybeMethod = utils.getMethod(input, methodName)
-        if (maybeMethod.isDefined && (maybeMethod.get.pres ++ maybeMethod.get.posts).nonEmpty) {
+        if (maybeMethod.isDefined /*&& (maybeMethod.get.pres ++ maybeMethod.get.posts).nonEmpty*/) {
           MethodCall(
             naming.getNameFor(maybeMethod.get, methodName, "contract_wellformed_dummy_method"),
             args,

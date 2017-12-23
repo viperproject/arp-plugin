@@ -196,7 +196,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     val wildcardNames = getWildcardNames(acc)
     val normalizedPred = plugin.normalize.normalizeExpression(acc.perm, plugin.normalize.rdPermContext)
     val predLogUpdate = if (normalizedPred.isDefined) {
-      generateLogUpdate(input, acc.loc, normalizedPred.get, minus = !minus, ctx)(fold.pos, fold.info, NoTrafos)
+      generateLogUpdate(input, acc.loc, normalizedPred.get, minus = !minus, ctx)(fold.pos, fold.info, NoTrafos).map(plugin.utils.rewriteRd(ctx.c.rdName, wildcardNames))
     } else {
       Seq(Assert(BoolLit(b = false)())())
     }
@@ -205,7 +205,19 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     acc.loc.predicateBody(input) match {
       case Some(body) =>
-        val wildcardNamesAll = wildcardNames ++ getWildcardNames(body)
+        val bodyWildcardNames = getWildcardNames(body)
+        val wildcardNamesAll = wildcardNames ++ bodyWildcardNames
+
+        var currentWildcardNames = bodyWildcardNames
+
+        def nextWildcardName() = if (currentWildcardNames.nonEmpty) {
+          val head = currentWildcardNames.head
+          currentWildcardNames = currentWildcardNames.tail
+          head
+        } else {
+          plugin.naming.getNewName(suffix = "not_enough_names")
+        }
+
         Seqn(
           (if (foldBefore) {
             Seq(
@@ -218,8 +230,14 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
                 val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
                 if (normalized.isDefined) {
-                  generateLogUpdate(input, accessPredicate.loc, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos)
-                    .map(plugin.utils.rewriteRd(ctx.c.rdName, wildcardNamesAll))
+                  if (normalized.get.wildcard.isDefined){
+                    val wildcardName = if (wildcardNames.nonEmpty) wildcardNames.head else nextWildcardName()
+                    generateLogUpdate(input, accessPredicate.loc, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos)
+                      .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
+                  } else {
+                    generateLogUpdate(input, accessPredicate.loc, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos)
+                      .map(plugin.utils.rewriteRd(ctx.c.rdName, Seq()))
+                  }
                 } else {
                   Seq(Assert(BoolLit(b = false)())())
                 }

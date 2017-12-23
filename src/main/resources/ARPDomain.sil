@@ -5,47 +5,47 @@ domain ARPLog {
     // Constructors
 
     function ARPLog_Nil(): ARPLog
-    function ARPLog_Cons(ref: Ref, fieldId: Int, permission: Perm, level: Int, log: ARPLog): ARPLog
+    function ARPLog_Cons(arp_quant_ref: Ref, arp_quant_fieldId: Int, permission: Perm, arp_quant_level: Int, arp_quant_log: ARPLog): ARPLog
 
     // Deconstructors
 
-    function ARPLog_head_ref_Cons(log: ARPLog): Ref
-    function ARPLog_head_fieldId_Cons(log: ARPLog): Int
-    function ARPLog_head_permission_Cons(log: ARPLog): Perm
-    function ARPLog_head_level_Cons(log: ARPLog): Int
-    function ARPLog_tail_Cons(log: ARPLog): ARPLog
+    function ARPLog_head_ref_Cons(arp_quant_log: ARPLog): Ref
+    function ARPLog_head_fieldId_Cons(arp_quant_log: ARPLog): Int
+    function ARPLog_head_permission_Cons(arp_quant_log: ARPLog): Perm
+    function ARPLog_head_level_Cons(arp_quant_log: ARPLog): Int
+    function ARPLog_tail_Cons(arp_quant_log: ARPLog): ARPLog
 
     // Constructor Types
 
-    function ARPLog_type(log: ARPLog): Int
+    function ARPLog_type(arp_quant_log: ARPLog): Int
     unique function ARPLog_type_Nil(): Int
     unique function ARPLog_type_Cons(): Int
 
-    function ARPLog_is_Nil(log: ARPLog): Bool
-    function ARPLog_is_Cons(log: ARPLog): Bool
+    function ARPLog_is_Nil(arp_quant_log: ARPLog): Bool
+    function ARPLog_is_Cons(arp_quant_log: ARPLog): Bool
 
     // Functions
 
-    function ARPLog_max_level(log: ARPLog): Int
+    function ARPLog_max_level(arp_quant_log: ARPLog): Int
 
-    function ARPLog_sum_gt(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+    function ARPLog_sum_gt(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
 
-    function ARPLog_sum(ref: Ref, fieldId: Int, level: Int, log: ARPLog): Perm
+    function ARPLog_sum(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
 
     // Axioms
 
     axiom destruct_over_construct_Cons {
-        forall head_ref: Ref, head_fieldId: Int, head_permission: Perm, head_level: Int, tail: ARPLog :: { ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail) }
-            ARPLog_head_ref_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_ref
-         && ARPLog_head_fieldId_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_fieldId
-         && ARPLog_head_permission_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_permission
-         && ARPLog_head_level_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == head_level
-         && ARPLog_tail_Cons(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == tail
+        forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: { ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail) }
+            ARPLog_head_ref_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_ref
+         && ARPLog_head_fieldId_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_fieldId
+         && ARPLog_head_permission_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_permission
+         && ARPLog_head_level_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_level
+         && ARPLog_tail_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_tail
     }
 
     axiom construct_over_destruct_Cons {
-        forall log: ARPLog :: { ARPLog_head_ref_Cons(log) } { ARPLog_head_fieldId_Cons(log) } { ARPLog_head_permission_Cons(log) } { ARPLog_head_level_Cons(log) } { ARPLog_tail_Cons(log) }
-            ARPLog_is_Cons(log) ==> log == ARPLog_Cons(ARPLog_head_ref_Cons(log), ARPLog_head_fieldId_Cons(log), ARPLog_head_permission_Cons(log), ARPLog_head_level_Cons(log), ARPLog_tail_Cons(log))
+        forall arp_quant_log: ARPLog :: { ARPLog_head_ref_Cons(arp_quant_log) } { ARPLog_head_fieldId_Cons(arp_quant_log) } { ARPLog_head_permission_Cons(arp_quant_log) } { ARPLog_head_level_Cons(arp_quant_log) } { ARPLog_tail_Cons(arp_quant_log) }
+            ARPLog_is_Cons(arp_quant_log) ==> arp_quant_log == ARPLog_Cons(ARPLog_head_ref_Cons(arp_quant_log), ARPLog_head_fieldId_Cons(arp_quant_log), ARPLog_head_permission_Cons(arp_quant_log), ARPLog_head_level_Cons(arp_quant_log), ARPLog_tail_Cons(arp_quant_log))
     }
 
     axiom type_of_Nil {
@@ -53,57 +53,57 @@ domain ARPLog {
     }
 
     axiom type_of_Cons {
-        forall head_ref: Ref, head_fieldId: Int, head_permission: Perm, head_level: Int, tail: ARPLog ::
-            ARPLog_type(ARPLog_Cons(head_ref, head_fieldId, head_permission, head_level, tail)) == ARPLog_type_Cons()
+        forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog ::
+            ARPLog_type(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == ARPLog_type_Cons()
     }
 
     axiom type_existence {
-        forall log: ARPLog :: { ARPLog_is_Nil(log) }{ ARPLog_is_Cons(log) }{ ARPLog_type(log) }
-            ARPLog_type(log) == ARPLog_type_Nil()
-         || ARPLog_type(log) == ARPLog_type_Cons()
+        forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) }{ ARPLog_is_Cons(arp_quant_log) }{ ARPLog_type(arp_quant_log) }
+            ARPLog_type(arp_quant_log) == ARPLog_type_Nil()
+         || ARPLog_type(arp_quant_log) == ARPLog_type_Cons()
     }
 
     axiom type_is_Nil {
-        forall log: ARPLog :: { ARPLog_is_Nil(log) }{ ARPLog_type(log) }
-            ARPLog_type(log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(log)
+        forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) }{ ARPLog_type(arp_quant_log) }
+            ARPLog_type(arp_quant_log) == ARPLog_type_Nil() <==> ARPLog_is_Nil(arp_quant_log)
     }
 
     axiom type_is_Cons {
-        forall log: ARPLog :: { ARPLog_is_Cons(log) }{ ARPLog_type(log) }
-            ARPLog_type(log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(log)
+        forall arp_quant_log: ARPLog :: { ARPLog_is_Cons(arp_quant_log) }{ ARPLog_type(arp_quant_log) }
+            ARPLog_type(arp_quant_log) == ARPLog_type_Cons() <==> ARPLog_is_Cons(arp_quant_log)
     }
 
     // could be made more generic, but this is probably faster
     axiom log_max_level {
-        forall log: ARPLog :: { ARPLog_max_level(log) }
-            ARPLog_max_level(log) == 6
+        forall arp_quant_log: ARPLog :: { ARPLog_max_level(arp_quant_log) }
+            ARPLog_max_level(arp_quant_log) == 6
     }
 
     axiom sum_gt_of_log {
-        forall ref: Ref, fieldId: Int, level: Int, log: ARPLog :: { ARPLog_sum_gt(ref, fieldId, level, log) }
-            (level >= ARPLog_max_level(log) ==> ARPLog_sum_gt(ref, fieldId, level, log) == none)
-         && (level < ARPLog_max_level(log) ==>
-                ARPLog_sum_gt(ref, fieldId, level, log) ==
+        forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) }
+            (arp_quant_level >= ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none)
+         && (arp_quant_level < ARPLog_max_level(arp_quant_log) ==>
+                ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) ==
                 (
-                    ARPLog_sum_gt(ref, fieldId, level + 1, log) + ARPLog_sum(ref, fieldId, level + 1, log)
+                    ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log) + ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log)
                 )
             )
     }
 
     axiom sum_of_log {
-        forall ref: Ref, fieldId: Int, level: Int, log: ARPLog :: { ARPLog_sum(ref, fieldId, level, log) }
-            (ARPLog_is_Nil(log) ==> ARPLog_sum(ref, fieldId, level, log) == none)
-         && (ARPLog_is_Cons(log) ==>
-                ARPLog_sum(ref, fieldId, level, log) ==
+        forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) }
+            (ARPLog_is_Nil(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none)
+         && (ARPLog_is_Cons(arp_quant_log) ==>
+                ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) ==
                 (
-                    ARPLog_sum(ref, fieldId, level, ARPLog_tail_Cons(log)) +
+                    ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, ARPLog_tail_Cons(arp_quant_log)) +
                     (
                         (
-                            ARPLog_head_ref_Cons(log) == ref
-                         && ARPLog_head_fieldId_Cons(log) == fieldId
-                         && ARPLog_head_level_Cons(log) == level
+                            ARPLog_head_ref_Cons(arp_quant_log) == arp_quant_ref
+                         && ARPLog_head_fieldId_Cons(arp_quant_log) == arp_quant_fieldId
+                         && ARPLog_head_level_Cons(arp_quant_log) == arp_quant_level
                         ) ?
-                        (ARPLog_head_permission_Cons(log)) :
+                        (ARPLog_head_permission_Cons(arp_quant_log)) :
                         (none)
                     )
                 )
@@ -129,7 +129,3 @@ function globalRd(): Perm
 function epsilonRd(): Perm
   ensures none < result && result < write
 
-method ARPHavocBool() returns(x: Bool)
-method ARPHavocInt() returns(x: Int)
-method ARPHavocRef() returns(x: Ref)
-method ARPHavocPerm() returns(x: Perm)

@@ -9,8 +9,7 @@ predicate p2(x: Ref)
 
 predicate p3(x: Ref, y: Ref)
 {
-	acc(x.f, 1/2)
-	acc(x.f, 1/2)
+	acc(x.f, 1/2) && acc(y.f, 1/2)
 }
 
 method foo(x: Ref, y: Ref)

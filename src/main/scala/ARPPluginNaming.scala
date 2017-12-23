@@ -28,15 +28,20 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   val rdEpsilonName = "epsilonRd"
   val rdGlobalName = "epsilonRd"
   val blacklistName = "ARP_IGNORE"
-  val havocNames = HashMap[Type, String]() + (Bool -> "ARPHavocBool") + (Int -> "ARPHavocInt") + (Ref -> "ARPHavocRef") + (Perm -> "ARPHavocPerm")
+  private var havocNames_ = HashMap[Type, String]()
+  def havocNames: HashMap[Type, String] = havocNames_
   private var fieldFunctionDomainName_ = "ARP_field_functions"
-  def fieldFunctionDomainName = fieldFunctionDomainName_
+  def fieldFunctionDomainName: String = fieldFunctionDomainName_
   val arpDomainFile = "/ARPDomain.sil"
 
   def init(usedNames: Set[String]): Unit = {
     this.usedNames = HashSet[String]()
     this.usedNames ++= usedNames
     fieldFunctionDomainName_ = getNewName("ARP_field_functions")
+    havocNames_ += (Bool -> getNewName("HavocBool"))
+    havocNames_ += (Int -> getNewName("HavocInt"))
+    havocNames_ += (Ref -> getNewName("HavocRef"))
+    havocNames_ += (Perm -> getNewName("HavocPerm"))
   }
 
   def getNewName(prefix: String = "ARP", suffix: String = ""): String ={

@@ -9,6 +9,7 @@ package viper.silver.plugin
 import viper.silver.ast._
 import viper.silver.ast.utility.Rewriter._
 import viper.silver.plugin.ARPPlugin.ARPContext
+import viper.silver.verifier.ConsistencyError
 
 class ARPPluginUtils(plugin: ARPPlugin) {
 
@@ -82,6 +83,9 @@ class ARPPluginUtils(plugin: ARPPlugin) {
 
     val nodePrime = if (oldLabel) {
       StrategyBuilder.Ancestor[Node]({
+        case (f: Forall, ctx) =>
+          f.triggers.foreach(ctx.noRec[Trigger])
+          f
         case (l: LabelledOld, ctx) => ctx.noRec(l)
         case (o@Old(exp), ctx) => LabelledOld(exp, labelName)(o.pos, o.info, NodeTrafo(o))
       }).execute[T](node)
@@ -112,6 +116,9 @@ class ARPPluginUtils(plugin: ARPPlugin) {
         case (f: ForPerm, ctx) => ctx.noRec(f)
         case (u: Unfolding, ctx) =>
           ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u)))
+        case (f: Forall, ctx) =>
+          f.triggers.foreach(ctx.noRec[Trigger])
+          f
         case (a: AbstractAssign, ctx) =>
           ctx.noRec(a.lhs)
           a
@@ -143,11 +150,11 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg: Exp)) =>
         arg match {
           case IntLit(x) if x == 1 =>
-            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, NoTrafos)
+            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
           case default =>
             PermMul(
               default,
-              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, f.formalArgs, NoTrafos)
+              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
             )(f.pos, f.info, NodeTrafo(f))
         }
       case f@FuncApp(plugin.naming.rdWildcardName, Seq()) =>
@@ -215,7 +222,6 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       StrategyBuilder.Slim[Node]({
         case root@Minus(IntLit(literal)) => IntLit(-literal)(root.pos, root.info, NodeTrafo(root))
         case Minus(Minus(single)) => single
-        case root@PermMinus(IntLit(literal)) => IntLit(-literal)(root.pos, root.info, NodeTrafo(root))
         case PermMinus(PermMinus(single)) => single
 
         case root@Add(IntLit(left), IntLit(right)) =>
@@ -228,14 +234,10 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           IntLit(left / right)(root.pos, root.info, NodeTrafo(root))
         case root@Mod(IntLit(left), IntLit(right)) if right != bigIntZero =>
           IntLit(left % right)(root.pos, root.info, NodeTrafo(root))
-        case root@PermAdd(IntLit(left), IntLit(right)) =>
-          IntLit(left + right)(root.pos, root.info, NodeTrafo(root))
-        case root@PermSub(IntLit(left), IntLit(right)) =>
-          IntLit(left - right)(root.pos, root.info, NodeTrafo(root))
-        case root@PermMul(IntLit(left), IntLit(right)) =>
-          IntLit(left * right)(root.pos, root.info, NodeTrafo(root))
-        case PermMul(_: FullPerm, e: Exp) => e
-        case PermMul(e: Exp, _: FullPerm) => e
+        case PermMul(f: FullPerm, IntLit(x)) if x == 1 => f
+        case PermMul(IntLit(x), f: FullPerm) if x == 1 => f
+        case PermMul(_: FullPerm, e: PermExp) => e
+        case PermMul(e: PermExp, _: FullPerm) => e
         case PermMul(e: NoPerm, _: Exp) => e
         case PermMul(_: Exp, e: NoPerm) => e
       }, Traverse.BottomUp).execute[Exp](exp)

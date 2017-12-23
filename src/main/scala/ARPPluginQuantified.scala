@@ -10,7 +10,8 @@ import viper.silver.ast._
 import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder}
 import viper.silver.plugin.ARPPlugin.ARPContext
 import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
-import viper.silver.verifier.errors.Internal
+import viper.silver.verifier.AbstractVerificationError
+import viper.silver.verifier.errors.{ExhaleFailed, InhaleFailed, Internal}
 import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPluginQuantified(plugin: ARPPlugin) {
@@ -21,12 +22,15 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     forall.exp match {
       case Implies(left, AccessPredicate(loc@FieldAccess(_: LocalVar, _: Field), perm)) =>
         val normalized = plugin.normalize.normalizeExpression(perm, rdPerm)
+        val inahelFaildedTrafo = ErrTrafo({
+          case InhaleFailed(node, reason, cached) => ExhaleFailed(Exhale(forall)(forall.pos, forall.info), reason, cached)
+        })
         if (normalized.isDefined) {
           if (normalized.get.wildcard.isDefined) {
             val wildcardName = nextWildcardName()
             val stmts = (plugin.breathe.generateAssumption(input, loc, normalized.get, ctx.c.logName, negativeOnly = isInhale, wildcardName = wildcardName)(forall.pos, forall.info, NodeTrafo(forall))
               .map(e => Inhale(Forall(forall.variables, forall.triggers, Implies(left, e)(forall.pos, forall.info))(forall.pos, forall.info))(forall.pos, forall.info)).toSeq ++
-              generateLogUpdateQuantifiedFromNormalized(input, forall, left, normalized.get, loc, minus = !isInhale, ctx)(forall.pos, forall.info, NodeTrafo(forall)))
+              generateLogUpdateQuantifiedFromNormalized(input, forall, left, normalized.get, loc, minus = !isInhale, ctx)(forall.pos, forall.info, NodeTrafo(forall) + inahelFaildedTrafo))
               .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
             if (isInhale) {
               stmts
@@ -36,7 +40,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
           } else {
             val stmts = (plugin.breathe.generateAssumption(input, loc, normalized.get, ctx.c.logName, negativeOnly = isInhale)(forall.pos, forall.info, NodeTrafo(forall))
               .map(e => Inhale(Forall(forall.variables, forall.triggers, Implies(left, e)(forall.pos, forall.info))(forall.pos, forall.info))(forall.pos, forall.info)).toSeq ++
-              generateLogUpdateQuantifiedFromNormalized(input, forall, left, normalized.get, loc, minus = !isInhale, ctx)(forall.pos, forall.info, NodeTrafo(forall)))
+              generateLogUpdateQuantifiedFromNormalized(input, forall, left, normalized.get, loc, minus = !isInhale, ctx)(forall.pos, forall.info, NodeTrafo(forall) + inahelFaildedTrafo))
               .map(rdRewriter)
             if (isInhale) {
               stmts
@@ -89,8 +93,8 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
       input,
       LocalVar(quantRefName)(Ref, pos, info),
       Seq(),
-      quantifiedRef => EqCmp(quantifiedRef, accRcv)(pos, info),
-      (_, level, tmpLog) => changeValue(DomainFuncApp(arpLogSum, Seq(permRcv, arpFieldFunctionPerm, level, tmpLog), Map[TypeVar, Type]())(pos, info)),
+      quantifiedRef => EqCmp(quantifiedRef, accRcv)(pos, info, errT),
+      (_, level, tmpLog) => changeValue(DomainFuncApp(arpLogSum, Seq(permRcv, arpFieldFunctionPerm, level, tmpLog), Map[TypeVar, Type]())(pos, info, errT)),
       accAccess,
       minus,
       ctx
@@ -153,9 +157,9 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
 
     val arpFieldFunctionAcc = plugin.utils.getAccessDomainFuncApp(input, accAccess)(pos, info, errT)
 
-    val add = if (minus) (a: Exp, b: Exp) => PermSub(a, b)(pos, info) else (a: Exp, b: Exp) => PermAdd(a, b)(pos, info)
+    val add = if (minus) (a: Exp, b: Exp) => PermSub(a, b)(pos, info, errT) else (a: Exp, b: Exp) => PermAdd(a, b)(pos, info, errT)
 
-    val quantifiedVars = Seq(LocalVarDecl(quantifiedRefName, Ref)(pos, info), LocalVarDecl(quantifiedLevelName, Int)(pos, info), LocalVarDecl(quantifiedFieldName, Int)(pos, info))
+    val quantifiedVars = Seq(LocalVarDecl(quantifiedRefName, Ref)(pos, info, errT), LocalVarDecl(quantifiedLevelName, Int)(pos, info, errT), LocalVarDecl(quantifiedFieldName, Int)(pos, info, errT))
 
     val conditionExp = if (additionalQuantified.nonEmpty) {
       Exists(
@@ -163,11 +167,11 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
         And(
           condition(quantifiedRef),
           And(
-            EqCmp(quantifiedRef, quantifiedRefVal)(pos, info),
-            EqCmp(quantifiedField, arpFieldFunctionAcc)(pos, info)
-          )(pos, info)
-        )(pos, info)
-      )(pos, info)
+            EqCmp(quantifiedRef, quantifiedRefVal)(pos, info, errT),
+            EqCmp(quantifiedField, arpFieldFunctionAcc)(pos, info, errT)
+          )(pos, info, errT)
+        )(pos, info, errT)
+      )(pos, info, errT)
     } else {
       condition(quantifiedRef)
     }
@@ -180,20 +184,20 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
           Inhale(Forall(
             quantifiedVars,
             Seq(Trigger(Seq(
-              DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, arpLog), Map[TypeVar, Type]())(pos, info)
-            ))(pos, info)),
+              DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, arpLog), Map[TypeVar, Type]())(pos, info, errT)
+            ))(pos, info, errT)),
             EqCmp(
-              DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, arpLog), Map[TypeVar, Type]())(pos, info),
+              DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, arpLog), Map[TypeVar, Type]())(pos, info, errT),
               CondExp(
                 conditionExp,
                 add(
-                  DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, tmpLog), Map[TypeVar, Type]())(pos, info),
+                  DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, tmpLog), Map[TypeVar, Type]())(pos, info, errT),
                   addval(quantifiedRef, quantifiedLevel, tmpLog)
                 ),
-                DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, tmpLog), Map[TypeVar, Type]())(pos, info)
-              )(pos, info)
-            )(pos, info)
-          )(pos, info))(pos, info)
+                DomainFuncApp(arpLogSum, Seq(quantifiedRef, quantifiedField, quantifiedLevel, tmpLog), Map[TypeVar, Type]())(pos, info, errT)
+              )(pos, info, errT)
+            )(pos, info, errT)
+          )(pos, info, errT))(pos, info, errT)
         ),
         Seq(
           LocalVarDecl(tmpLogName, arpLogType)(pos, info, errT)

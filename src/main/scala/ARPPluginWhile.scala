@@ -49,7 +49,8 @@ class ARPPluginWhile(plugin: ARPPlugin) {
               })),
               w.body
             ) ++
-            w.invs.map(i => Assert(i)(i.pos, i.info, ErrTrafo({
+            // this assert is needed to differentiate between LoopInvariantNotPreserved and WhileFailed
+            w.invs.map(i => Assert(i)(i.pos, ConsInfo(i.info, WasInvariantInside()), ErrTrafo({
               case AssertFailed(_, reason, cached) =>
                 LoopInvariantNotPreserved(i, reason, cached)
               case error: AbstractVerificationError => error.withNode(i).asInstanceOf[AbstractVerificationError]
@@ -85,19 +86,20 @@ class ARPPluginWhile(plugin: ARPPlugin) {
           // LocalVarDeclStmt(LocalVarDecl(whileRdName, Perm)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info),
           Inhale(plugin.utils.constrainRdExp(whileRdName)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info)
         ) ++
-          w.invs.map(i => Assert(i)(i.pos, i.info, ErrTrafo({
+          // this assert is needed to differentiate between LoopInvariantNotEstablished and WhileFailed
+          w.invs.map(i => Assert(i)(i.pos, ConsInfo(i.info, WasInvariantOutside()), ErrTrafo({
             case AssertFailed(_, reason, cached) =>
               LoopInvariantNotEstablished(i, reason, cached)
             case error: AbstractVerificationError => error.withNode(i).asInstanceOf[AbstractVerificationError]
           }))) ++
           Seq(
-          LocalVarAssign(condVar, w.cond)(w.cond.pos, w.cond.info, ErrTrafo({
-            case AssignmentFailed(_, reason, cached) =>
-              WhileFailed(w.cond, reason, cached)
-            case error: AbstractVerificationError => error.withNode(w.cond).asInstanceOf[AbstractVerificationError]
-          })),
-          Label(whileStartLabelName, Seq())(w.pos, w.info, NodeTrafo(w))
-        ) ++
+            LocalVarAssign(condVar, w.cond)(w.cond.pos, w.cond.info, ErrTrafo({
+              case AssignmentFailed(_, reason, cached) =>
+                WhileFailed(w.cond, reason, cached)
+              case error: AbstractVerificationError => error.withNode(w.cond).asInstanceOf[AbstractVerificationError]
+            })),
+            Label(whileStartLabelName, Seq())(w.pos, w.info, NodeTrafo(w))
+          ) ++
           w.invs.map(i => Exhale(
             plugin.utils.rewriteOldExpr(whileStartLabelName, oldLabel = false)(i)
           )(i.pos, ConsInfo(i.info, WasInvariantOutside()), ErrTrafo({

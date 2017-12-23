@@ -194,7 +194,7 @@ object ARPPluginNormalize {
           val h2 = exps2.head
           if (h1.store == h2.store) {
             if (h1.check == h2.check) {
-              newExps :+= h1.setExp(PermAdd(h1.exp, h2.exp)())
+              newExps :+= h1.setExp(Add(h1.exp, h2.exp)())
               exps1 = exps1.tail
               exps2 = exps2.tail
             } else if (h1.check < h2.check) {

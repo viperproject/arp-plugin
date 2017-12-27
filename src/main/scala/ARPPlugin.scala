@@ -214,9 +214,9 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def loadSilFile(file: String): Program = {
-    val path = Paths.get(getClass.getResource(file).toURI)
+    val path = getClass.getResourceAsStream(file)
     val arpFrontend = new ARPFrontend
-    arpFrontend.loadFile(path) match {
+    arpFrontend.loadFile(file, path) match {
       case Some(program) => program
       case None =>
         val empty = Program(Seq(), Seq(), Seq(), Seq(), Seq())()

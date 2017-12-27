@@ -31,8 +31,8 @@ ensures acc(p1()) && acc(p3(x, y))
 }
 
 method foobar(x: Ref, y: Ref)
-requires acc(p1()) && acc(x.f, rd) && acc(y.f, rd) && x.f == 4 && y.f == 5
-ensures acc(p1()) && acc(x.f, rd) && acc(y.f, rd) && x.f == 4 && y.f == 5
+requires acc(p1()) && acc(x.f, 3/4) && acc(y.f, 3/4) && x.f == 4 && y.f == 5
+ensures acc(p1()) && acc(x.f, 3/4) && acc(y.f, 3/4) && x.f == 4 && y.f == 5
 {
 	fold p3(x, y)
 	bar(x, y)

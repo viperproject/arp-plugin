@@ -159,7 +159,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           case IntLit(x) if x == 1 =>
             FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
           case default =>
-            PermMul(
+            IntPermMul(
               default,
               FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
             )(f.pos, f.info, NodeTrafo(f))

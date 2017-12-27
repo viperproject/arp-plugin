@@ -157,7 +157,8 @@ object ARPPluginNormalize {
       if (unit.isDefined) {
         absVal match {
           case IntLit(x) if x == 1 => unit.get
-          case default => PermMul(default, unit.get)(pos, info, errT)
+          case default: PermExp => PermMul(default, unit.get)(pos, info, errT)
+          case default => IntPermMul(default, unit.get)(pos, info, errT)
         }
       } else {
         absVal
@@ -169,7 +170,8 @@ object ARPPluginNormalize {
       if (unit.isDefined) {
         simplified match {
           case IntLit(x) if x == 1 => unit.get
-          case default => PermMul(default, unit.get)(pos, info, errT)
+          case default: PermExp => PermMul(default, unit.get)(pos, info, errT)
+          case default => IntPermMul(default, unit.get)(pos, info, errT)
         }
       } else {
         simplified

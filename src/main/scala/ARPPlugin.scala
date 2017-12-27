@@ -290,11 +290,12 @@ class ARPPlugin extends SilverPlugin {
             val args3 = pp.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
             val localArgs3 = args3.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
             val app3 = DomainFuncApp(naming.getPredicateFunctionName(pp), localArgs3, Map[TypeVar, Type]())(input.pos, input.info, Int, pp.formalArgs, domainName, NoTrafos)
+            val triggers = Seq(app1) ++ (if (args3.nonEmpty) Seq(app3) else Seq())
             DomainAxiom(
               naming.getNewName(suffix = p.name + "_" + pp.name),
               Forall(
                 p.formalArgs ++ args3,
-                Seq(Trigger(Seq(app1, app3))(input.pos, input.info)),
+                Seq(Trigger(triggers)(input.pos, input.info)),
                 NeCmp(app1, app3)(input.pos, input.info)
               )(input.pos, input.info)
             )(input.pos, input.info, domainName)

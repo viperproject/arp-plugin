@@ -1,0 +1,5 @@
+input file;arp, average runtime [s];silicon, average runtime [s]
+../arp-plugin/src/test/resources/arp/performance/noarp/quantifiers1.sil;11.877647508400333;6.629317719599203
+../arp-plugin/src/test/resources/arp/performance/noarp/fields1.sil;1.345456435799497;0.6914145117996668
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates1.sil;1.0672233291999873;0.5518109200005711
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates2.sil;3.098388596600853;1.194360429399967

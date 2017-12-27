@@ -1,0 +1,21 @@
+input file;arp, runtime [s];arp, exit condition;arp, timeout;silicon, runtime [s];silicon, exit condition;silicon, timeout
+../arp-plugin/src/test/resources/arp/performance/noarp/quantifiers1.sil;13.042295061000914;0;False;7.025246069999412;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/quantifiers1.sil;11.95925875499961;0;False;6.7804891129999305;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/quantifiers1.sil;11.609632577999946;0;False;6.580433063998498;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/quantifiers1.sil;10.965135275000648;0;False;6.37390784299896;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/quantifiers1.sil;11.811915873000544;0;False;6.386512507999214;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/fields1.sil;1.8763511759989342;0;False;1.072692661999099;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/fields1.sil;1.2737563699993188;0;False;0.5726895410007273;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/fields1.sil;1.1271945349999442;0;False;0.6732624669984943;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/fields1.sil;1.223011176;0;False;0.5693028820005566;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/fields1.sil;1.226968921999287;0;False;0.5691250069994567;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates1.sil;1.5779747729993687;0;False;0.6732666200005042;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates1.sil;1.027437173999715;0;False;0.5184538169996813;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates1.sil;0.9782422330008558;0;False;0.5720281680005428;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates1.sil;1.0329016690011485;0;False;0.5250338990008458;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates1.sil;0.7195607969988487;0;False;0.47027209600128117;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates2.sil;3.845214284001486;131;False;1.6819177029992716;131;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates2.sil;2.384862303000773;131;False;1.2736884730002203;131;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates2.sil;2.2836369780015957;131;False;1.072392709000269;131;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates2.sil;3.5407137960010004;131;False;0.972695090000343;0;False
+../arp-plugin/src/test/resources/arp/performance/noarp/predicates2.sil;3.4375156219994096;131;False;0.971108171999731;0;False

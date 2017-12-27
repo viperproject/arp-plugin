@@ -89,8 +89,6 @@ class ARPPluginMethods(plugin: ARPPlugin) {
 
         Seqn(
           Seq(
-            // TODO: Why is this declStmt needed? (see test recursive.sil)
-            // LocalVarDeclStmt(LocalVarDecl(methodRdName, Perm)(m.pos, m.info))(m.pos, m.info),
             // call label
             Label(labelName, Seq())(m.pos, m.info),
             // inhale rd constraints for call rd
@@ -114,7 +112,6 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             )(p.pos, ConsInfo(p.info, WasCallCondition()))),
           // variable declarations
           Seq(
-            // TODO: Why does this not always work?
             LocalVarDecl(methodRdName, Perm)(m.pos, m.info),
             Label(labelName, Seq())(m.pos, m.info)
           ) ++

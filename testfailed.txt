@@ -6,7 +6,6 @@
 [0m[[0minfo[0m] [0m[31m- arp/performance/arp/predicates2.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
 [0m[[0minfo[0m] [0m[31m- arp/performance/arp/quantifiers1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
 [0m[[0minfo[0m] [0m[31m- arp/performance/arp/sum1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
-[0m[[0minfo[0m] [0m[31m- arp/performance/noarp/quantifiers1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
 [0m[[0minfo[0m] [0m[31m- consistency/consistency.sil [Silicon-Silver] *** FAILED ***[0m[0m Error in Plugin prevents expected error
 [0m[[0minfo[0m] [0m[31m- all/issues/carbon/0206.sil [Silicon-Silver] *** FAILED ***[0m[0m Quantifier Trigger in Silicon
 [0m[[0minfo[0m] [0m[31m- all/issues/silicon/0144.sil [Silicon-Silver] *** FAILED ***[0m[0m Wrong annotation
@@ -21,4 +20,4 @@
 [0m[[0minfo[0m] [0m[31m- examples/graph-copy/graph-copy.sil [Silicon-Silver] *** FAILED ***[0m[0m VarName in Precondition Quantifier used as LocalVar in Body
 [0m[[0minfo[0m] [0m[31m- examples/quickselect/arrays_quickselect_rec_index-shifting.sil [Silicon-Silver] *** FAILED ***[0m[0m VarName in Precondition Quantifier used as LocalVar in Body
 [0m[[0minfo[0m] [0m[31m- examples/vmcai2016/arraylist-quantified-permissions.sil [Silicon-Silver] *** FAILED ***[0m[0m Missing assumption in dummy method to check invariant
-[0m[[0minfo[0m] [0m[31m*** 23 TESTS FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m*** 22 TESTS FAILED ***[0m[0m

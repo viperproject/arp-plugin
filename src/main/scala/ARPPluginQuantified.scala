@@ -129,7 +129,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
       }
       CondExp(
         EqCmp(level, IntLit(e.store)(pos, info, errT))(pos, info, errT),
-        if (minus) PermMinus(total)(pos, info, errT) else total,
+        total,
         if (norms.size == 1) NoPerm()(pos, info, errT) else generateNorm(norms.tail, quantifiedRef, level)
       )(pos, info, errT)
     }

@@ -1,8 +1,8 @@
 field f: Int
 
 method foo()
-requires forall x: Ref :: x != null ==> acc(x.f, 1/2)
-ensures forall x: Ref :: x != null ==> acc(x.f, 1/2)
+requires forall x: Ref :: x != null ==> acc(x.f, 1/20)
+ensures forall x: Ref :: x != null ==> acc(x.f, 1/20)
 
 method bar()
 requires forall x: Ref :: x != null ==> acc(x.f, write)

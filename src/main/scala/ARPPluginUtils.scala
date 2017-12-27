@@ -193,8 +193,6 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       val tmpName = plugin.naming.getNewName(suffix = "havoc")
       Seqn(
         Seq(
-          // TODO: Why is this declStmt needed?
-          // LocalVarDeclStmt(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))(lvar.pos, lvar.info),
           LocalVarAssign(lvar, LocalVar(tmpName)(lvar.typ, lvar.pos, lvar.info))(lvar.pos, lvar.info)
         ),
         Seq(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))

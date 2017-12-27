@@ -82,8 +82,6 @@ class ARPPluginWhile(plugin: ARPPlugin) {
 
       Seqn(
         Seq(
-          // TODO: Why is this declStmt needed? (see test all/issues/silicon/0285.sil)
-          // LocalVarDeclStmt(LocalVarDecl(whileRdName, Perm)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info),
           Inhale(plugin.utils.constrainRdExp(whileRdName)(w.pos, w.info, NodeTrafo(w)))(w.pos, w.info)
         ) ++
           // this assert is needed to differentiate between LoopInvariantNotEstablished and WhileFailed

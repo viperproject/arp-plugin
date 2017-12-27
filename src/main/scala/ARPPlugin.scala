@@ -16,8 +16,6 @@ import viper.silver.verifier._
 import viper.silver.verifier.errors._
 import viper.silver.verifier.reasons.FeatureUnsupported
 
-import scala.collection.immutable
-
 class ARPPlugin extends SilverPlugin {
 
   // TODO: old in while loops?

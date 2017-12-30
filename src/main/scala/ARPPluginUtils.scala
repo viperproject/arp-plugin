@@ -9,7 +9,6 @@ package viper.silver.plugin
 import viper.silver.ast._
 import viper.silver.ast.utility.Rewriter._
 import viper.silver.plugin.ARPPlugin.ARPContext
-import viper.silver.verifier.ConsistencyError
 
 class ARPPluginUtils(plugin: ARPPlugin) {
 
@@ -87,11 +86,18 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       }).execute[Exp](perm)
     }
 
+    def removeOld(trigger: Trigger): Trigger ={
+      StrategyBuilder.Slim[Node]({
+        case Old(e) => e
+      }).execute[Trigger](trigger)
+    }
+
     val nodePrime = if (oldLabel) {
       StrategyBuilder.Ancestor[Node]({
         case (f: Forall, ctx) =>
-          f.triggers.foreach(ctx.noRec[Trigger])
-          f
+          Forall(
+            f.variables, f.triggers.map(removeOld).map(ctx.noRec[Trigger]), f.exp
+          )(f.pos, f.info, NodeTrafo(f))
         case (l: LabelledOld, ctx) => ctx.noRec(l)
         case (o@Old(exp), ctx) => LabelledOld(exp, labelName)(o.pos, o.info, NodeTrafo(o))
       }).execute[T](node)

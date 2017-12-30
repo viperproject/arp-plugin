@@ -201,7 +201,8 @@ class ARPPlugin extends SilverPlugin {
           case error: AbstractVerificationError => error.transformedError()
           case default => default
         })
-        Failure(errorsPrime.filterNot({
+        val errorsUnique = errorsPrime.map(e => (e, e.pos)).distinct.map(t => t._1)
+        Failure(errorsUnique.filterNot({
           case ep: PostconditionViolated => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
           case ep: WhileFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
           case ep: LoopInvariantNotEstablished => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)

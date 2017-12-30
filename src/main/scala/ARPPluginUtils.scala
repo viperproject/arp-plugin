@@ -203,9 +203,27 @@ class ARPPluginUtils(plugin: ARPPlugin) {
   def getAccessDomainFuncApp(input: Program, l: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): DomainFuncApp = {
     val arpFieldFunctionDomain = plugin.utils.getDomain(input, plugin.naming.fieldFunctionDomainName).get
 
-    def getFieldFun(f: Field) = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getFieldFunctionName(f)).get
+    def getFieldFun(f: Field) = {
+      val maybeFunc = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getFieldFunctionName(f))
+      if (maybeFunc.isDefined){
+        maybeFunc.get
+      } else {
+        throw new NoSuchElementException("FieldFunction for " + f.toString() + " / " + plugin.naming.getFieldFunctionName(f)
+          + " / " + input.fields.mkString(" ; ")
+          + " / " + arpFieldFunctionDomain.functions.mkString(" ; "))
+      }
+    }
 
-    def getPredicateFun(p: String) = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getPredicateFunctionName(getPredicate(input, p).get)).get
+    def getPredicateFun(p: String) = {
+      val maybeFunc = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getPredicateFunctionName(getPredicate(input, p).get))
+      if (maybeFunc.isDefined){
+        maybeFunc.get
+      } else {
+        throw new NoSuchElementException("FieldFunction for predicate " + p + " / " + plugin.naming.getPredicateFunctionName(getPredicate(input, p).get)
+          + " / " + input.predicates.mkString(" ; ")
+          + " / " + arpFieldFunctionDomain.functions.mkString(" ; "))
+      }
+    }
 
     l match {
       case FieldAccess(_, f) => DomainFuncApp(getFieldFun(f), Seq(), Map[TypeVar, Type]())(pos, info, errT)

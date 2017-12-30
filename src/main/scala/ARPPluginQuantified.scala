@@ -20,7 +20,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(labelName, oldLabel = false)(exp)
 
     forall.exp match {
-      case Implies(left, AccessPredicate(loc@FieldAccess(_: LocalVar, _: Field), perm)) =>
+      case Implies(left, AccessPredicate(loc@FieldAccess(_: LocalVar, _: Field), perm)) if !plugin.isAccIgnored(loc) =>
         val normalized = plugin.normalize.normalizeExpression(perm, rdPerm)
         val inahelFaildedTrafo = ErrTrafo({
           case InhaleFailed(node, reason, cached) => ExhaleFailed(Exhale(forall)(forall.pos, forall.info), reason, cached)
@@ -61,7 +61,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
 
   def handleForallAssert(input: Program, forall: Forall, rdRewriter: Stmt => Stmt, rdPerm: (Exp, FuncApp) => NormalizedExpression, nextWildcardName: () => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
     forall.exp match {
-      case Implies(left, acc: FieldAccessPredicate) =>
+      case Implies(left, acc: FieldAccessPredicate) if !plugin.isAccIgnored(acc.loc) =>
         val normalized = plugin.normalize.normalizeExpression(acc.perm, rdPerm, ignoreErrors = true)
         if (normalized.isDefined) {
           if (normalized.get.wildcard.isDefined) {

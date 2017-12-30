@@ -357,6 +357,7 @@ class ARPPlugin extends SilverPlugin {
             case l@LocalVar(name) => if (!args.exists(a => a.localVar.name == name)) args :+= LocalVarDecl(name, l.typ)(l.pos, l.info)
             case Forall(vars, _, _) => quantified ++= vars
             case Exists(vars, _) => quantified ++= vars
+            case ForPerm(vars, _, _) => quantified :+= vars
             case _ =>
           }).visit(wi)
         )

@@ -14,7 +14,8 @@ import scala.collection.immutable.{HashMap, HashSet}
 class ARPPluginNaming(plugin: ARPPlugin) {
 
   var usedNames = new HashSet[String]
-  var nameMap = new HashMap[(Node, Position, String, String), String]
+  var nodeNameMap = new HashMap[(Node, Position, String, String), String]
+  var anyNameMap = new HashMap[(Any, String, String), String]
 
   val logDomainName = "ARPLog"
   val logDomainNil = "ARPLog_Nil"
@@ -60,23 +61,35 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   }
 
   def getNameFor(node: Node with Positioned, prefix: String = "ARP", suffix: String = ""): String ={
-    if (!nameMap.contains((node, node.pos, prefix, suffix))){
-      nameMap += (node, node.pos, prefix, suffix) -> getNewName(prefix, suffix)
+    if (!nodeNameMap.contains((node, node.pos, prefix, suffix))){
+      nodeNameMap += (node, node.pos, prefix, suffix) -> getNewName(prefix, suffix)
     }
-    nameMap((node, node.pos, prefix, suffix))
+    nodeNameMap((node, node.pos, prefix, suffix))
+  }
+
+  def getAnyNameFor(any: Any, prefix: String = "ARP", suffix: String = ""): String ={
+    if (!anyNameMap.contains((any, prefix, suffix))){
+      anyNameMap += (any, prefix, suffix) -> getNewName(prefix, suffix)
+    }
+    anyNameMap((any, prefix, suffix))
   }
 
   def getFieldFunctionName(f: Field): String ={
-    getNameFor(f, "field", f.name)
+    getAnyNameFor(f, "field", f.name)
   }
 
   def getPredicateFunctionName(p: Predicate): String ={
-    getNameFor(p, "predicate", p.name)
+    getAnyNameFor(p, "predicate", p.name)
   }
 
   def storeName(name: String, node: Node with Positioned, prefix: String = "ARP", suffix: String = ""): Unit ={
     usedNames += name
-    nameMap += (node, node.pos, prefix, suffix) -> name
+    nodeNameMap += (node, node.pos, prefix, suffix) -> name
+  }
+
+  def storeAnyName(name: String, any: Any, prefix: String = "ARP", suffix: String = ""): Unit ={
+    usedNames += name
+    anyNameMap += (any, prefix, suffix) -> name
   }
 
   def collectUsedNames(node: Node): Set[String] = {

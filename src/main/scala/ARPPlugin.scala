@@ -18,8 +18,7 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
-  // TODO: old in while loops?
-  // TODO: Fix log update for quantified expressions
+  // TODO: Fix while loop contract wellformedness checks
   // TODO: Fix quantified x.f.g
   // TODO: Fix quantified xs[i]
   // TODO: Fix quantified predicates
@@ -363,7 +362,7 @@ class ARPPlugin extends SilverPlugin {
         )
         args = args.filterNot(quantified.contains) ++ ctx.c.formalArgs.filterNot(args.contains)
         whileMethods :+= Method(
-          naming.getNameFor(w, suffix = "invariant_wellformed_dummy_method"),
+          naming.getNewNameFor(w, suffix = "invariant_wellformed_dummy_method"),
           args,
           Seq(),
           ctx.c.pres.map(utils.rewriteRdForDummyMethod), // precondition of the current method seem to play a role for the contracts as well
@@ -379,23 +378,25 @@ class ARPPlugin extends SilverPlugin {
       }
     ).visit(originalInput)
 
+    val methodMethods = originalInput.methods
+      //        .filter(m => m.pres.nonEmpty || m.posts.nonEmpty) // cant't do this as we need the method for constraining blocks
+      .map(m =>
+      Method(
+        naming.getNameFor(m, m.name, "contract_wellformed_dummy_method"),
+        m.formalArgs,
+        m.formalReturns,
+        m.pres.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+        m.posts.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+        None
+      )(m.pos, m.info, NodeTrafo(input))
+    )
+
     val newProgram = Program(
       input.domains,
       input.fields,
       input.functions,
       input.predicates,
-      input.methods ++ whileMethods ++ originalInput.methods
-//        .filter(m => m.pres.nonEmpty || m.posts.nonEmpty) // cant't do this as we need the method for constraining blocks
-        .map(m =>
-          Method(
-            naming.getNameFor(m, m.name, "contract_wellformed_dummy_method"),
-            m.formalArgs,
-            m.formalReturns,
-            m.pres.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
-            m.posts.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
-            None
-          )(m.pos, m.info, NodeTrafo(input))
-        )
+      input.methods ++ /*whileMethods ++*/ methodMethods
     )(input.pos, input.info, NodeTrafo(input))
 
     newProgram

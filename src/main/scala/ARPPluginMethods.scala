@@ -20,10 +20,10 @@ class ARPPluginMethods(plugin: ARPPlugin) {
   // init ARPLog
   // desugar method contracts into explicit inhales/exhales
   def handleMethod(input: Program, m: Method, ctx: ContextC[Node, ARPContext]): Node = {
-    val methodRdName = plugin.naming.getNameFor(m, m.name, "rd")
-    val methodStartLabelName = plugin.naming.getNameFor(m, m.name, "start_label")
+    val methodRdName = plugin.naming.getNewNameFor(m, m.name, "rd")
+    val methodStartLabelName = plugin.naming.getNewNameFor(m, m.name, "start_label")
     val methodEndLabelName = plugin.naming.getNewName(m.name, "end_label")
-    val logName = plugin.naming.getNameFor(m, m.name, "log")
+    val logName = plugin.naming.getNewNameFor(m, m.name, "log")
     val rdArg = LocalVarDecl(methodRdName, Perm)(m.pos, m.info)
     val arpLogType = plugin.utils.getARPLogType(input)
     val arpLogNil = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainNil)
@@ -81,7 +81,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
     plugin.utils.getMethod(input, m.methodName) match {
       case Some(method) =>
         val labelName = plugin.naming.getNewName(method.name, "call_label")
-        val methodRdName = plugin.naming.getNameFor(m, method.name, "call_rd")
+        val methodRdName = plugin.naming.getNewNameFor(m, method.name, "call_rd")
         val argumentNames = method.formalArgs.map(v => plugin.naming.getNewName("arg", v.localVar.name))
         val localVars = method.formalArgs.zip(m.args).zip(argumentNames).map(z => LocalVar(z._2)(z._1._1.localVar.typ, m.pos, m.info, NodeTrafo(z._1._2)))
 

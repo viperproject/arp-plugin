@@ -18,12 +18,12 @@ class ARPPluginWhile(plugin: ARPPlugin) {
     if (w.info.getUniqueInfo[TransformedWhile].isDefined) {
       w
     } else {
-      val whileRdName = plugin.naming.getNameFor(w, suffix = "while_rd")
+      val whileRdName = plugin.naming.getNewNameFor(w, suffix = "while_rd")
       val condName = plugin.naming.getNewName(suffix = "while_cond")
       val condVar = LocalVar(condName)(Bool, w.cond.pos, w.cond.info, NodeTrafo(w.cond))
       val whileStartLabelName = plugin.naming.getNewName("while", "start_label")
       val whileEndLabelName = plugin.naming.getNewName("while", "end_label")
-      val newLogName = plugin.naming.getNameFor(w, suffix = "while_log")
+      val newLogName = plugin.naming.getNewNameFor(w, suffix = "while_log")
 
       val arpLogType = plugin.utils.getARPLogType(input)
       val arpLogNil = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainNil)

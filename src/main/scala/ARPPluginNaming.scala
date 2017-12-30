@@ -67,6 +67,11 @@ class ARPPluginNaming(plugin: ARPPlugin) {
     nodeNameMap((node, node.pos, prefix, suffix))
   }
 
+  def getNewNameFor(node: Node with Positioned, prefix: String = "ARP", suffix: String = ""): String ={
+    nodeNameMap += (node, node.pos, prefix, suffix) -> getNewName(prefix, suffix)
+    nodeNameMap((node, node.pos, prefix, suffix))
+  }
+
   def getAnyNameFor(any: Any, prefix: String = "ARP", suffix: String = ""): String ={
     if (!anyNameMap.contains((any, prefix, suffix))){
       anyNameMap += (any, prefix, suffix) -> getNewName(prefix, suffix)

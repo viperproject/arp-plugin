@@ -255,8 +255,10 @@ object ARPPluginNormalize {
         def multiply(e: NormalizedPart): NormalizedPart = {
           if (e.exp.typ == Perm && exp.typ == Perm) {
             e.setExp(PermMul(e.exp, exp)())
-          } else if (e.exp.typ == Perm || exp.typ == Perm) {
+          } else if (exp.typ == Perm) {
             e.setExp(IntPermMul(e.exp, exp)())
+          } else if (e.exp.typ == Perm) {
+            e.setExp(IntPermMul(exp, e.exp)())
           } else {
             e.setExp(Mul(e.exp, exp)())
           }

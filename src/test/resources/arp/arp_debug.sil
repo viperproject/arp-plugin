@@ -24,7 +24,19 @@ domain PyType {
   
   unique function object(): PyType
   
-  unique function traceback(): PyType
+  unique function dict_basic(): PyType
+
+  function dict(arg0: PyType, arg1: PyType): PyType
+
+  function dict_arg(typ: PyType, index: Int): PyType
+
+  unique function int(): PyType
+
+  unique function range(): PyType
+
+  unique function Thread(): PyType
+
+  unique function type(): PyType
 
   unique function list_basic(): PyType
 
@@ -32,27 +44,13 @@ domain PyType {
 
   function list_arg(typ: PyType, index: Int): PyType
 
-  unique function Sequence_basic(): PyType
+  unique function traceback(): PyType
 
-  function Sequence(arg0: PyType): PyType
-
-  function Sequence_arg(typ: PyType, index: Int): PyType
-
-  unique function bool(): PyType
-
-  unique function range(): PyType
-
-  unique function LevelType(): PyType
-
-  unique function int(): PyType
-
-  unique function Iterator_basic(): PyType
-
-  function Iterator(arg0: PyType): PyType
-
-  function Iterator_arg(typ: PyType, index: Int): PyType
+  unique function Exception(): PyType
 
   unique function bytes(): PyType
+
+  unique function LevelType(): PyType
 
   unique function tuple_basic(): PyType
 
@@ -60,11 +58,15 @@ domain PyType {
 
   function tuple_arg(typ: PyType, index: Int): PyType
 
-  unique function Exception(): PyType
+  unique function str(): PyType
 
-  unique function type(): PyType
+  unique function bool(): PyType
 
-  unique function NoneType(): PyType
+  unique function Sequence_basic(): PyType
+
+  function Sequence(arg0: PyType): PyType
+
+  function Sequence_arg(typ: PyType, index: Int): PyType
 
   unique function set_basic(): PyType
 
@@ -72,17 +74,15 @@ domain PyType {
 
   function set_arg(typ: PyType, index: Int): PyType
 
+  unique function NoneType(): PyType
+
   unique function slice(): PyType
 
-  unique function dict_basic(): PyType
+  unique function Iterator_basic(): PyType
 
-  function dict(arg0: PyType, arg1: PyType): PyType
+  function Iterator(arg0: PyType): PyType
 
-  function dict_arg(typ: PyType, index: Int): PyType
-
-  unique function Thread(): PyType
-
-  unique function str(): PyType
+  function Iterator_arg(typ: PyType, index: Int): PyType
 
   unique function __prim__Sequence_type(): PyType
 
@@ -168,78 +168,6 @@ domain PyType {
     extends_(Place(), object()) && get_basic(Place()) == Place()
   }
 
-  axiom subtype_traceback {
-    extends_(traceback(), object()) && get_basic(traceback()) == traceback()
-  }
-
-  axiom subtype_list {
-    (forall var0: PyType :: { list(var0) } extends_(list(var0), object()) && get_basic(list(var0)) == list_basic())
-  }
-
-  axiom list_args0 {
-    (forall Z: PyType, arg0: PyType :: issubtype(Z, list(arg0)) ==> list_arg(Z, 0) == arg0)
-  }
-
-  axiom subtype_Sequence {
-    (forall var0: PyType :: { Sequence(var0) } extends_(Sequence(var0), object()) && get_basic(Sequence(var0)) == Sequence_basic())
-  }
-
-  axiom Sequence_args0 {
-    (forall Z: PyType, arg0: PyType :: issubtype(Z, Sequence(arg0)) ==> Sequence_arg(Z, 0) == arg0)
-  }
-
-  axiom subtype_bool {
-    extends_(bool(), int()) && get_basic(bool()) == bool()
-  }
-
-  axiom subtype_range {
-    extends_(range(), object()) && get_basic(range()) == range()
-  }
-
-  axiom subtype_int {
-    extends_(int(), object()) && get_basic(int()) == int()
-  }
-
-  axiom subtype_Iterator {
-    (forall var0: PyType :: { Iterator(var0) } extends_(Iterator(var0), object()) && get_basic(Iterator(var0)) == Iterator_basic())
-  }
-
-  axiom Iterator_args0 {
-    (forall Z: PyType, arg0: PyType :: issubtype(Z, Iterator(arg0)) ==> Iterator_arg(Z, 0) == arg0)
-  }
-
-  axiom subtype_bytes {
-    extends_(bytes(), object()) && get_basic(bytes()) == bytes()
-  }
-
-  axiom subtype_tuple {
-    (forall args: Seq[PyType] :: { tuple(args) } ((forall e: PyType :: (e in args) ==> e == object()) ==> extends_(tuple(args), object())) && get_basic(tuple(args)) == tuple_basic())
-  }
-
-  axiom subtype_Exception {
-    extends_(Exception(), object()) && get_basic(Exception()) == Exception()
-  }
-
-  axiom subtype_type {
-    extends_(type(), object()) && get_basic(type()) == type()
-  }
-
-  axiom subtype_NoneType {
-    extends_(NoneType(), object()) && get_basic(NoneType()) == NoneType()
-  }
-
-  axiom subtype_set {
-    (forall var0: PyType :: { set(var0) } extends_(set(var0), object()) && get_basic(set(var0)) == set_basic())
-  }
-
-  axiom set_args0 {
-    (forall Z: PyType, arg0: PyType :: issubtype(Z, set(arg0)) ==> set_arg(Z, 0) == arg0)
-  }
-
-  axiom subtype_slice {
-    extends_(slice(), object()) && get_basic(slice()) == slice()
-  }
-
   axiom subtype_dict {
     (forall var0: PyType, var1: PyType :: { dict(var0, var1) } extends_(dict(var0, var1), object()) && get_basic(dict(var0, var1)) == dict_basic())
   }
@@ -252,12 +180,84 @@ domain PyType {
     (forall Z: PyType, arg0: PyType, arg1: PyType :: issubtype(Z, dict(arg0, arg1)) ==> dict_arg(Z, 1) == arg1)
   }
 
+  axiom subtype_int {
+    extends_(int(), object()) && get_basic(int()) == int()
+  }
+
+  axiom subtype_range {
+    extends_(range(), object()) && get_basic(range()) == range()
+  }
+
   axiom subtype_Thread {
     extends_(Thread(), object()) && get_basic(Thread()) == Thread()
   }
 
+  axiom subtype_type {
+    extends_(type(), object()) && get_basic(type()) == type()
+  }
+
+  axiom subtype_list {
+    (forall var0: PyType :: { list(var0) } extends_(list(var0), object()) && get_basic(list(var0)) == list_basic())
+  }
+
+  axiom list_args0 {
+    (forall Z: PyType, arg0: PyType :: issubtype(Z, list(arg0)) ==> list_arg(Z, 0) == arg0)
+  }
+
+  axiom subtype_traceback {
+    extends_(traceback(), object()) && get_basic(traceback()) == traceback()
+  }
+
+  axiom subtype_Exception {
+    extends_(Exception(), object()) && get_basic(Exception()) == Exception()
+  }
+
+  axiom subtype_bytes {
+    extends_(bytes(), object()) && get_basic(bytes()) == bytes()
+  }
+
+  axiom subtype_tuple {
+    (forall args: Seq[PyType] :: { tuple(args) } ((forall e: PyType :: (e in args) ==> e == object()) ==> extends_(tuple(args), object())) && get_basic(tuple(args)) == tuple_basic())
+  }
+
   axiom subtype_str {
     extends_(str(), object()) && get_basic(str()) == str()
+  }
+
+  axiom subtype_bool {
+    extends_(bool(), int()) && get_basic(bool()) == bool()
+  }
+
+  axiom subtype_Sequence {
+    (forall var0: PyType :: { Sequence(var0) } extends_(Sequence(var0), object()) && get_basic(Sequence(var0)) == Sequence_basic())
+  }
+
+  axiom Sequence_args0 {
+    (forall Z: PyType, arg0: PyType :: issubtype(Z, Sequence(arg0)) ==> Sequence_arg(Z, 0) == arg0)
+  }
+
+  axiom subtype_set {
+    (forall var0: PyType :: { set(var0) } extends_(set(var0), object()) && get_basic(set(var0)) == set_basic())
+  }
+
+  axiom set_args0 {
+    (forall Z: PyType, arg0: PyType :: issubtype(Z, set(arg0)) ==> set_arg(Z, 0) == arg0)
+  }
+
+  axiom subtype_NoneType {
+    extends_(NoneType(), object()) && get_basic(NoneType()) == NoneType()
+  }
+
+  axiom subtype_slice {
+    extends_(slice(), object()) && get_basic(slice()) == slice()
+  }
+
+  axiom subtype_Iterator {
+    (forall var0: PyType :: { Iterator(var0) } extends_(Iterator(var0), object()) && get_basic(Iterator(var0)) == Iterator_basic())
+  }
+
+  axiom Iterator_args0 {
+    (forall Z: PyType, arg0: PyType :: issubtype(Z, Iterator(arg0)) ==> Iterator_arg(Z, 0) == arg0)
   }
 
   axiom subtype___prim__Sequence_type {

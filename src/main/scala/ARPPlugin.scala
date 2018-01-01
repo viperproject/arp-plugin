@@ -251,7 +251,7 @@ class ARPPlugin extends SilverPlugin {
       case (FuncApp(naming.rdWildcardName, _), ctx) => foundRd = true; foundComplicatedRd = true
       case _ =>
     }).visit(input)
-    return if (foundRd) if (foundComplicatedRd) 2 else 1 else 0
+    if (foundRd) if (foundComplicatedRd) 2 else 1 else 0
   }
 
   def loadSilFile(file: String): Program = {

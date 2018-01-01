@@ -182,6 +182,12 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }).execute[T](node)
   }
 
+  def rewriteRdSimple[T <: Node](rdName: String)(node: T): T = {
+    StrategyBuilder.Slim[Node]({
+      case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(rdName)(Perm, f.pos, f.info, NodeTrafo(f))
+    }).execute[T](node)
+  }
+
   def rewriteRdForDummyMethod[T <: Node](node: T): T = {
     val strat = TreeRegexBuilder.simple[Node] &> n.r[AccessPredicate] >> n.P[FuncApp](f =>
       f.funcname == plugin.naming.rdName || f.funcname == plugin.naming.rdCountingName || f.funcname == plugin.naming.rdWildcardName

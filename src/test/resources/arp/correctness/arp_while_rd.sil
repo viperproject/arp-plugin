@@ -9,12 +9,14 @@ ensures x.f == x.g + 1
     if (x.f > x.g){
         x.f := x.g
     }
+    var tmp: Int := x.g
     while(x.f <= x.g)
         invariant acc(x.f, write) && acc(x.g, rd)
         invariant x.f <= x.g + 1
     {
         x.f := x.f + 1
     }
+    assert tmp == x.g
 }
 
 method client(x: Ref)

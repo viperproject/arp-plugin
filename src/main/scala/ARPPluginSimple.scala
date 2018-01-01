@@ -51,6 +51,28 @@ class ARPPluginSimple(plugin: ARPPlugin) {
             )
           )(m.pos, m.info, NodeTrafo(m))
         )
+      case (w: While, ctx) =>
+        val rdName = plugin.naming.getNewNameFor(w, suffix = "while_rd")
+        ctx.noRec(
+          Seqn(
+            Seq(Inhale(plugin.utils.constrainRdExp(rdName)(w.pos, w.info))(w.pos, w.info)) ++
+              w.invs.flatMap(inv =>
+                plugin.breathe.splitBreathing(inv, None, {
+                  case a: AccessPredicate if isRdCall(a.perm) => Seq(Inhale(PermLtCmp(
+                    LocalVar(rdName)(Perm, w.pos, w.info),
+                    CurrentPerm(a.loc)(w.pos, w.info)
+                  )(w.pos, w.info))(w.pos, w.info))
+                  case _ => Seq()
+                })
+              ) ++
+              Seq(
+                While(w.cond, w.invs.map(plugin.utils.rewriteRdSimple(rdName)), w.body)(w.pos, w.info, NodeTrafo(w))
+              ),
+            Seq(
+              LocalVarDecl(rdName, Perm)(w.pos, w.info)
+            )
+          )(w.pos, w.info, NodeTrafo(w))
+        )
     },
       ARPContextSimple(""),
       {

@@ -29,21 +29,24 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     ctx.noRec(
       Seqn(
-        Seq(Inhale(rdRewriter(inhale.exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale))) ++
-          splitBreathing(inhale.exp, Some(true), {
-            case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
-            case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => e, minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
-            case f@FieldAccessPredicate(floc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isFieldIgnored(floc.field) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => PermSub(FullPerm()(f.pos, f.info), e)(f.pos, f.info), minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
-            case p@PredicateAccessPredicate(ploc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isPredicateIgnored(ploc.predicateName) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => PermSub(FullPerm()(p.pos, p.info), e)(p.pos, p.info), minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
-            case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
-              assumeAndLog(input, isInhale = true, accessPredicate, getRdLevel(inhale), rdRewriter, "", nextWildcardName, ctx)
-            case f: Forall =>
-              plugin.quantified.handleForallBreathe(input, isInhale = true, f, rdRewriter, "", getRdLevel(inhale), nextWildcardName, ctx)
-            case _ => Seq()
+          splitBreathing(inhale.exp, Some(true), exp => {
+            val inSeq = Seq(Inhale(rdRewriter(exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale)))
+            inSeq ++
+            (exp match {
+              case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
+              case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => e, minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
+              case f@FieldAccessPredicate(floc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isFieldIgnored(floc.field) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => PermSub(FullPerm()(f.pos, f.info), e)(f.pos, f.info), minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
+              case p@PredicateAccessPredicate(ploc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => PermSub(FullPerm()(p.pos, p.info), e)(p.pos, p.info), minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
+              case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
+                assumeAndLog(input, isInhale = true, accessPredicate, getRdLevel(inhale), rdRewriter, "", nextWildcardName, ctx)
+              case f: Forall =>
+                plugin.quantified.handleForallBreathe(input, isInhale = true, f, rdRewriter, "", getRdLevel(inhale), nextWildcardName, ctx)
+              case _ => Seq()
+            })
           }),
         wildcardNames.map(n => LocalVarDecl(n, Perm)(inhale.pos, inhale.info))
       )(inhale.pos, inhale.info, NodeTrafo(inhale))
@@ -73,36 +76,32 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     ctx.noRec(
       Seqn(
         Seq(Label(labelName, Seq())(exhale.pos, exhale.info)) ++
-          splitBreathing(exhale.exp, Some(false), {
-            case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = true, ctx)(f.pos, f.info, NodeTrafo(f)) ++
-                Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
-            case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => e, minus = true, ctx)(p.pos, p.info, NodeTrafo(p)) ++
-                Seq(Exhale(oldRewriter(rdRewriter(p)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
-            case f@FieldAccessPredicate(floc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isFieldIgnored(floc.field) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => PermSub(FullPerm()(f.pos, f.info), e)(f.pos, f.info), minus = false, ctx)(f.pos, f.info, NodeTrafo(f)) ++
-                Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
-            case p@PredicateAccessPredicate(ploc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isPredicateIgnored(ploc.predicateName) =>
-              plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => PermSub(FullPerm()(p.pos, p.info), e)(p.pos, p.info), minus = false, ctx)(p.pos, p.info, NodeTrafo(p)) ++
-                Seq(Exhale(oldRewriter(rdRewriter(p)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
-            case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
-              val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
-              (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined && !(normalized.isDefined && normalized.get.wildcard.isDefined)) {
-                Seq()
-              } else {
-                assumeAndLog(input, isInhale = false, accessPredicate, getRdLevel(exhale), rdRewriter, labelName, nextWildcardName, ctx)
-              }) ++
-                Seq(Exhale(oldRewriter(plugin.utils.rewriteRd(ctx.c.rdName, Seq(lastWildcardName))(accessPredicate)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
-            case f: Forall =>
-              (if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined) {
-                Seq()
-              } else {
-                plugin.quantified.handleForallBreathe(input, isInhale = false, f, rdRewriter, labelName, getRdLevel(exhale), nextWildcardName, ctx)
-              }) ++
-                Seq(Exhale(oldRewriter(rdRewriter(f)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
-            case default =>
-              Seq(Exhale(oldRewriter(rdRewriter(default)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
+          splitBreathing(exhale.exp, Some(false), exp => {
+            val exSeq = Seq(Exhale(oldRewriter(rdRewriter(exp)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
+            (exp match {
+              case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = true, ctx)(f.pos, f.info, NodeTrafo(f))
+              case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => e, minus = true, ctx)(p.pos, p.info, NodeTrafo(p))
+              case f@FieldAccessPredicate(floc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isFieldIgnored(floc.field) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => PermSub(FullPerm()(f.pos, f.info), e)(f.pos, f.info), minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
+              case p@PredicateAccessPredicate(ploc, PermSub(FullPerm(), CurrentPerm(loc))) if !plugin.isPredicateIgnored(ploc.predicateName) =>
+                plugin.quantified.generateLogUpdateCurrentPerm(input, ploc, loc, e => PermSub(FullPerm()(p.pos, p.info), e)(p.pos, p.info), minus = false, ctx)(p.pos, p.info, NodeTrafo(p))
+              case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
+                val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
+                if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined && !(normalized.isDefined && normalized.get.wildcard.isDefined)) {
+                  Seq()
+                } else {
+                  assumeAndLog(input, isInhale = false, accessPredicate, getRdLevel(exhale), rdRewriter, labelName, nextWildcardName, ctx)
+                }
+              case f: Forall =>
+                if (plugin.Optimize.noAssumptionForPost && exhale.info.getUniqueInfo[WasMethodCondition].isDefined) {
+                  Seq()
+                } else {
+                  plugin.quantified.handleForallBreathe(input, isInhale = false, f, rdRewriter, labelName, getRdLevel(exhale), nextWildcardName, ctx)
+                }
+              case default => Seq()
+            }) ++ exSeq
           }),
         Seq(Label(labelName, Seq())(exhale.pos, exhale.info)) ++
           wildcardNames.map(n => LocalVarDecl(n, Perm)(exhale.pos, exhale.info))
@@ -230,7 +229,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
                 val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
                 if (normalized.isDefined) {
-                  if (normalized.get.wildcard.isDefined){
+                  if (normalized.get.wildcard.isDefined) {
                     val wildcardName = if (wildcardNames.nonEmpty) wildcardNames.head else nextWildcardName()
                     generateLogUpdate(input, accessPredicate.loc, normalized.get, minus, ctx)(fold.pos, fold.info, NoTrafos)
                       .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))

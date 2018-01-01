@@ -102,12 +102,13 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
   }
 
   def generateLogUpdateQuantifiedFromNormalized(input: Program, forall: Forall, cond: Exp, normalized: NormalizedExpression, accAccess: LocationAccess, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
-    def getRewriter(quantVar: LocalVar): LocalVar => Strategy[Node, SimpleContext[Node]] ={
-      def rewriter(quantifiedRef: LocalVar): Strategy[Node, SimpleContext[Node]] ={
+    def getRewriter(quantVar: LocalVar): LocalVar => Strategy[Node, SimpleContext[Node]] = {
+      def rewriter(quantifiedRef: LocalVar): Strategy[Node, SimpleContext[Node]] = {
         StrategyBuilder.Slim[Node]({
           case LocalVar(quantVar.name) => quantifiedRef
         })
       }
+
       rewriter
     }
 
@@ -122,7 +123,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
 
     def generateNorm(norms: Seq[NormalizedPart], quantifiedRef: LocalVar, level: LocalVar): Exp = {
       val e = norms.head
-      val total = if (quantVar.isDefined){
+      val total = if (quantVar.isDefined) {
         getRewriter(quantVar.get)(quantifiedRef).execute[Exp](e.getTotal(plugin)(pos, info, errT))
       } else {
         e.getTotal(plugin)(pos, info, errT)
@@ -134,7 +135,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
       )(pos, info, errT)
     }
 
-    if ((normalized.const ++ normalized.wildcard ++ normalized.exps).isEmpty){
+    if ((normalized.const ++ normalized.wildcard ++ normalized.exps).isEmpty) {
       plugin.reportError(Internal(forall, FeatureUnsupported(forall, "Normalized permission is not wellformed")))
       Seq()
     } else {

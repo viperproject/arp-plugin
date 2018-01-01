@@ -39,12 +39,16 @@ class ARPPlugin extends SilverPlugin {
   val quantified = new ARPPluginQuantified(this)
   val wands = new ARPPluginWands(this)
   val misc = new ARPPluginMisc(this)
+  val simple = new ARPPluginSimple(this)
   var ignoredFields = Seq[String]()
+  var difficulty = 0
 
   object Optimize {
     val simplifyExpressions = true
     val removeProvableIf = true
     val noAssumptionForPost = true
+    val useSimpleEncodingIfPossible = false
+    val onlyTransformIfRdUsed = false
   }
 
   def setIgnoredFields(fields: Seq[String]): Unit = {
@@ -131,6 +135,36 @@ class ARPPlugin extends SilverPlugin {
   }
 
   override def beforeVerify(input: Program): Program = {
+    difficulty = analyzeInput(input)
+
+    def inputPrime = if (difficulty == 0 && Optimize.onlyTransformIfRdUsed) {
+      input
+    } else if (difficulty == 1 && Optimize.useSimpleEncodingIfPossible) {
+      beforeVerifySimple(input)
+    } else {
+      beforeVerifyFull(input)
+    }
+
+    checkAllRdTransformed(inputPrime)
+
+    if (System.getProperty("DEBUG", "").equals("1")) {
+      println(inputPrime)
+    }
+
+    if (_errors.isEmpty) {
+      if (inputPrime.checkTransitively.nonEmpty) {
+        inputPrime.checkTransitively.foreach(ce => reportError(ConsistencyError(ce.message + s" (${ce.pos})", ce.pos)))
+      }
+    }
+
+    inputPrime
+  }
+
+  def beforeVerifySimple(input: Program): Program ={
+    simple.transform(input)
+  }
+
+  def beforeVerifyFull(input: Program): Program = {
     val inputWithARPDomain = addARPDomain(input)
     naming.init(naming.collectUsedNames(inputWithARPDomain))
     val enhancedInput = addFieldFunctions(inputWithARPDomain)
@@ -174,43 +208,50 @@ class ARPPlugin extends SilverPlugin {
 
     val rewrittenInput = arpRewriter.execute[Program](enhancedInput)
     val inputPrime = addHavocMethods(addDummyMethods(input, rewrittenInput))
-
-    checkAllRdTransformed(inputPrime)
-
-    if (System.getProperty("DEBUG", "").equals("1")) {
-      println(inputPrime)
-    }
-
-    if (_errors.isEmpty) {
-      if (inputPrime.checkTransitively.nonEmpty) {
-        inputPrime.checkTransitively.foreach(ce => reportError(ConsistencyError(ce.message + s" (${ce.pos})", ce.pos)))
-      }
-    }
-
     inputPrime
   }
 
   override def mapVerificationResult(input: VerificationResult): VerificationResult = {
-    input match {
-      case Success => Success
-      case Failure(errors) =>
-        val errorsPrime = errors.map({
-          case ParseError(msg, pos) => ParseError(msg + s" ($pos)", pos)
-          case AbortedExceptionally(cause) => ParseError(s"Exception: $cause (${cause.getStackTrace})", NoPosition) // Is not really a parse error...
-          case TypecheckerError(msg, pos) => TypecheckerError(msg.replace("<undefined position>", "<ARP Plugin>"), pos)
-          case error: AbstractVerificationError => error.transformedError()
-          case default => default
-        })
-        val errorsUnique = errorsPrime.map(e => (e, e.pos)).distinct.map(t => t._1)
-        Failure(errorsUnique.filterNot({
-          case ep: PostconditionViolated => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
-          case ep: WhileFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
-          case ep: LoopInvariantNotEstablished => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
-          case ep: LoopInvariantNotPreserved => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
-          case ep: InhaleFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
-          case _ => false
-        }))
+    if (difficulty == 0 && Optimize.onlyTransformIfRdUsed){
+      input
+    } else {
+      input match {
+        case Success => Success
+        case Failure(errors) =>
+          val errorsPrime = errors.map({
+            case ParseError(msg, pos) => ParseError(msg + s" ($pos)", pos)
+            case AbortedExceptionally(cause) => ParseError(s"Exception: $cause (${cause.getStackTrace})", NoPosition) // Is not really a parse error...
+            case TypecheckerError(msg, pos) => TypecheckerError(msg.replace("<undefined position>", "<ARP Plugin>"), pos)
+            case error: AbstractVerificationError => error.transformedError()
+            case default => default
+          })
+          val errorsUnique = errorsPrime.map(e => (e, e.pos)).distinct.map(t => t._1)
+          Failure(errorsUnique.filterNot({
+            case ep: PostconditionViolated => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+            case ep: WhileFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+            case ep: LoopInvariantNotEstablished => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+            case ep: LoopInvariantNotPreserved => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+            case ep: InhaleFailed => errorsPrime.exists(e => e.isInstanceOf[ContractNotWellformed] && e.pos == ep.pos)
+            case _ => false
+          }))
+      }
     }
+  }
+
+  def analyzeInput(input: Program): Int ={
+    var foundRd = false
+    var foundComplicatedRd = false
+    StrategyBuilder.AncestorVisitor[Node]({
+      case (FuncApp(naming.rdName, _), ctx) =>
+        foundRd = true
+        if (!ctx.parent.isInstanceOf[AccessPredicate]) {
+          foundComplicatedRd = true
+        }
+      case (FuncApp(naming.rdCountingName, _), ctx) => foundRd = true; foundComplicatedRd = true
+      case (FuncApp(naming.rdWildcardName, _), ctx) => foundRd = true; foundComplicatedRd = true
+      case _ =>
+    }).visit(input)
+    return if (foundRd) if (foundComplicatedRd) 2 else 1 else 0
   }
 
   def loadSilFile(file: String): Program = {

@@ -2,14 +2,14 @@ field f: Int
 field p: Perm
 
 method foo(x: Ref)
-requires acc(x.p, rd) && x.p < 0 && acc(x.f, write - rd + x.p + rdc(7) + 2 * rd - rdc(3))
-ensures acc(x.p, rd) && x.p < 0 && acc(x.f, write - rd + x.p + rdc(7) - rdc(3) + 2 * rd)
+requires acc(x.p, rd) && x.p > none && acc(x.f, write - rd - x.p + rdc(7) + 2 * rd - rdc(3))
+ensures acc(x.p, rd) && x.p > none && acc(x.f, write - rd - x.p + rdc(7) - rdc(3) + 2 * rd)
 
 method bar(x: Ref, y: Ref)
-requires acc(x.p) && x.p < 0 && acc(x.f) && x.f == 5
-requires acc(y.p, rd) && y.p < -rd && acc(x.f, rd) && x.f == 5
-ensures acc(x.p) && x.p < 0 && acc(x.f) && x.f == 5
-ensures acc(y.p, rd) && y.p < -rd && acc(x.f, rd) && x.f == 5
+requires acc(x.p) && x.p > none && x.p < write && acc(x.f) && x.f == 5
+requires acc(y.p, rd) && y.p > none && y.p < write && acc(y.f, rd) && y.f == 5
+ensures acc(x.p) && x.p > none && x.p < write && acc(x.f) && x.f == 5
+ensures acc(y.p, rd) && y.p > none && y.p < write && acc(y.f, rd) && y.f == 5
 {
 	foo(x)
 	foo(y)

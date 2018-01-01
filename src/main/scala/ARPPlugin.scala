@@ -137,7 +137,7 @@ class ARPPlugin extends SilverPlugin {
   override def beforeVerify(input: Program): Program = {
     difficulty = analyzeInput(input)
 
-    def inputPrime = if (difficulty == 0 && Optimize.onlyTransformIfRdUsed) {
+    val inputPrime = if (difficulty == 0 && Optimize.onlyTransformIfRdUsed) {
       input
     } else if (difficulty == 1 && Optimize.useSimpleEncodingIfPossible) {
       beforeVerifySimple(input)

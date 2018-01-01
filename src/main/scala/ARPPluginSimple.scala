@@ -38,7 +38,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
                 plugin.breathe.splitBreathing(p, Some(false), {
                   case a: AccessPredicate if isRdCall(a.perm) => Seq(Inhale(PermLtCmp(
                     LocalVar(rdName)(Perm, m.pos, m.info),
-                    CurrentPerm(a.loc)(m.pos, m.info)
+                    CurrentPerm(transformLoc(method, m, a.loc))(m.pos, m.info)
                   )(m.pos, m.info))(m.pos, m.info))
                   case _ => Seq()
                 })
@@ -59,6 +59,13 @@ class ARPPluginSimple(plugin: ARPPlugin) {
     ).execute[Program](input)
 
     inputPrime
+  }
+
+  def transformLoc(m: Method, mc: MethodCall, loc: LocationAccess): LocationAccess ={
+    val mapping = m.formalArgs.map(_.name).zip(mc.args).toMap
+    StrategyBuilder.Slim[Node]({
+      case LocalVar(name) => mapping(name)
+    }).execute[LocationAccess](loc)
   }
 
   def isRdCall(e: Exp): Boolean ={

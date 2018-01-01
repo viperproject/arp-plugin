@@ -47,7 +47,7 @@ class ARPPlugin extends SilverPlugin {
     val simplifyExpressions = true
     val removeProvableIf = true
     val noAssumptionForPost = true
-    val useSimpleEncodingIfPossible = false
+    val useSimpleEncodingIfPossible = true
     val onlyTransformIfRdUsed = false
   }
 

@@ -7,12 +7,12 @@ method ARP_IGNORE()
 }
 
 method foo(x: Ref)
-requires acc(x.f, rd)
-ensures acc(x.f, rd)
+requires acc(x.f, 2*rd)
+ensures acc(x.f, 2*rd)
 
 method foo2(x: Ref)
-requires acc(x.g, rd)
-ensures acc(x.g, rd)
+requires acc(x.g, 2*rd)
+ensures acc(x.g, 2*rd)
 
 method bar(r: Ref)
 requires acc(r.f, 1/2)

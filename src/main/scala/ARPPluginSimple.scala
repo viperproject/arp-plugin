@@ -75,6 +75,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
       ARPContextSimple(""),
       {
         case (m: Method, ctx) => ARPContextSimple(plugin.naming.getNameFor(m, m.name, "rd"))
+        case (w: While, ctx) if w.info.getUniqueInfo[TransformedWhile].isEmpty => ARPContextSimple(plugin.naming.getNameFor(w, suffix = "while_rd"))
       }
     ).execute[Program](input)
 

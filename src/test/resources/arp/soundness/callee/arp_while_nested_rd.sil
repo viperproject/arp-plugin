@@ -12,17 +12,22 @@ ensures false
         x.f := x.g
     }
     var tmp: Int := x.g
+    assert acc(x.g, rd)
     while(x.f <= x.g)
         invariant acc(x.f, write) && acc(x.g, rd)
         invariant x.f <= x.g + 1
     {
+        assert acc(x.g, rd)
         while(x.f <= x.g)
             invariant acc(x.f, write) && acc(x.g, rd)
             invariant x.f <= x.g + 1
         {
+            assert acc(x.g, rd)
             x.f := x.f + 1
         }
+        assert acc(x.g, rd)
     }
+    assert acc(x.g, rd)
     assert tmp == x.g
 }
 

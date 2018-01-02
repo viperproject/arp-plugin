@@ -1,0 +1,53 @@
+field f: Int
+
+predicate pred(y: Int)
+
+predicate pred2(x: Int)
+
+predicate pred12(x: Int, y: Int)
+{
+    acc(pred(x)) && acc(pred2(y))
+}
+
+method foo(y: Int)
+requires acc(pred(y), rd)
+ensures acc(pred(y), rd)
+
+method foo2(y: Int)
+requires acc(pred2(y), rd)
+ensures acc(pred2(y), rd)
+
+method bar(x: Ref)
+requires acc(pred12(2, 3), 1/2) && acc(x.f, 1/2)
+ensures acc(pred12(2, 3), 1/2) && acc(x.f, 1/2)
+{
+    unfold acc(pred12(2, 3), 1/2)
+    foo(2)
+    foo2(3)
+    fold acc(pred12(2, 3), 1/2)
+}
+
+method bar2(x: Ref)
+requires acc(pred12(2, 3), 1/2) && acc(x.f, 1/2)
+ensures acc(pred12(2, 3), 1/2) && acc(x.f, 1/2)
+{
+    //:: ExpectedOutput(call.precondition:insufficient.permission)
+    foo(2)
+    foo2(3)
+}
+
+method bar3(x: Ref)
+requires acc(pred(2), rd) && acc(x.f, 1/2)
+ensures acc(pred(2), rd) && acc(x.f, 1/2)
+{
+    foo(2)
+}
+
+method bar4(x: Ref)
+requires acc(pred(2), rd) && acc(x.f, 1/2)
+ensures acc(pred(2), rd) && acc(x.f, 1/2)
+{
+    foo(2)
+    //:: ExpectedOutput(call.precondition:insufficient.permission)
+    foo2(3)
+}

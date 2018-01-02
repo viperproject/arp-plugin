@@ -1,7 +1,7 @@
 field f: Int
 
 method foo()
-requires forall x: Ref :: x != null ==> acc(x.f, rd)
+requires forall x: Ref :: x != null ==> acc(x.f, 1*rd) // prevent simple encoding
 ensures forall x: Ref :: x != null ==> acc(x.f, rd)
 
 method bar()

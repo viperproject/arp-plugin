@@ -7,11 +7,11 @@
 [0m[[0minfo[0m] [0m[31m- arp/performance/arp/quantifiers1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
 [0m[[0minfo[0m] [0m[31m- arp/performance/arp/sum1.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
 [0m[[0minfo[0m] [0m[31m- consistency/consistency.sil [Silicon-Silver] *** FAILED ***[0m[0m Error in Plugin prevents expected error
-[0m[[0minfo[0m] [0m[31m- all/issues/carbon/0206.sil [Silicon-Silver] *** FAILED ***[0m[0m Quantifier Trigger in Silicon
+[0m[[0minfo[0m] [0m[31m- all/issues/carbon/0206.sil [Silicon-Silver] *** FAILED ***[0m[0m Quantifier Trigger in Silicon (old label)
 [0m[[0minfo[0m] [0m[31m- all/issues/silicon/0144.sil [Silicon-Silver] *** FAILED ***[0m[0m Wrong annotation
 [0m[[0minfo[0m] [0m[31m- all/issues/silicon/0152.sil [Silicon-Silver] *** FAILED ***[0m[0m Wrong annotation
 [0m[[0minfo[0m] [0m[31m- all/issues/silicon/0285.sil [Silicon-Silver] *** FAILED ***[0m[0m Contract Wellformed
-[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0299.sil [Silicon-Silver] *** FAILED ***[0m[0m Quantifier Trigger in Silicon
+[0m[[0minfo[0m] [0m[31m- all/issues/silicon/0299.sil [Silicon-Silver] *** FAILED ***[0m[0m Quantifier Trigger in Silicon (old label)
 [0m[[0minfo[0m] [0m[31m- all/third_party/stefan_recent/testLockSetDemo.sil [Silicon-Silver] *** FAILED ***[0m[0m ???
 [0m[[0minfo[0m] [0m[31m- quantifiedpermissions/sets/unionfind.sil [Silicon-Silver] *** FAILED ***[0m[0m z3 crashes
 [0m[[0minfo[0m] [0m[31m- quantifiedpermissions/third_party/max-two-range.sil [Silicon-Silver] *** FAILED ***[0m[0m Contract Wellformed

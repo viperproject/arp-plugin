@@ -4,5 +4,6 @@ field f: Int
 function globalRd(): Int
 
 method foo(x: Ref)
+requires acc(x.f, 2*rd)
 {
 }

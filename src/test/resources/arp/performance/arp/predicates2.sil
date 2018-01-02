@@ -10,7 +10,7 @@ predicate p8 (x: Ref, y: Ref, z: Ref)
 predicate p9 (x: Ref, y: Ref, z: Ref)
 
 method foo(x: Ref, y: Ref, z: Ref)
-requires acc(p0(x, y, z), rd)
+requires acc(p0(x, y, z), 1*rd) // prevent simple encoding
 requires acc(p1(x, y, z), rd)
 requires acc(p2(x, y, z), rd)
 requires acc(p3(x, y, z), rd)

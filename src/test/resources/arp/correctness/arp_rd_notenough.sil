@@ -1,0 +1,20 @@
+field f : Int
+field g : Int
+
+method foo(x: Ref)
+requires acc(x.f, write) && acc(x.g, rd)
+ensures acc(x.f, write) && acc(x.g, rd)
+ensures x.f == x.g + 1
+{
+    x.f := x.g + 1
+}
+
+method client(x: Ref)
+requires acc(x.f, write)
+ensures acc(x.f, write)
+{
+    x.f := 4
+    //:: ExpectedOutput(call.precondition:insufficient.permission)
+    foo(x)
+    assert x.f == x.g + 1
+}

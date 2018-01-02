@@ -139,7 +139,7 @@ class ARPPlugin extends SilverPlugin {
 
     val inputPrime = if (difficulty == 0 && Optimize.onlyTransformIfRdUsed) {
       input
-    } else if (difficulty == 1 && Optimize.useSimpleEncodingIfPossible) {
+    } else if (difficulty <= 1 && Optimize.useSimpleEncodingIfPossible) {
       beforeVerifySimple(input)
     } else {
       beforeVerifyFull(input)

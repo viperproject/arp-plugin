@@ -1,0 +1,36 @@
+field f : Int
+field g : Int
+
+method foo(x: Ref)
+requires acc(x.f, write) && acc(x.g, rd)
+ensures acc(x.f, write) && acc(x.g, rd)
+ensures x.f == x.g + 1
+{
+    if (x.f > x.g){
+        x.f := x.g
+    }
+    var tmp: Int := x.g
+    while(x.f <= x.g)
+        invariant acc(x.f, write) && acc(x.g, rd)
+        invariant x.f <= x.g + 1
+    {
+        while(x.f <= x.g)
+            invariant acc(x.f, write) && acc(x.g, rd)
+            invariant x.f <= x.g + 1
+        {
+            x.f := x.f + 1
+        }
+    }
+    assert tmp == x.g
+}
+
+method client(x: Ref)
+requires acc(x.f, write) && acc(x.g, 1/2)
+ensures acc(x.f, write) && acc(x.g, 1/2)
+{
+    x.f := 4
+    inhale x.g == 5
+    foo(x)
+    assert x.g == 5
+    assert x.f == 6
+}

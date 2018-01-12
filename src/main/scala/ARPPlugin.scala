@@ -42,11 +42,14 @@ class ARPPlugin extends SilverPlugin {
   val simple = new ARPPluginSimple(this)
   var ignoredFields = Seq[String]()
   var difficulty = 0
+  var methodCallDifficulty = Map[String, Int]()
+  var methodBodyDifficulty = Map[String, Int]()
+  var predicateBodyDifficulty = Map[String, Int]()
 
   object Optimize {
     val simplifyExpressions = true
     val removeProvableIf = true
-    val noAssumptionForPost = true
+    val noAssumptionForPost = false // this does not work if rd is only present in post condition
     val removeUnnecessaryLabels = true
     val mixSimpleEncoding = false
     val useSimpleEncodingIfPossible = false
@@ -137,7 +140,7 @@ class ARPPlugin extends SilverPlugin {
   }
 
   override def beforeVerify(input: Program): Program = {
-    difficulty = analyzeInput(input)
+    analyzeInput(input)
 
     val inputPrime = if (difficulty == 0 && Optimize.onlyTransformIfRdUsed) {
       input
@@ -174,7 +177,11 @@ class ARPPlugin extends SilverPlugin {
     val arpRewriter = StrategyBuilder.Context[Node, ARPContext](
       {
         case (m: Method, ctx) =>
-          methods.handleMethod(enhancedInput, m, ctx)
+          if (Optimize.mixSimpleEncoding && methodBodyDifficulty(m.name) <= 1){
+            ctx.noRec(simple.transformNode(enhancedInput, m))
+          } else {
+            methods.handleMethod(enhancedInput, m, ctx)
+          }
         case (m: MethodCall, ctx) =>
           methods.handleMethodCall(enhancedInput, m, ctx)
         case (w: While, ctx) =>
@@ -240,20 +247,37 @@ class ARPPlugin extends SilverPlugin {
     }
   }
 
-  def analyzeInput(input: Program): Int ={
-    var foundRd = false
-    var foundComplicatedRd = false
+  def getDifficulty(node: Node): Int ={
+    var difficulty = 0
+    def dif(x: Int) = difficulty = math.max(difficulty, x)
     StrategyBuilder.AncestorVisitor[Node]({
       case (FuncApp(naming.rdName, _), ctx) =>
-        foundRd = true
+        dif(1)
         if (!ctx.parent.isInstanceOf[AccessPredicate]) {
-          foundComplicatedRd = true
+          dif(2)
         }
-      case (FuncApp(naming.rdCountingName, _), ctx) => foundRd = true; foundComplicatedRd = true
-      case (FuncApp(naming.rdWildcardName, _), ctx) => foundRd = true; foundComplicatedRd = true
+      case (FuncApp(naming.rdCountingName, _), ctx) => dif(2)
+      case (FuncApp(naming.rdWildcardName, _), ctx) => dif(2)
+      case (FuncApp(naming.rdGlobalName, _), ctx) => dif(2)
+      case (MethodCall(method, _, _), ctx) => dif(methodCallDifficulty(method))
+      case (Fold(PredicateAccessPredicate(PredicateAccess(_, predicate), _)), ctx) => dif(predicateBodyDifficulty(predicate))
+      case (Unfold(PredicateAccessPredicate(PredicateAccess(_, predicate), _)), ctx) => dif(predicateBodyDifficulty(predicate))
       case _ =>
-    }).visit(input)
-    if (foundRd) if (foundComplicatedRd) 2 else 1 else 0
+    }).visit(node)
+    difficulty
+  }
+
+  def analyzeInput(input: Program): Unit ={
+    input.methods.foreach(m => {
+      methodCallDifficulty += m.name -> (m.pres ++ m.posts).map(getDifficulty).fold(0)(math.max)
+    })
+    input.predicates.foreach(p => {
+      predicateBodyDifficulty += p.name -> p.body.map(getDifficulty).map(d => if (d == 1) 2 else d).getOrElse(0)
+    })
+    input.methods.foreach(m => {
+      methodBodyDifficulty += m.name -> math.max(m.body.map(getDifficulty).getOrElse(0), methodCallDifficulty(m.name))
+    })
+    difficulty = (methodCallDifficulty ++ methodBodyDifficulty ++ predicateBodyDifficulty).values.fold(0)(math.max)
   }
 
   def loadSilFile(file: String): Program = {
@@ -432,18 +456,23 @@ class ARPPlugin extends SilverPlugin {
 //      }
 //    ).visit(originalInput)
 
-    val methodMethods = originalInput.methods
-      //        .filter(m => m.pres.nonEmpty || m.posts.nonEmpty) // cant't do this as we need the method for constraining blocks
-      .map(m =>
+    val filteredMethods = if (Optimize.mixSimpleEncoding){
+      originalInput.methods.filter(m => methodBodyDifficulty(m.name) > 1)
+    } else {
+      originalInput.methods
+    }
+
+    val methodMethods = filteredMethods.map(m => {
+      val rdName = naming.getNewNameFor(m, m.name, "rd")
       Method(
-        naming.getNameFor(m, m.name, "contract_wellformed_dummy_method"),
-        m.formalArgs,
+        m.name,
+        m.formalArgs :+ LocalVarDecl(rdName, Perm)(m.pos, m.info),
         m.formalReturns,
-        m.pres.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
-        m.posts.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod),
+        m.pres.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRd(rdName)),
+        m.posts.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRd(rdName)),
         None
       )(m.pos, m.info, NodeTrafo(input))
-    )
+    })
 
     val newProgram = Program(
       input.domains,
@@ -514,16 +543,11 @@ class ARPPlugin extends SilverPlugin {
   def rewriteMethodCallsToDummyMethods(input: Program, node: Node): Node = {
     StrategyBuilder.Slim[Node]({
       case m@MethodCall(methodName, args, targets) =>
-        val maybeMethod = utils.getMethod(input, methodName)
-        if (maybeMethod.isDefined /*&& (maybeMethod.get.pres ++ maybeMethod.get.posts).nonEmpty*/) {
-          MethodCall(
-            naming.getNameFor(maybeMethod.get, methodName, "contract_wellformed_dummy_method"),
-            args,
-            targets
-          )(m.pos, m.info, NodeTrafo(m))
-        } else {
-          m
-        }
+        MethodCall(
+          methodName,
+          args :+ FractionalPerm(IntLit(1)(m.pos, m.info), IntLit(2)(m.pos, m.info))(m.pos, m.info),
+          targets
+        )(m.pos, m.info, NodeTrafo(m))
     }).execute(node)
   }
 

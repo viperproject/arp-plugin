@@ -1,0 +1,80 @@
+field f : Int
+
+predicate predS(x: Ref)
+{
+    acc(x.f, 1/2)
+}
+
+predicate predC(x: Ref)
+{
+    acc(x.f, rd)
+}
+
+method a(x: Ref)
+requires acc(x.f, rd)
+ensures acc(x.f, rd)
+{}
+
+method b(x: Ref)
+requires acc(x.f, rdc(1))
+ensures acc(x.f, rdc(1))
+{}
+
+method simple1(x: Ref)
+requires acc(x.f)
+ensures acc(x.f)
+{
+    a(x)
+    a(x)
+}
+
+method simple2(x: Ref)
+requires acc(x.f)
+ensures predS(x) && acc(x.f, 1/2)
+{
+    fold predS(x)
+}
+
+method simple3(x: Ref)
+requires predS(x)
+ensures acc(x.f, 1/2)
+{
+    unfold predS(x)
+}
+
+method simple4(x: Ref)
+requires predC(x) && acc(x.f, 1/2)
+ensures predC(x) && acc(x.f, 1/2)
+{
+    a(x)
+}
+
+method complex1(x: Ref)
+requires acc(x.f)
+ensures acc(x.f)
+{
+    b(x)
+    b(x)
+}
+
+method complex2(x: Ref)
+requires acc(x.f)
+ensures acc(x.f)
+{
+    a(x)
+    b(x)
+}
+
+method complex3(x: Ref)
+requires acc(x.f)
+ensures predC(x)
+{
+    fold predC(x)
+}
+
+method complex4(x: Ref)
+requires predC(x)
+ensures acc(x.f, rd)
+{
+    unfold predC(x)
+}

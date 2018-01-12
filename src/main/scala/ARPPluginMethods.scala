@@ -20,6 +20,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
   // init ARPLog
   // desugar method contracts into explicit inhales/exhales
   def handleMethod(input: Program, m: Method, ctx: ContextC[Node, ARPContext]): Node = {
+    val methodName = plugin.naming.getNewNameFor(m, m.name, "ARP_TRANSFORMED")
     val methodRdName = plugin.naming.getNewNameFor(m, m.name, "rd")
     val methodStartLabelName = plugin.naming.getNewNameFor(m, m.name, "start_label")
     val methodEndLabelName = plugin.naming.getNewName(m.name, "end_label")
@@ -29,7 +30,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
     val arpLogNil = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainNil)
 
     Method(
-      m.name,
+      methodName,
       // add rd argument
       m.formalArgs :+ rdArg,
       m.formalReturns,

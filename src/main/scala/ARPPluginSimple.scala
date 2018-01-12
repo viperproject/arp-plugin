@@ -14,8 +14,11 @@ class ARPPluginSimple(plugin: ARPPlugin) {
 
   def transform(input: Program): Program = {
     plugin.naming.init(plugin.naming.collectUsedNames(input))
+    transformNode(input, input)
+  }
 
-    val inputPrime = StrategyBuilder.Context[Node, ARPContextSimple]({
+  def transformNode[T <: Node](input: Program, toTransform: T): T ={
+    val methodPrime = StrategyBuilder.Context[Node, ARPContextSimple]({
       case (m: Method, ctx) =>
         val rdName = plugin.naming.getNewNameFor(m, m.name, "rd")
         Method(
@@ -77,9 +80,9 @@ class ARPPluginSimple(plugin: ARPPlugin) {
         case (m: Method, ctx) => ARPContextSimple(plugin.naming.getNameFor(m, m.name, "rd"))
         case (w: While, ctx) if w.info.getUniqueInfo[TransformedWhile].isEmpty => ARPContextSimple(plugin.naming.getNameFor(w, suffix = "while_rd"))
       }
-    ).execute[Program](input)
+    ).execute[T](toTransform)
 
-    inputPrime
+    methodPrime
   }
 
   def constrainRdInhale(rdName: String, loc: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Stmt = {

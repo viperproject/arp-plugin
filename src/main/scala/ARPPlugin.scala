@@ -468,8 +468,8 @@ class ARPPlugin extends SilverPlugin {
         m.name,
         m.formalArgs :+ LocalVarDecl(rdName, Perm)(m.pos, m.info),
         m.formalReturns,
-        m.pres.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRd(rdName)),
-        m.posts.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRd(rdName)),
+        utils.constrainRdExp(rdName)(m.pos, m.info) +: m.pres.map(utils.rewriteRd(rdName)),
+        m.posts.map(utils.rewriteRd(rdName)),
         None
       )(m.pos, m.info, NodeTrafo(input))
     })

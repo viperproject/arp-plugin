@@ -51,7 +51,10 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // start label
             Seq(Label(methodStartLabelName, Seq())(m.pos, m.info)) ++
             // method body
-            b.ss.map(plugin.utils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)) ++
+            Seq(Seqn(
+              b.ss.map(plugin.utils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)),
+              b.scopedDecls
+            )(b.pos, b.info, NodeTrafo(b))) ++
             Seq(
               Label(methodEndLabelName, Seq())(m.pos, m.info)
             ) ++
@@ -66,7 +69,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
               case error: AbstractVerificationError => error.withNode(p).asInstanceOf[AbstractVerificationError]
             }))),
           // variable declarations
-          b.scopedDecls ++ Seq(
+          Seq(
             Label(methodStartLabelName, Seq())(m.pos, m.info),
             Label(methodEndLabelName, Seq())(m.pos, m.info),
             LocalVarDecl(logName, arpLogType)(m.pos, m.info)

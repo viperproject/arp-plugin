@@ -488,7 +488,7 @@ class ARPPlugin extends SilverPlugin {
               collectFollowup(ss)
             case _ =>
           }).visit(m)
-          usedLabels = usedLabels.filterNot(labelMapping.contains)
+          usedLabels = usedLabels.map(u => labelMapping.getOrElse(u, u))
           val removeLabelStrategy = StrategyBuilder.Slim[Node]({
             case s@Seqn(ss, decls) =>
               def isNodeNeeded(st: Any): Boolean = st match {
@@ -500,7 +500,7 @@ class ARPPlugin extends SilverPlugin {
               LabelledOld(exp, labelMapping(name))(l.pos, l.info, NodeTrafo(l))
           })
           // do it twice for good measure
-          // it seams like creating a nested Seqn does sometimes flatten it and the rewriter does not recurse anymore
+          // it seems like creating a nested Seqn does sometimes flatten it and the rewriter does not recurse anymore
           // TODO figure out why this is necessary
           val mPrime = removeLabelStrategy.execute[Method](removeLabelStrategy.execute[Method](m))
           mPrime

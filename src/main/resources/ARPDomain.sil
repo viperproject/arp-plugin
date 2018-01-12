@@ -116,7 +116,7 @@ function rd(): Perm
   requires false
 
 // requires false to make sure all references to rdc are transformed
-function rdc(): Perm
+function rdc(count: Int): Perm
   requires false
 
 // requires false to make sure all references to rdw are transformed

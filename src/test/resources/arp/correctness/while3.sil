@@ -1,0 +1,16 @@
+field f: Int
+field g: Int
+
+method t10(r: Ref) returns ()
+    requires acc(r.f, write) && acc(r.g, rd) && r.f == r.g
+    ensures acc(r.f, write) && acc(r.g, rd)
+{
+    var j: Int := 2
+
+    while (j < (r.f))
+    invariant acc(r.f, rd) && acc(r.g, rd) && old(r.f) == r.g
+    {
+        j := j+1
+    }
+    assert j >= (r.f)
+}

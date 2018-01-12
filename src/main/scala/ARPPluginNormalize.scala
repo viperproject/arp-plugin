@@ -48,6 +48,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, f))
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
+      case f@FuncApp(plugin.naming.rdGlobalName, _) => Some(globalPerm(IntLit(1)(), f))
       case f: FuncApp => Some(constPerm(f))
       case f: DomainFuncApp => Some(constPerm(f))
       case e if !containsNonConst(e) => Some(constPerm(e))
@@ -96,6 +97,10 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
 
   def rdcPerm(exp: Exp, f: FuncApp): NormalizedExpression = {
     NormalizedExpression(Seq(NormalizedPart(exp, 0, 0, Some(f))), None, None)
+  }
+
+  def globalPerm(exp: Exp, f: FuncApp): NormalizedExpression = {
+    NormalizedExpression(Seq(NormalizedPart(exp, 5, 5, Some(f))), None, None)
   }
 
   def constPerm(exp: Exp): NormalizedExpression = {

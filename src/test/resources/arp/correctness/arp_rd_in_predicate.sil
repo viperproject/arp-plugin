@@ -1,0 +1,18 @@
+field f: Int
+
+predicate pred(x: Ref){
+    acc(x.f, rd)
+}
+
+method foo(y: Ref)
+requires acc(y.f, rd)
+ensures acc(y.f, rd)
+
+method bar(x: Ref)
+requires acc(pred(x), 1/2)
+ensures acc(pred(x), 1/2)
+{
+    unfold acc(pred(x), 1/2)
+    foo(x)
+    fold acc(pred(x), 1/2)
+}

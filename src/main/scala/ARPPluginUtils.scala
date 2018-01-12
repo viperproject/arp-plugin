@@ -182,6 +182,12 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }).execute[T](node)
   }
 
+  def rewriteRdPredicate[T <: Node](node: T): T = {
+    StrategyBuilder.Slim[Node]({
+      case f@FuncApp(plugin.naming.rdName, Seq()) => FuncApp(plugin.naming.rdGlobalName, Seq())(f.pos, f.info, Perm, Seq(), NodeTrafo(f))
+    }).execute[T](node)
+  }
+
   def rewriteRdSimple[T <: Node](rdName: String)(node: T): T = {
     StrategyBuilder.Slim[Node]({
       case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(rdName)(Perm, f.pos, f.info, NodeTrafo(f))

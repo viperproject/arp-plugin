@@ -47,6 +47,8 @@ class ARPPlugin extends SilverPlugin {
     val simplifyExpressions = true
     val removeProvableIf = true
     val noAssumptionForPost = true
+    val removeUnnecessaryLabels = true
+    val mixSimpleEncoding = false
     val useSimpleEncodingIfPossible = false
     val onlyTransformIfRdUsed = false
   }
@@ -167,7 +169,7 @@ class ARPPlugin extends SilverPlugin {
   def beforeVerifyFull(input: Program): Program = {
     val inputWithARPDomain = addARPDomain(input)
     naming.init(naming.collectUsedNames(inputWithARPDomain))
-    val enhancedInput = addFieldFunctions(inputWithARPDomain)
+    val enhancedInput = addFieldFunctions(rewriteRdPredicate(inputWithARPDomain))
 
     val arpRewriter = StrategyBuilder.Context[Node, ARPContext](
       {
@@ -207,7 +209,7 @@ class ARPPlugin extends SilverPlugin {
     )
 
     val rewrittenInput = arpRewriter.execute[Program](enhancedInput)
-    val inputPrime = addHavocMethods(addDummyMethods(input, rewrittenInput))
+    val inputPrime = optimizeLabels(addHavocMethods(addDummyMethods(input, rewrittenInput)))
     inputPrime
   }
 
@@ -285,6 +287,16 @@ class ARPPlugin extends SilverPlugin {
 
     // if there was an error, give back an empty program
     if (_errors.isEmpty) newProgram else Program(Seq(), Seq(), Seq(), Seq(), Seq())()
+  }
+
+  def rewriteRdPredicate(input: Program): Program = {
+    Program(
+      input.domains,
+      input.fields,
+      input.functions,
+      input.predicates.map(utils.rewriteRdPredicate),
+      input.methods
+    )(input.pos, input.info, NodeTrafo(input))
   }
 
   def addFieldFunctions(input: Program): Program = {
@@ -388,37 +400,37 @@ class ARPPlugin extends SilverPlugin {
     // ensures false is not checked if there is no body, so would not need handle this
     // invariants have other rules for wellformedness than methods, so this does not always work (see issues/silicon/0285.sil)
 
-    var whileMethods = Seq[Method]()
-    StrategyBuilder.ContextVisitor[Node, Method]({
-      case (w: While, ctx) if w.invs.nonEmpty =>
-        var args = Seq[LocalVarDecl]()
-        var quantified = Seq[LocalVarDecl]()
-        w.invs.foreach(wi =>
-          StrategyBuilder.SlimVisitor[Node]({
-            case l@LocalVar(name) => if (!args.exists(a => a.localVar.name == name)) args :+= LocalVarDecl(name, l.typ)(l.pos, l.info)
-            case Forall(vars, _, _) => quantified ++= vars
-            case Exists(vars, _) => quantified ++= vars
-            case ForPerm(vars, _, _) => quantified :+= vars
-            case _ =>
-          }).visit(wi)
-        )
-        args = args.filterNot(quantified.contains) ++ ctx.c.formalArgs.filterNot(args.contains)
-        whileMethods :+= Method(
-          naming.getNewNameFor(w, suffix = "invariant_wellformed_dummy_method"),
-          args,
-          Seq(),
-          ctx.c.pres.map(utils.rewriteRdForDummyMethod), // precondition of the current method seem to play a role for the contracts as well
-          w.invs.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod).map(utils.rewriteLabelledOldExpr),
+//    var whileMethods = Seq[Method]()
+//    StrategyBuilder.ContextVisitor[Node, Method]({
+//      case (w: While, ctx) if w.invs.nonEmpty =>
+//        var args = Seq[LocalVarDecl]()
+//        var quantified = Seq[LocalVarDecl]()
+//        w.invs.foreach(wi =>
+//          StrategyBuilder.SlimVisitor[Node]({
+//            case l@LocalVar(name) => if (!args.exists(a => a.localVar.name == name)) args :+= LocalVarDecl(name, l.typ)(l.pos, l.info)
+//            case Forall(vars, _, _) => quantified ++= vars
+//            case Exists(vars, _) => quantified ++= vars
+//            case ForPerm(vars, _, _) => quantified :+= vars
+//            case _ =>
+//          }).visit(wi)
+//        )
+//        args = args.filterNot(quantified.contains) ++ ctx.c.formalArgs.filterNot(args.contains)
+//        whileMethods :+= Method(
+//          naming.getNewNameFor(w, suffix = "invariant_wellformed_dummy_method"),
+//          args,
+//          Seq(),
+//          ctx.c.pres.map(utils.rewriteRdForDummyMethod), // precondition of the current method seem to play a role for the contracts as well
+//          w.invs.filterNot(_.isInstanceOf[BoolLit]).map(utils.rewriteRdForDummyMethod).map(utils.rewriteLabelledOldExpr),
 //          Seq(utils.rewriteRdForDummyMethod(w.invs.filterNot(_.isInstanceOf[BoolLit]).reduce((a, b) => And(a, b)(a.pos, a.info)))),
-          None
-        )(w.pos, w.info)
-      case _ =>
-    },
-      null,
-      {
-        case (m: Method, ctx) => m
-      }
-    ).visit(originalInput)
+//          None
+//        )(w.pos, w.info)
+//      case _ =>
+//    },
+//      null,
+//      {
+//        case (m: Method, ctx) => m
+//      }
+//    ).visit(originalInput)
 
     val methodMethods = originalInput.methods
       //        .filter(m => m.pres.nonEmpty || m.posts.nonEmpty) // cant't do this as we need the method for constraining blocks
@@ -442,6 +454,61 @@ class ARPPlugin extends SilverPlugin {
     )(input.pos, input.info, NodeTrafo(input))
 
     newProgram
+  }
+
+  def optimizeLabels(input: Program): Program = {
+    if (Optimize.removeUnnecessaryLabels){
+      Program(
+        input.domains,
+        input.fields,
+        input.functions,
+        input.predicates,
+        input.methods.map(m =>{
+          var usedLabels = Set[String]()
+          var labelMapping = Map[String, String]()
+          StrategyBuilder.SlimVisitor[Node]({
+            case LabelledOld(_, name) => usedLabels += name
+            case Seqn(ss, _) =>
+              def collectFollowup(s: Seq[Stmt]): Unit ={
+                if (s.size >= 2){
+                  s.head match {
+                    case headLabel: Label =>
+                      s.tail.head match {
+                        case tailLabel: Label =>
+                          labelMapping += tailLabel.name -> labelMapping.getOrElse(headLabel.name, headLabel.name)
+                          collectFollowup(s.tail)
+                        case Seqn(stmts, _) if stmts.nonEmpty => collectFollowup(Seq(s.head) ++ stmts ++ s.tail)
+                        case _ => collectFollowup(s.tail)
+                      }
+                    case Seqn(stmts, _) if stmts.nonEmpty => collectFollowup(stmts ++ s.tail)
+                    case _ => collectFollowup(s.tail)
+                  }
+                }
+              }
+              collectFollowup(ss)
+            case _ =>
+          }).visit(m)
+          usedLabels = usedLabels.filterNot(labelMapping.contains)
+          val removeLabelStrategy = StrategyBuilder.Slim[Node]({
+            case s@Seqn(ss, decls) =>
+              def isNodeNeeded(st: Any): Boolean = st match {
+                case Label(name, Seq()) => usedLabels.contains(name)
+                case _ => true
+              }
+              Seqn(ss.filter(isNodeNeeded), decls.filter(isNodeNeeded))(s.pos, s.info, NodeTrafo(s))
+            case l@LabelledOld(exp, name) if labelMapping.contains(name) =>
+              LabelledOld(exp, labelMapping(name))(l.pos, l.info, NodeTrafo(l))
+          })
+          // do it twice for good measure
+          // it seams like creating a nested Seqn does sometimes flatten it and the rewriter does not recurse anymore
+          // TODO figure out why this is necessary
+          val mPrime = removeLabelStrategy.execute[Method](removeLabelStrategy.execute[Method](m))
+          mPrime
+        })
+      )(input.pos, input.info, NodeTrafo(input))
+    } else {
+      input
+    }
   }
 
   def rewriteMethodCallsToDummyMethods(input: Program, node: Node): Node = {

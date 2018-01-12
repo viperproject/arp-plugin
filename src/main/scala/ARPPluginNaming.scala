@@ -27,7 +27,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   val rdCountingName = "rdc"
   val rdWildcardName = "rdw"
   val rdEpsilonName = "epsilonRd"
-  val rdGlobalName = "epsilonRd"
+  val rdGlobalName = "globalRd"
   val blacklistName = "ARP_IGNORE"
   private var havocNames_ = HashMap[Type, String]()
   def havocNames: HashMap[Type, String] = havocNames_

@@ -142,7 +142,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
             case default => default
           }), typVarMap)(f.pos, f.info, f.typ, f.formalArgs, f.domainName, f.errT))
         case (l: LocalVar, ctx) => ctx.noRec(l)
-        case (n: Exp, ctx) if isPure(n) && n.isHeapDependent() => ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n)))
+        case (n: Exp, ctx) if isPure(n) => ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n)))
         case (f: FieldAccess, ctx) =>
           ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
         case (f: FuncApp, ctx) =>

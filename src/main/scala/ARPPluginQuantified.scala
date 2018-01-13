@@ -17,7 +17,7 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 class ARPPluginQuantified(plugin: ARPPlugin) {
 
   def handleForallBreathe(input: Program, isInhale: Boolean, forall: Forall, rdRewriter: Stmt => Stmt, labelName: String, rdPerm: (Exp, FuncApp) => NormalizedExpression, nextWildcardName: () => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
-    def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(labelName, oldLabel = false)(exp)
+    def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(input, labelName, oldLabel = false)(exp)
 
     forall.exp match {
       case Implies(left, AccessPredicate(loc@FieldAccess(_: LocalVar, _: Field), perm)) if !plugin.isAccIgnored(loc) =>

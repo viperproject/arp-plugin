@@ -51,7 +51,7 @@ class ARPPluginWhile(plugin: ARPPlugin) {
               Label(whileEndLabelName, Seq())(w.pos, w.info)
             ) ++
             w.invs.map(i => Exhale(
-              plugin.utils.rewriteOldExpr(whileEndLabelName, oldLabel = false)(i)
+              plugin.utils.rewriteOldExpr(input, whileEndLabelName, oldLabel = false)(i)
             )(i.pos, ConsInfo(i.info, WasInvariantInside()), ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 LoopInvariantNotPreserved(i, reason, cached)
@@ -80,7 +80,7 @@ class ARPPluginWhile(plugin: ARPPlugin) {
           Label(whileStartLabelName, Seq())(w.pos, w.info, NodeTrafo(w))
         ) ++
           w.invs.map(i => Exhale(
-            plugin.utils.rewriteOldExpr(whileStartLabelName, oldLabel = false)(i)
+            plugin.utils.rewriteOldExpr(input, whileStartLabelName, oldLabel = false)(i)
           )(i.pos, ConsInfo(i.info, WasInvariantOutside()), ErrTrafo({
             case ExhaleFailed(_, reason, cached) =>
               LoopInvariantNotEstablished(i, reason, cached)

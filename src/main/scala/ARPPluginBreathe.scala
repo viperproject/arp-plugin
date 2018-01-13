@@ -71,7 +71,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
       plugin.naming.getNewName(suffix = "not_enough_names")
     }
 
-    def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(labelName, oldLabel = false)(exp)
+    def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(input, labelName, oldLabel = false)(exp)
 
     ctx.noRec(
       Seqn(
@@ -112,7 +112,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
   def assumeAndLog(input: Program, isInhale: Boolean, accessPredicate: AccessPredicate, rdPerm: (Exp, FuncApp) => NormalizedExpression, rdRewriter: Stmt => Stmt, labelName: String, nextWildcardName: () => String, ctx: ContextC[Node, ARPContext]): Seq[Stmt] = {
     val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, rdPerm)
 
-    def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(labelName, oldLabel = false)(exp)
+    def oldRewriter[T <: Node](exp: T) = plugin.utils.rewriteOldExpr(input, labelName, oldLabel = false)(exp)
 
     if (normalized.isDefined) {
       if (normalized.get.wildcard.isDefined) {

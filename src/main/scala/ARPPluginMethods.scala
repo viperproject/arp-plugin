@@ -52,14 +52,14 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             // start label
             Seq(Label(methodStartLabelName, Seq())(m.pos, m.info)) ++
             // method body
-            b.ss.map(plugin.utils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)) ++
+            b.ss.map(plugin.utils.rewriteOldExpr(input, methodStartLabelName, fieldAccess = false)) ++
             Seq(
               Label(methodEndLabelName, Seq())(m.pos, m.info)
             ) ++
             // exhale postconditions
             m.posts.map(p => Exhale(
-              plugin.utils.rewriteOldExpr(methodEndLabelName, oldLabel = false)(
-                plugin.utils.rewriteOldExpr(methodStartLabelName, fieldAccess = false)(p)
+              plugin.utils.rewriteOldExpr(input, methodEndLabelName, oldLabel = false)(
+                plugin.utils.rewriteOldExpr(input, methodStartLabelName, fieldAccess = false)(p)
               )
             )(p.pos, ConsInfo(p.info, WasMethodCondition()), ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
@@ -102,7 +102,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             ) ++
             // exhale preconditions
             method.pres.map(p => Exhale(
-              plugin.utils.rewriteOldExpr(labelName)(argRenamer(p))
+              plugin.utils.rewriteOldExpr(input, labelName)(argRenamer(p))
             )(p.pos, ConsInfo(p.info, WasCallCondition()), ErrTrafo({
               case ExhaleFailed(_, reason, cached) =>
                 PreconditionInCallFalse(m, reason, cached)
@@ -111,7 +111,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
             m.targets.map(t => plugin.utils.havoc(t, ctx)) ++
             // inhale postconditions
             method.posts.map(p => Inhale(
-              plugin.utils.rewriteOldExpr(labelName, fieldAccess = false)(argRenamer(p))
+              plugin.utils.rewriteOldExpr(input, labelName, fieldAccess = false)(argRenamer(p))
             )(p.pos, ConsInfo(p.info, WasCallCondition()))),
           // variable declarations
           Seq(

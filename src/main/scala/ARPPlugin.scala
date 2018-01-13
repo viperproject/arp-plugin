@@ -499,16 +499,21 @@ class ARPPlugin extends SilverPlugin {
         input.predicates,
         input.methods.map(m =>{
           var usedLabels = Set[String]()
+          var targetLabels = Set[String]()
           var labelMapping = Map[String, String]()
           StrategyBuilder.SlimVisitor[Node]({
             case LabelledOld(_, name) => usedLabels += name
+            case Goto(target) => targetLabels += target
+            case _ =>
+          }).visit(m)
+          StrategyBuilder.SlimVisitor[Node]({
             case Seqn(ss, _) =>
               def collectFollowup(s: Seq[Stmt]): Unit ={
                 if (s.size >= 2){
                   s.head match {
                     case headLabel: Label =>
                       s.tail.head match {
-                        case tailLabel: Label =>
+                        case tailLabel: Label if !targetLabels.contains(headLabel.name) && !targetLabels.contains(tailLabel.name) =>
                           labelMapping += tailLabel.name -> labelMapping.getOrElse(headLabel.name, headLabel.name)
                           collectFollowup(s.tail)
                         case Seqn(stmts, _) if stmts.nonEmpty => collectFollowup(Seq(s.head) ++ stmts ++ s.tail)
@@ -526,7 +531,7 @@ class ARPPlugin extends SilverPlugin {
           val removeLabelStrategy = StrategyBuilder.Slim[Node]({
             case s@Seqn(ss, decls) =>
               def isNodeNeeded(st: Any): Boolean = st match {
-                case Label(name, Seq()) => usedLabels.contains(name)
+                case Label(name, Seq()) => usedLabels.contains(name) || targetLabels.contains(name)
                 case _ => true
               }
               Seqn(ss.filter(isNodeNeeded), decls.filter(isNodeNeeded))(s.pos, s.info, NodeTrafo(s))

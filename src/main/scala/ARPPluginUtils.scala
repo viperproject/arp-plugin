@@ -58,7 +58,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }).execute[T](node)
   }
 
-  def rewriteOldExpr[T <: Node](labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true, includeNonpure: Boolean = false)(node: T): T = {
+  def rewriteOldExpr[T <: Node](program: Program, labelName: String, oldLabel: Boolean = true, fieldAccess: Boolean = true, includeNonpure: Boolean = false)(node: T): T = {
     def rewriteFieldAccess(fa: FieldAccess): FieldAccess = {
       fa.rcv match {
         case _: LabelledOld => fa
@@ -73,7 +73,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }
 
     def rewritePredicateAccess(pa: PredicateAccess): PredicateAccess = {
-      PredicateAccess(pa.args.map(rewriteOldExpr(labelName, oldLabel, fieldAccess)), pa.predicateName)(pa.pos, pa.info, NodeTrafo(pa))
+      PredicateAccess(pa.args.map(rewriteOldExpr(program, labelName, oldLabel, fieldAccess)), pa.predicateName)(pa.pos, pa.info, NodeTrafo(pa))
     }
 
     def rewritePerm(perm: Exp): Exp = {
@@ -142,7 +142,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
             case default => default
           }), typVarMap)(f.pos, f.info, f.typ, f.formalArgs, f.domainName, f.errT))
         case (l: LocalVar, ctx) => ctx.noRec(l)
-        case (n: Exp, ctx) if isPure(n) => ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n)))
+        case (n: Exp, ctx) if isPure(n) && n.isHeapDependent(program) => ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n)))
         case (f: FieldAccess, ctx) =>
           ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
         case (f: FuncApp, ctx) =>

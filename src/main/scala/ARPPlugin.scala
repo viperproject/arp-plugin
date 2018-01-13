@@ -18,6 +18,7 @@ import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPlugin extends SilverPlugin {
 
+  // TODO: Fix label optimization
   // TODO: Fix while loop contract wellformedness checks
   // TODO: Fix quantified x.f.g
   // TODO: Fix quantified xs[i]
@@ -472,8 +473,8 @@ class ARPPlugin extends SilverPlugin {
         m.name,
         m.formalArgs :+ LocalVarDecl(rdName, Perm)(m.pos, m.info),
         m.formalReturns,
-        utils.constrainRdExp(rdName)(m.pos, m.info) +: m.pres.map(utils.rewriteRd(rdName)),
-        m.posts.map(utils.rewriteRd(rdName)),
+        utils.constrainRdExp(rdName)(m.pos, m.info) +: m.pres.map(utils.rewriteRdForDummyMethod),
+        m.posts.map(utils.rewriteRdForDummyMethod),
         None
       )(m.pos, m.info, NodeTrafo(input))
     })
@@ -549,7 +550,7 @@ class ARPPlugin extends SilverPlugin {
       case m@MethodCall(methodName, args, targets) =>
         MethodCall(
           methodName,
-          args :+ FractionalPerm(IntLit(1)(m.pos, m.info), IntLit(2)(m.pos, m.info))(m.pos, m.info),
+          args :+ FractionalPerm(IntLit(1)(m.pos, m.info), IntLit(2000)(m.pos, m.info))(m.pos, m.info),
           targets
         )(m.pos, m.info, NodeTrafo(m))
     }).execute(node)

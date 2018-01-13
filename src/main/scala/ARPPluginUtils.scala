@@ -109,7 +109,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       includeNonpure ||
         !pureNode.exists(n =>
           n.isInstanceOf[AccessPredicate] ||
-            n.isInstanceOf[LocationAccess] ||
+            //n.isInstanceOf[LocationAccess] ||
             n.isInstanceOf[CurrentPerm] ||
             n.isInstanceOf[ForPerm] ||
             n.isInstanceOf[MagicWand]

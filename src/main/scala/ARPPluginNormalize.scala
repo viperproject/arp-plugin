@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast.utility.Rewriter.StrategyBuilder
-import viper.silver.ast.{Add, CondExp, Div, DomainBinExp, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermExp, PermLtCmp, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
+import viper.silver.ast.{Add, CondExp, Div, DomainBinExp, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, LtCmp, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermExp, PermLtCmp, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
 import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
 import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported
@@ -152,9 +152,15 @@ object ARPPluginNormalize {
         case FractionalPerm(IntLit(x), IntLit(y)) if (x >= 0) != (y >= 0) => negate(simplified)
         case FullPerm() => simplified
         case NoPerm() => simplified
-        case default =>
+        case default: PermExp =>
           CondExp(
             PermLtCmp(default, plugin.utils.getZeroEquivalent(default))(pos, info, errT),
+            PermMinus(default)(pos, info, errT),
+            default
+          )(pos, info, errT)
+        case default =>
+          CondExp(
+            LtCmp(default, plugin.utils.getZeroEquivalent(default))(pos, info, errT),
             Minus(default)(pos, info, errT),
             default
           )(pos, info, errT)

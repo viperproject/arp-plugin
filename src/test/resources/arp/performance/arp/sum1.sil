@@ -7,18 +7,38 @@ ensures acc(x.p, rd) && x.p > none && acc(x.f, write - rd - x.p + rdc(7) - rdc(3
 
 method bar(x: Ref, y: Ref)
 requires acc(x.p) && x.p > none && x.p < write && acc(x.f) && x.f == 5
-requires acc(y.p, rd) && y.p > none && y.p < write && acc(y.f, rd) && y.f == 5
+requires acc(y.p) && y.p > none && y.p < write && acc(y.f) && y.f == 5
 ensures acc(x.p) && x.p > none && x.p < write && acc(x.f) && x.f == 5
-ensures acc(y.p, rd) && y.p > none && y.p < write && acc(y.f, rd) && y.f == 5
+ensures acc(y.p) && y.p > none && y.p < write && acc(y.f) && y.f == 5
 {
 	foo(x)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(y)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(x)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(y)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(x)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(y)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(x)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(y)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(x)
+	assert acc(x.f)
+	assert acc(y.f)
 	foo(y)
+	assert acc(x.f)
+	assert acc(y.f)
 }

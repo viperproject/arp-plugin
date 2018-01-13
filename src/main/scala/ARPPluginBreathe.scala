@@ -321,7 +321,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           Seq()
         }
       case InhaleExhaleExp(in, ex) if isInhale.isDefined => if (isInhale.get) recursive(in) else recursive(ex)
-      case _: InhaleExhaleExp => Seq(Assert(BoolLit(b = false)(breath.pos, breath.info))(breath.pos, breath.info))
+      case InhaleExhaleExp(in, ex) => recursive(in) ++ recursive(ex)
       case fa@FieldAccessPredicate(loc, perm) => splitAccessPredicate(perm, recursive, handle, fa, FieldAccessPredicate(loc, _)(fa.pos, fa.info, NodeTrafo(fa)))
       case pa@PredicateAccessPredicate(loc, perm) => splitAccessPredicate(perm, recursive, handle, pa, PredicateAccessPredicate(loc, _)(pa.pos, pa.info, NodeTrafo(pa)))
       case default => handle(default)

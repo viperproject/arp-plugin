@@ -41,7 +41,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
                   case a: AccessPredicate if isRdCall(a.perm) =>
                     Seq(constrainRdInhale(rdName, transformLoc(method, m, a.loc))(m.pos, m.info))
                   case f@Forall(vars, triggers, Implies(exp, a: AccessPredicate)) =>
-                    Seq(Inhale(Forall(vars, triggers, Implies(exp, constrainRdExp(rdName, a.loc)(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))
+                    Seq(Inhale(Forall(vars, triggers, Implies(transformLoc(method, m, exp), constrainRdExp(rdName, transformLoc(method, m, a.loc))(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))
                   case _ => Seq()
                 })
               ) ++
@@ -102,11 +102,11 @@ class ARPPluginSimple(plugin: ARPPlugin) {
     )(pos, info)
   }
 
-  def transformLoc(m: Method, mc: MethodCall, loc: LocationAccess): LocationAccess = {
+  def transformLoc[T <: Node](m: Method, mc: MethodCall, loc: T): T = {
     val mapping = m.formalArgs.map(_.name).zip(mc.args).toMap
     StrategyBuilder.Slim[Node]({
-      case LocalVar(name) => mapping(name)
-    }).execute[LocationAccess](loc)
+      case l@LocalVar(name) => mapping.getOrElse(name, l) // might not be in mapping if quantifier
+    }).execute[T](loc)
   }
 
   def isRdCall(e: Exp): Boolean = {

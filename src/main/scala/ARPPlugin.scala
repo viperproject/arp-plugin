@@ -53,8 +53,8 @@ class ARPPlugin extends SilverPlugin {
     val removeProvableIf = true
     val noAssumptionForPost = false // this does not work if rd is only present in post condition
     val removeUnnecessaryLabels = true
-    val mixSimpleEncoding = false
-    val useSimpleEncodingIfPossible = false
+    val mixSimpleEncoding = true
+    val useSimpleEncodingIfPossible = true
     val onlyTransformIfRdUsed = false
   }
 
@@ -491,8 +491,8 @@ class ARPPlugin extends SilverPlugin {
         m.name,
         m.formalArgs :+ LocalVarDecl(rdName, Perm)(m.pos, m.info),
         m.formalReturns,
-        utils.constrainRdExp(rdName)(m.pos, m.info) +: m.pres.map(utils.rewriteRdForDummyMethod),
-        m.posts.map(utils.rewriteRdForDummyMethod),
+        utils.constrainRdExp(rdName)(m.pos, m.info) +: m.pres.map(utils.rewriteRdForDummyMethod(rdName)),
+        m.posts.map(utils.rewriteRdForDummyMethod(rdName)),
         None
       )(m.pos, m.info, NodeTrafo(input))
     })

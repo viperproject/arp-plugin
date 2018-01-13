@@ -90,14 +90,16 @@ class ARPPluginMethods(plugin: ARPPlugin) {
 
         Seqn(
           Seq(
-            // call label
-            Label(labelName, Seq())(m.pos, m.info),
             // inhale rd constraints for call rd
             Inhale(plugin.utils.constrainRdExp(methodRdName)(m.pos, m.info))(m.pos, m.info)
           ) ++
             localVars.zip(m.args).map(z => LocalVarAssign(z._1, z._2)(m.pos, m.info, ErrTrafo({
               case AssignmentFailed(_, reason, cached) => CallFailed(m, reason, cached)
             }))) ++
+            Seq(
+              // call label
+              Label(labelName, Seq())(m.pos, m.info)
+            ) ++
             // exhale preconditions
             method.pres.map(p => Exhale(
               plugin.utils.rewriteOldExpr(labelName)(argRenamer(p))

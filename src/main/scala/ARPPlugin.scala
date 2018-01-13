@@ -140,6 +140,8 @@ class ARPPlugin extends SilverPlugin {
   }
 
   override def beforeVerify(input: Program): Program = {
+    val startTime = System.currentTimeMillis()
+
     analyzeInput(input)
 
     val inputPrime = if (difficulty == 0 && Optimize.onlyTransformIfRdUsed) {
@@ -154,6 +156,8 @@ class ARPPlugin extends SilverPlugin {
 
     if (System.getProperty("DEBUG", "").equals("1")) {
       println(inputPrime)
+      val endTime = System.currentTimeMillis()
+      println("ARPPlugin finished in " + ((endTime - startTime) / 1000.0) + " seconds")
     }
 
     if (_errors.isEmpty) {

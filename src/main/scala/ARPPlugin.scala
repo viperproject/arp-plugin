@@ -41,6 +41,7 @@ class ARPPlugin extends SilverPlugin {
   val wands = new ARPPluginWands(this)
   val misc = new ARPPluginMisc(this)
   val simple = new ARPPluginSimple(this)
+  val performance = new ARPPerformance()
   var ignoredFields = Seq[String]()
   var difficulty = 0
   var methodCallDifficulty = Map[String, Int]()
@@ -81,6 +82,7 @@ class ARPPlugin extends SilverPlugin {
   }
 
   override def beforeResolve(input: PProgram): PProgram = {
+    performance.start()
 
     val rdFunction = PFunction(PIdnDef(naming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
@@ -137,11 +139,13 @@ class ARPPlugin extends SilverPlugin {
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
 
+    performance.stop("beforeResolve")
+
     inputPrime
   }
 
   override def beforeVerify(input: Program): Program = {
-    val startTime = System.currentTimeMillis()
+    performance.start()
 
     analyzeInput(input)
 
@@ -157,15 +161,16 @@ class ARPPlugin extends SilverPlugin {
 
     if (System.getProperty("DEBUG", "").equals("1")) {
       println(inputPrime)
-      val endTime = System.currentTimeMillis()
-      println("ARPPlugin finished in " + ((endTime - startTime) / 1000.0) + " seconds")
     }
 
     if (_errors.isEmpty) {
-      if (inputPrime.checkTransitively.nonEmpty) {
-        inputPrime.checkTransitively.foreach(ce => reportError(ConsistencyError(ce.message + s" (${ce.pos})", ce.pos)))
+      val checkResult = performance.measure("checkTransitively consistency")(inputPrime.checkTransitively)
+      if (checkResult.nonEmpty) {
+        checkResult.foreach(ce => reportError(ConsistencyError(ce.message + s" (${ce.pos})", ce.pos)))
       }
     }
+
+    performance.stop("beforeVerify")
 
     inputPrime
   }
@@ -220,7 +225,7 @@ class ARPPlugin extends SilverPlugin {
       }
     )
 
-    val rewrittenInput = arpRewriter.execute[Program](enhancedInput)
+    val rewrittenInput = performance.measure("arpRewriter")(arpRewriter.execute[Program](enhancedInput))
     val inputPrime = optimizeLabels(addHavocMethods(addDummyMethods(input, rewrittenInput)))
     inputPrime
   }
@@ -273,6 +278,7 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def analyzeInput(input: Program): Unit ={
+    performance.start()
     input.methods.foreach(m => {
       methodCallDifficulty += m.name -> (m.pres ++ m.posts).map(getDifficulty).fold(0)(math.max)
     })
@@ -283,21 +289,24 @@ class ARPPlugin extends SilverPlugin {
       methodBodyDifficulty += m.name -> math.max(m.body.map(getDifficulty).getOrElse(0), methodCallDifficulty(m.name))
     })
     difficulty = (methodCallDifficulty ++ methodBodyDifficulty ++ predicateBodyDifficulty).values.fold(0)(math.max)
+    performance.stop("analyzeInput")
   }
 
   def loadSilFile(file: String): Program = {
+    performance.start()
     val path = getClass.getResourceAsStream(file)
-    val arpFrontend = new ARPFrontend
-    arpFrontend.loadFile(file, path) match {
+    val arpFrontend = new ARPFrontend(this)
+    performance.measure("loadSilFile " + file)(arpFrontend.loadFile(file, path) match {
       case Some(program) => program
       case None =>
         val empty = Program(Seq(), Seq(), Seq(), Seq(), Seq())()
         reportError(Internal(FeatureUnsupported(empty, "Could not load ARP Domain")))
         empty
-    }
+    })
   }
 
   def addARPDomain(input: Program): Program = {
+    performance.start()
     val arpDomainFile = loadSilFile(naming.arpDomainFile)
 
     val newProgram = Program(
@@ -314,6 +323,8 @@ class ARPPlugin extends SilverPlugin {
 
     checkUniqueNames(input, arpDomainFile)
 
+    performance.stop("addARPDomain")
+
     // if there was an error, give back an empty program
     if (_errors.isEmpty) newProgram else Program(Seq(), Seq(), Seq(), Seq(), Seq())()
   }
@@ -329,6 +340,8 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def addFieldFunctions(input: Program): Program = {
+    performance.start()
+
     val domainName = naming.fieldFunctionDomainName
     val fields = input.fields.filterNot(isFieldIgnored)
     val predicates = input.predicates.filterNot(isPredicateIgnored)
@@ -409,6 +422,8 @@ class ARPPlugin extends SilverPlugin {
       input.methods
     )(input.pos, input.info, NodeTrafo(input))
 
+    performance.stop("addFieldFunctions")
+
     newProgram
   }
 
@@ -426,6 +441,8 @@ class ARPPlugin extends SilverPlugin {
   }
 
   def addDummyMethods(originalInput: Program, input: Program): Program = {
+    performance.start()
+
     // ensures false is not checked if there is no body, so would not need handle this
     // invariants have other rules for wellformedness than methods, so this does not always work (see issues/silicon/0285.sil)
 
@@ -467,6 +484,7 @@ class ARPPlugin extends SilverPlugin {
       originalInput.methods
     }
 
+    performance.start()
     val methodMethods = filteredMethods.map(m => {
       val rdName = naming.getNewNameFor(m, m.name, "rd")
       Method(
@@ -478,6 +496,7 @@ class ARPPlugin extends SilverPlugin {
         None
       )(m.pos, m.info, NodeTrafo(input))
     })
+    performance.stop("addDummyMethods generate methods")
 
     val newProgram = Program(
       input.domains,
@@ -487,17 +506,19 @@ class ARPPlugin extends SilverPlugin {
       input.methods ++ /*whileMethods ++*/ methodMethods
     )(input.pos, input.info, NodeTrafo(input))
 
+    performance.stop("addDummyMethods")
+
     newProgram
   }
 
   def optimizeLabels(input: Program): Program = {
     if (Optimize.removeUnnecessaryLabels){
-      Program(
+      performance.measure("optimizeLabels")(Program(
         input.domains,
         input.fields,
         input.functions,
         input.predicates,
-        input.methods.map(m =>{
+        input.methods.map(m => {
           var usedLabels = Set[String]()
           var targetLabels = Set[String]()
           var labelMapping = Map[String, String]()
@@ -508,8 +529,8 @@ class ARPPlugin extends SilverPlugin {
           }).visit(m)
           StrategyBuilder.SlimVisitor[Node]({
             case Seqn(ss, _) =>
-              def collectFollowup(s: Seq[Stmt]): Unit ={
-                if (s.size >= 2){
+              def collectFollowup(s: Seq[Stmt]): Unit = {
+                if (s.size >= 2) {
                   s.head match {
                     case headLabel: Label =>
                       s.tail.head match {
@@ -524,6 +545,7 @@ class ARPPlugin extends SilverPlugin {
                   }
                 }
               }
+
               collectFollowup(ss)
             case _ =>
           }).visit(m)
@@ -534,6 +556,7 @@ class ARPPlugin extends SilverPlugin {
                 case Label(name, Seq()) => usedLabels.contains(name) || targetLabels.contains(name)
                 case _ => true
               }
+
               Seqn(ss.filter(isNodeNeeded), decls.filter(isNodeNeeded))(s.pos, s.info, NodeTrafo(s))
             case l@LabelledOld(exp, name) if labelMapping.contains(name) =>
               LabelledOld(exp, labelMapping(name))(l.pos, l.info, NodeTrafo(l))
@@ -544,7 +567,7 @@ class ARPPlugin extends SilverPlugin {
           val mPrime = removeLabelStrategy.execute[Method](removeLabelStrategy.execute[Method](m))
           mPrime
         })
-      )(input.pos, input.info, NodeTrafo(input))
+      )(input.pos, input.info, NodeTrafo(input)))
     } else {
       input
     }

@@ -12,7 +12,7 @@ import scala.io.Source
 /** Minimal SilFrontend to load a file and translate it into an AST
   * Will probably break if it is used for something else than loadFile.
   */
-class ARPFrontend extends SilFrontend{
+class ARPFrontend(plugin: ARPPlugin) extends SilFrontend{
 
   override def createVerifier(fullCmd: String): Verifier =
     sys.error("Implementation missing")
@@ -24,7 +24,9 @@ class ARPFrontend extends SilFrontend{
     _plugins = SilverPluginManager(None)
     _state = TranslatorState.Initialized
     myReset(name, stream)
+    plugin.performance.start()
     translate()
+    plugin.performance.stop("loadFile translate")
 
     if (_errors.nonEmpty) {
       logger.info(s"Could not load $name:")

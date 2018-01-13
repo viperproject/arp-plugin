@@ -195,13 +195,30 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }).execute[T](node)
   }
 
-  def rewriteRdForDummyMethod[T <: Node](node: T): T = {
+  def rewriteRdForDummyMethodSlow[T <: Node](node: T): T = {
+    plugin.performance.start()
     val strat = TreeRegexBuilder.simple[Node] &> n.r[AccessPredicate] >> n.P[FuncApp](f =>
       f.funcname == plugin.naming.rdName || f.funcname == plugin.naming.rdCountingName || f.funcname == plugin.naming.rdWildcardName
     ) |-> {
       case f@FieldAccessPredicate(loc, perm) => FieldAccessPredicate(loc, FractionalPerm(IntLit(1)(), IntLit(2)())())(f.pos, f.info, NodeTrafo(f))
       case p@PredicateAccessPredicate(loc, perm) => PredicateAccessPredicate(loc, FractionalPerm(IntLit(1)(), IntLit(2)())())(p.pos, p.info, NodeTrafo(p))
     }
+    val result = strat.execute[T](node)
+    plugin.performance.stop("rewriteRdForDummyMethodSlow")
+    result
+  }
+
+  def rewriteRdForDummyMethod[T <: Node](node: T): T = {
+    val strat = StrategyBuilder.Slim[Node]({
+      case ap: AccessPredicate if ap.loc.exists({
+        case f: FuncApp => f.funcname == plugin.naming.rdName || f.funcname == plugin.naming.rdCountingName || f.funcname == plugin.naming.rdWildcardName
+        case _ => false
+      }) =>
+        ap match {
+          case f@FieldAccessPredicate(loc, perm) => FieldAccessPredicate(loc, FractionalPerm(IntLit(1)(), IntLit(2)())())(f.pos, f.info, NodeTrafo(f))
+          case p@PredicateAccessPredicate(loc, perm) => PredicateAccessPredicate(loc, FractionalPerm(IntLit(1)(), IntLit(2)())())(p.pos, p.info, NodeTrafo(p))
+        }
+    })
     strat.execute[T](node)
   }
 

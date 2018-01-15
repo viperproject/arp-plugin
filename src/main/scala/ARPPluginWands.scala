@@ -16,7 +16,7 @@ class ARPPluginWands(plugin: ARPPlugin) {
 
   def handleApply(input: Program, a: Apply, ctx: ContextC[Node, ARPContext]): Node = {
     Seqn(
-      plugin.breathe.splitBreathing(a.exp.left, Some(false), {
+      plugin.breathe.splitBreathing(a.exp.left, complete = true, Some(false), {
         case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
           val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
           if (normalized.isDefined) {
@@ -32,7 +32,7 @@ class ARPPluginWands(plugin: ARPPlugin) {
         case _ => Seq()
       }) ++
         Seq[Stmt](ctx.noRec(a)) ++
-        plugin.breathe.splitBreathing(a.exp.right, Some(true), {
+        plugin.breathe.splitBreathing(a.exp.right, complete = true, Some(true), {
           case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
             val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, plugin.normalize.rdPermContext)
             if (normalized.isDefined) {

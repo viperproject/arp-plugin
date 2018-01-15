@@ -41,6 +41,7 @@ requires acc(r.f, write) && acc(r.f, 1/2)
     r.f := perm(r.g)
     inhale acc(r.f, rd)
     //:: ExpectedOutput(internal:feature.unsupported)
+    //:: MissingOutput(internal:feature.unsupported)
     r.f := perm(r.g)
 }
 
@@ -51,6 +52,7 @@ requires acc(r.f, write) && acc(r.f, 1/2)
     r.f := perm(r.g)
     inhale acc(r.f, rdc(3))
     //:: ExpectedOutput(internal:feature.unsupported)
+    //:: MissingOutput(internal:feature.unsupported)
     r.f := perm(r.g)
 }
 
@@ -61,6 +63,7 @@ requires acc(r.f, write) && acc(r.f, 1/2)
     r.f := perm(r.g)
     inhale acc(r.f, rdw)
     //:: ExpectedOutput(internal:feature.unsupported)
+    //:: MissingOutput(internal:feature.unsupported)
     r.f := perm(r.g)
 }
 
@@ -71,5 +74,6 @@ requires acc(r.f, write) && acc(r.f, 1/2)
     r.f := perm(r.g)
     inhale acc(r.f, rd)
     //:: ExpectedOutput(internal:feature.unsupported)
+    //:: MissingOutput(internal:feature.unsupported)
     r.f := write - perm(r.f) + perm(r.g)
 }

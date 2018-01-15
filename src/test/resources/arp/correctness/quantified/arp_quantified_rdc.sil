@@ -18,6 +18,7 @@ ensures acc(a.g) && (forall x: Ref :: x != null ==> acc(x.f, 1/2))
     a.g := 6
     inhale a.f == 5
     inhale b.f == 6
+    //:: UnexpectedOutput(call.precondition:insufficient.permission)
     foo(a, b)
     assert a.g == 11
 }

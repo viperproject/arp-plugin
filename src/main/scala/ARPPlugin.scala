@@ -53,8 +53,8 @@ class ARPPlugin extends SilverPlugin {
     val removeProvableIf = true
     val noAssumptionForPost = false // this does not work if rd is only present in post condition
     val removeUnnecessaryLabels = true
-    val mixSimpleEncoding = true
-    val useSimpleEncodingIfPossible = true
+    val mixSimpleEncoding = false
+    val useSimpleEncodingIfPossible = false
     val onlyTransformIfRdUsed = false
   }
 

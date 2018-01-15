@@ -37,7 +37,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
           Seqn(
             Seq(Inhale(plugin.utils.constrainRdExp(rdName)(m.pos, m.info))(m.pos, m.info)) ++
               method.pres.flatMap(p =>
-                plugin.breathe.splitBreathing(p, Some(false), {
+                plugin.breathe.splitBreathing(p, complete = true, Some(false), {
                   case a: AccessPredicate if isRdCall(a.perm) =>
                     Seq(constrainRdInhale(rdName, transformLoc(method, m, a.loc))(m.pos, m.info))
                   case f@Forall(vars, triggers, Implies(exp, a: AccessPredicate)) =>
@@ -61,7 +61,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
           Seqn(
             Seq(Inhale(plugin.utils.constrainRdExp(rdName)(w.pos, w.info))(w.pos, w.info)) ++
               w.invs.flatMap(inv =>
-                plugin.breathe.splitBreathing(inv, None, {
+                plugin.breathe.splitBreathing(inv, complete = true, None, {
                   case a: AccessPredicate if isRdCall(a.perm) => Seq(constrainRdInhale(rdName, a.loc)(w.pos, w.info))
                   case _ => Seq()
                 })

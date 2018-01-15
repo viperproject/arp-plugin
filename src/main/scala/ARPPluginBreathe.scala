@@ -29,10 +29,10 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     ctx.noRec(
       Seqn(
-          splitBreathing(inhale.exp, Some(true), exp => {
-            val inSeq = Seq(Inhale(rdRewriter(exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale)))
-            inSeq ++
-            (exp match {
+        splitBreathing(inhale.exp, complete = false, Some(true), exp => {
+          val inSeq = Seq(Inhale(rdRewriter(exp))(inhale.pos, inhale.info, inhale.errT + NodeTrafo(inhale)))
+          inSeq ++
+            splitBreathing(exp, complete = true, Some(true), {
               case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
                 plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = false, ctx)(f.pos, f.info, NodeTrafo(f))
               case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
@@ -47,7 +47,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
                 plugin.quantified.handleForallBreathe(input, isInhale = true, f, rdRewriter, "", getRdLevel(inhale), nextWildcardName, ctx)
               case _ => Seq()
             })
-          }),
+        }),
         wildcardNames.map(n => LocalVarDecl(n, Perm)(inhale.pos, inhale.info))
       )(inhale.pos, inhale.info, NodeTrafo(inhale))
     )
@@ -76,9 +76,9 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     ctx.noRec(
       Seqn(
         Seq(Label(labelName, Seq())(exhale.pos, exhale.info)) ++
-          splitBreathing(exhale.exp, Some(false), exp => {
+          splitBreathing(exhale.exp, complete = false, Some(false), exp => {
             val exSeq = Seq(Exhale(oldRewriter(rdRewriter(exp)))(exhale.pos, exhale.info, exhale.errT + NodeTrafo(exhale)))
-            (exp match {
+            splitBreathing(exp, complete = true, Some(false), {
               case f@FieldAccessPredicate(floc, CurrentPerm(loc)) if !plugin.isFieldIgnored(floc.field) =>
                 plugin.quantified.generateLogUpdateCurrentPerm(input, floc, loc, e => e, minus = true, ctx)(f.pos, f.info, NodeTrafo(f))
               case p@PredicateAccessPredicate(ploc, CurrentPerm(loc)) if !plugin.isPredicateIgnored(ploc.predicateName) =>
@@ -155,7 +155,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     ctx.noRec(
       Seqn(
-        splitBreathing(assert.exp, Some(false), {
+        splitBreathing(assert.exp, complete = true, Some(false), {
           case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
             val normalized = plugin.normalize.normalizeExpression(accessPredicate.perm, getRdLevel(assert), ignoreErrors = true)
             if (normalized.isDefined) {
@@ -225,7 +225,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           } else {
             Seq()
           }) ++
-            splitBreathing(body, None, {
+            splitBreathing(body, complete = true, None, {
               case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
                 val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
                 if (normalized.isDefined) {
@@ -294,37 +294,54 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def splitBreathing(breath: Exp, isInhale: Option[Boolean], handle: Exp => Seq[Stmt]): Seq[Stmt] = {
-    def recursive(b: Exp) = splitBreathing(b, isInhale, handle)
+  def splitBreathing(breath: Exp, complete: Boolean, isInhale: Option[Boolean], handle: Exp => Seq[Stmt]): Seq[Stmt] = {
+    def recursive(b: Exp) = splitBreathing(b, complete, isInhale, handle)
 
-    breath match {
-      case And(left, right) => recursive(left) ++ recursive(right)
-      case Implies(left, right) =>
-        val rightRec = recursive(right)
-        if (rightRec.nonEmpty) {
-          Seq(If(left,
-            Seqn(rightRec, Seq())(right.pos, right.info, NodeTrafo(right)),
-            Seqn(Seq(), Seq())(breath.pos, breath.info)
-          )(breath.pos, breath.info, NodeTrafo(breath)))
-        } else {
-          Seq()
-        }
-      case CondExp(cond, thn, els) =>
-        val thnRec = recursive(thn)
-        val elsRec = recursive(els)
-        if (thnRec.nonEmpty || elsRec.nonEmpty) {
-          Seq(If(cond,
-            Seqn(thnRec, Seq())(thn.pos, thn.info, NodeTrafo(thn)),
-            Seqn(elsRec, Seq())(els.pos, els.info, NodeTrafo(els))
-          )(breath.pos, breath.info, NodeTrafo(breath)))
-        } else {
-          Seq()
-        }
-      case InhaleExhaleExp(in, ex) if isInhale.isDefined => if (isInhale.get) recursive(in) else recursive(ex)
-      case InhaleExhaleExp(in, ex) => recursive(in) ++ recursive(ex)
-      case fa@FieldAccessPredicate(loc, perm) => splitAccessPredicate(perm, recursive, handle, fa, FieldAccessPredicate(loc, _)(fa.pos, fa.info, NodeTrafo(fa)))
-      case pa@PredicateAccessPredicate(loc, perm) => splitAccessPredicate(perm, recursive, handle, pa, PredicateAccessPredicate(loc, _)(pa.pos, pa.info, NodeTrafo(pa)))
-      case default => handle(default)
+    def needSplit(exp: Exp): Boolean ={
+      exp.exists({
+        case ap: AccessPredicate =>
+          ap.perm.exists({
+            case cp: CurrentPerm => true
+            case FuncApp(name, _) =>
+              name == plugin.naming.rdName || name == plugin.naming.rdWildcardName || name == plugin.naming.rdCountingName
+            case _ => false
+          })
+        case _ => false
+      })
+    }
+
+    if (complete || needSplit(breath)) {
+      breath match {
+        case And(left, right) => recursive(left) ++ recursive(right)
+        case Implies(left, right) =>
+          val rightRec = recursive(right)
+          if (rightRec.nonEmpty) {
+            Seq(If(left,
+              Seqn(rightRec, Seq())(right.pos, right.info, NodeTrafo(right)),
+              Seqn(Seq(), Seq())(breath.pos, breath.info)
+            )(breath.pos, breath.info, NodeTrafo(breath)))
+          } else {
+            Seq()
+          }
+        case CondExp(cond, thn, els) =>
+          val thnRec = recursive(thn)
+          val elsRec = recursive(els)
+          if (thnRec.nonEmpty || elsRec.nonEmpty) {
+            Seq(If(cond,
+              Seqn(thnRec, Seq())(thn.pos, thn.info, NodeTrafo(thn)),
+              Seqn(elsRec, Seq())(els.pos, els.info, NodeTrafo(els))
+            )(breath.pos, breath.info, NodeTrafo(breath)))
+          } else {
+            Seq()
+          }
+        case InhaleExhaleExp(in, ex) if isInhale.isDefined => if (isInhale.get) recursive(in) else recursive(ex)
+        case InhaleExhaleExp(in, ex) => recursive(in) ++ recursive(ex)
+        case fa@FieldAccessPredicate(loc, perm) => splitAccessPredicate(perm, recursive, handle, fa, FieldAccessPredicate(loc, _)(fa.pos, fa.info, NodeTrafo(fa)))
+        case pa@PredicateAccessPredicate(loc, perm) => splitAccessPredicate(perm, recursive, handle, pa, PredicateAccessPredicate(loc, _)(pa.pos, pa.info, NodeTrafo(pa)))
+        case default => handle(default)
+      }
+    } else {
+      handle(breath)
     }
   }
 

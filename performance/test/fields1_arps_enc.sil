@@ -1,0 +1,76 @@
+field f: Int
+
+field g: Int
+
+field h: Int
+
+field r: Ref
+
+function rd(): Perm
+
+
+function rdc(ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264: Int): Perm
+
+
+function rdw(): Perm
+
+
+method foo(x: Ref, y: Ref, z: Ref, foo_rd: Perm)
+  requires none < foo_rd && foo_rd < write
+  requires acc(x.f, foo_rd) && (acc(y.g, foo_rd) && (acc(z.r, foo_rd) && acc(z.r.h, foo_rd)))
+  ensures acc(x.f, foo_rd) && (acc(y.g, foo_rd) && (acc(z.r, foo_rd) && acc(z.r.h, foo_rd)))
+
+
+method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
+  requires none < bar_rd && bar_rd < write
+  requires x != y && (x != z && y != z)
+  requires acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(x.r.h, 1 / 4)))
+  requires acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(y.r.h, 1 / 4)))
+  requires acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
+  ensures acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(x.r.h, 1 / 4)))
+  ensures acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(y.r.h, 1 / 4)))
+  ensures acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
+{
+  var foo_call_rd: Perm
+  inhale none < foo_call_rd && foo_call_rd < write
+  inhale none < perm(x.f) ==> foo_call_rd < perm(x.f)
+  inhale none < perm(y.g) ==> foo_call_rd < perm(y.g)
+  inhale none < perm(z.r) ==> foo_call_rd < perm(z.r)
+  inhale none < perm(z.r.h) ==> foo_call_rd < perm(z.r.h)
+  foo(x, y, z, foo_call_rd)
+  var foo_0_call_rd: Perm
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  inhale none < perm(x.f) ==> foo_0_call_rd < perm(x.f)
+  inhale none < perm(z.g) ==> foo_0_call_rd < perm(z.g)
+  inhale none < perm(y.r) ==> foo_0_call_rd < perm(y.r)
+  inhale none < perm(y.r.h) ==> foo_0_call_rd < perm(y.r.h)
+  foo(x, z, y, foo_0_call_rd)
+  var foo_1_call_rd: Perm
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  inhale none < perm(y.f) ==> foo_1_call_rd < perm(y.f)
+  inhale none < perm(x.g) ==> foo_1_call_rd < perm(x.g)
+  inhale none < perm(z.r) ==> foo_1_call_rd < perm(z.r)
+  inhale none < perm(z.r.h) ==> foo_1_call_rd < perm(z.r.h)
+  foo(y, x, z, foo_1_call_rd)
+  var foo_2_call_rd: Perm
+  inhale none < foo_2_call_rd && foo_2_call_rd < write
+  inhale none < perm(y.f) ==> foo_2_call_rd < perm(y.f)
+  inhale none < perm(z.g) ==> foo_2_call_rd < perm(z.g)
+  inhale none < perm(x.r) ==> foo_2_call_rd < perm(x.r)
+  inhale none < perm(x.r.h) ==> foo_2_call_rd < perm(x.r.h)
+  foo(y, z, x, foo_2_call_rd)
+  var foo_3_call_rd: Perm
+  inhale none < foo_3_call_rd && foo_3_call_rd < write
+  inhale none < perm(z.f) ==> foo_3_call_rd < perm(z.f)
+  inhale none < perm(x.g) ==> foo_3_call_rd < perm(x.g)
+  inhale none < perm(y.r) ==> foo_3_call_rd < perm(y.r)
+  inhale none < perm(y.r.h) ==> foo_3_call_rd < perm(y.r.h)
+  foo(z, x, y, foo_3_call_rd)
+  var foo_4_call_rd: Perm
+  inhale none < foo_4_call_rd && foo_4_call_rd < write
+  inhale none < perm(z.f) ==> foo_4_call_rd < perm(z.f)
+  inhale none < perm(y.g) ==> foo_4_call_rd < perm(y.g)
+  inhale none < perm(x.r) ==> foo_4_call_rd < perm(x.r)
+  inhale none < perm(x.r.h) ==> foo_4_call_rd < perm(x.r.h)
+  foo(z, y, x, foo_4_call_rd)
+}

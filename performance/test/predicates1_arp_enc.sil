@@ -1,0 +1,329 @@
+domain ARPLog {
+
+  function ARPLog_Nil(): ARPLog
+
+  function ARPLog_Cons(arp_quant_ref: Ref, arp_quant_fieldId: Int, permission: Perm, arp_quant_level: Int, arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_head_ref_Cons(arp_quant_log: ARPLog): Ref
+
+  function ARPLog_head_fieldId_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_head_permission_Cons(arp_quant_log: ARPLog): Perm
+
+  function ARPLog_head_level_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_tail_Cons(arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_type(arp_quant_log: ARPLog): Int
+
+  unique function ARPLog_type_Nil(): Int
+
+  unique function ARPLog_type_Cons(): Int
+
+  function ARPLog_is_Nil(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_is_Cons(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_max_level(arp_quant_log: ARPLog): Int
+
+  function ARPLog_sum_gt(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  function ARPLog_sum(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  axiom ARPLog_destruct_over_construct_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: { ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail) } ARPLog_head_ref_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_ref && (ARPLog_head_fieldId_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_fieldId && (ARPLog_head_permission_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_permission && (ARPLog_head_level_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_level && ARPLog_tail_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_tail))))
+  }
+
+  axiom ARPLog_construct_over_destruct_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_head_ref_Cons(arp_quant_log) } { ARPLog_head_fieldId_Cons(arp_quant_log) } { ARPLog_head_permission_Cons(arp_quant_log) } { ARPLog_head_level_Cons(arp_quant_log) } { ARPLog_tail_Cons(arp_quant_log) } ARPLog_is_Cons(arp_quant_log) ==> arp_quant_log == ARPLog_Cons(ARPLog_head_ref_Cons(arp_quant_log), ARPLog_head_fieldId_Cons(arp_quant_log), ARPLog_head_permission_Cons(arp_quant_log), ARPLog_head_level_Cons(arp_quant_log), ARPLog_tail_Cons(arp_quant_log)))
+  }
+
+  axiom ARPLog_type_of_Nil {
+    ARPLog_type(ARPLog_Nil()) == ARPLog_type_Nil()
+  }
+
+  axiom ARPLog_type_of_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: ARPLog_type(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_existence {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } ARPLog_type(arp_quant_log) == ARPLog_type_Nil() || ARPLog_type(arp_quant_log) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_is_Nil {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Nil()) == ARPLog_is_Nil(arp_quant_log))
+  }
+
+  axiom ARPLog_type_is_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Cons()) == ARPLog_is_Cons(arp_quant_log))
+  }
+
+  axiom ARPLog_log_max_level {
+    (forall arp_quant_log: ARPLog :: { ARPLog_max_level(arp_quant_log) } ARPLog_max_level(arp_quant_log) == 6)
+  }
+
+  axiom ARPLog_sum_gt_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (arp_quant_level >= ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (arp_quant_level < ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log) + ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log)))
+  }
+
+  axiom ARPLog_sum_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (ARPLog_is_Nil(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (ARPLog_is_Cons(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, ARPLog_tail_Cons(arp_quant_log)) + (ARPLog_head_ref_Cons(arp_quant_log) == arp_quant_ref && (ARPLog_head_fieldId_Cons(arp_quant_log) == arp_quant_fieldId && ARPLog_head_level_Cons(arp_quant_log) == arp_quant_level) ? ARPLog_head_permission_Cons(arp_quant_log) : none)))
+  }
+}
+
+domain ARP_field_functions {
+
+  unique function field_f(): Int
+
+  unique function predicate_p1(): Int
+
+  function predicate_p2(x: Ref): Int
+
+  function predicate_p3(x: Ref, y: Ref): Int
+
+  axiom ARP_p2_f {
+    (forall x: Ref :: { predicate_p2(x) } predicate_p2(x) != field_f())
+  }
+
+  axiom ARP_p2_p1 {
+    (forall x: Ref :: { predicate_p2(x) } predicate_p2(x) != predicate_p1())
+  }
+
+  axiom ARP_p2_p3 {
+    (forall x: Ref, x_1: Ref, y_0: Ref :: { predicate_p2(x),predicate_p3(x_1, y_0) } predicate_p2(x) != predicate_p3(x_1, y_0))
+  }
+
+  axiom ARP_p2 {
+    (forall x: Ref, x_0: Ref :: { predicate_p2(x),predicate_p2(x_0) } predicate_p2(x) == predicate_p2(x_0) ==> x == x_0)
+  }
+
+  axiom ARP_p3_f {
+    (forall x: Ref, y: Ref :: { predicate_p3(x, y) } predicate_p3(x, y) != field_f())
+  }
+
+  axiom ARP_p3_p1 {
+    (forall x: Ref, y: Ref :: { predicate_p3(x, y) } predicate_p3(x, y) != predicate_p1())
+  }
+
+  axiom ARP_p3_p2 {
+    (forall x: Ref, y: Ref, x_3: Ref :: { predicate_p3(x, y),predicate_p2(x_3) } predicate_p3(x, y) != predicate_p2(x_3))
+  }
+
+  axiom ARP_p3 {
+    (forall x: Ref, y: Ref, x_2: Ref, y_1: Ref :: { predicate_p3(x, y),predicate_p3(x_2, y_1) } predicate_p3(x, y) == predicate_p3(x_2, y_1) ==> x == x_2 && y == y_1)
+  }
+}
+
+field f: Int
+
+function rd(): Perm
+  requires false
+
+
+function rdc(count: Int): Perm
+  requires false
+
+
+function rdw(): Perm
+  requires false
+
+
+function globalRd(): Perm
+  ensures none < result && result < write
+
+
+function epsilonRd(): Perm
+  ensures none < result && result < write
+
+
+predicate p1()
+
+predicate p2(x: Ref) {
+  acc(x.f, 1 / 2)
+}
+
+predicate p3(x: Ref, y: Ref) {
+  acc(x.f, 1 / 2) && acc(y.f, 1 / 2)
+}
+
+method foo_ARP_TRANSFORMED(x: Ref, y: Ref, foo_rd: Perm)
+
+
+method bar_ARP_TRANSFORMED(x: Ref, y: Ref, bar_rd: Perm)
+{
+  var bar_log: ARPLog
+  var foo_call_rd: Perm
+  var arg_x: Ref
+  var arg_y: Ref
+  var foo_0_call_rd: Perm
+  var arg_0_x: Ref
+  var arg_0_y: Ref
+  bar_log := ARPLog_Nil()
+  inhale none < bar_rd && bar_rd < write
+  inhale acc(p1(), write) && acc(p3(x, y), write)
+  bar_log := ARPLog_Cons(null, predicate_p1(), write, 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p3(x, y), write, 6, bar_log)
+  unfold acc(p3(x, y), write)
+  bar_log := ARPLog_Cons(x, field_f(), 1 / 2, 6, bar_log)
+  bar_log := ARPLog_Cons(y, field_f(), 1 / 2, 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p3(x, y), -write, 6, bar_log)
+  bar_log := ARPLog_Cons(x, field_f(), -(1 / 2), 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p2(x), write, 6, bar_log)
+  fold acc(p2(x), write)
+  bar_log := ARPLog_Cons(y, field_f(), -(1 / 2), 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p2(y), write, 6, bar_log)
+  fold acc(p2(y), write)
+  inhale none < foo_call_rd && foo_call_rd < write
+  arg_x := x
+  arg_y := y
+  label foo_call_label
+  bar_log := ARPLog_Cons(null, predicate_p1(), -write, 6, bar_log)
+  exhale acc(p1(), write)
+  inhale none < old[foo_call_label](ARPLog_sum_gt(null, predicate_p2(arg_x), 1, bar_log)) ==> foo_call_rd < perm(p2(arg_x))
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_x), -foo_call_rd, 1, bar_log)
+  exhale acc(p2(arg_x), foo_call_rd)
+  inhale none < old[foo_call_label](ARPLog_sum_gt(null, predicate_p2(arg_y), 1, bar_log)) ==> foo_call_rd < perm(p2(arg_y))
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_y), -foo_call_rd, 1, bar_log)
+  exhale acc(p2(arg_y), foo_call_rd)
+  inhale acc(p1(), write)
+  bar_log := ARPLog_Cons(null, predicate_p1(), write, 6, bar_log)
+  inhale acc(p2(arg_x), foo_call_rd)
+  inhale none < foo_call_rd
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_x), foo_call_rd, 1, bar_log)
+  inhale acc(p2(arg_y), foo_call_rd)
+  inhale none < foo_call_rd
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_y), foo_call_rd, 1, bar_log)
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  arg_0_x := y
+  arg_0_y := x
+  label foo_0_call_label
+  bar_log := ARPLog_Cons(null, predicate_p1(), -write, 6, bar_log)
+  exhale acc(p1(), write)
+  inhale none < old[foo_0_call_label](ARPLog_sum_gt(null, predicate_p2(arg_0_x), 1, bar_log)) ==> foo_0_call_rd < perm(p2(arg_0_x))
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_0_x), -foo_0_call_rd, 1, bar_log)
+  exhale acc(p2(arg_0_x), foo_0_call_rd)
+  inhale none < old[foo_0_call_label](ARPLog_sum_gt(null, predicate_p2(arg_0_y), 1, bar_log)) ==> foo_0_call_rd < perm(p2(arg_0_y))
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_0_y), -foo_0_call_rd, 1, bar_log)
+  exhale acc(p2(arg_0_y), foo_0_call_rd)
+  inhale acc(p1(), write)
+  bar_log := ARPLog_Cons(null, predicate_p1(), write, 6, bar_log)
+  inhale acc(p2(arg_0_x), foo_0_call_rd)
+  inhale none < foo_0_call_rd
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_0_x), foo_0_call_rd, 1, bar_log)
+  inhale acc(p2(arg_0_y), foo_0_call_rd)
+  inhale none < foo_0_call_rd
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_0_y), foo_0_call_rd, 1, bar_log)
+  unfold acc(p2(x), write)
+  bar_log := ARPLog_Cons(x, field_f(), 1 / 2, 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p2(x), -write, 6, bar_log)
+  unfold acc(p2(y), write)
+  bar_log := ARPLog_Cons(y, field_f(), 1 / 2, 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p2(y), -write, 6, bar_log)
+  bar_log := ARPLog_Cons(x, field_f(), -(1 / 2), 6, bar_log)
+  bar_log := ARPLog_Cons(y, field_f(), -(1 / 2), 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p3(x, y), write, 6, bar_log)
+  fold acc(p3(x, y), write)
+  bar_log := ARPLog_Cons(null, predicate_p1(), -write, 6, bar_log)
+  bar_log := ARPLog_Cons(null, predicate_p3(x, y), -write, 6, bar_log)
+  exhale acc(p1(), write) && acc(p3(x, y), write)
+}
+
+method foobar_ARP_TRANSFORMED(x: Ref, y: Ref, foobar_rd: Perm)
+{
+  var foobar_log: ARPLog
+  var bar_call_rd: Perm
+  var arg_1_x: Ref
+  var arg_1_y: Ref
+  var foo_1_call_rd: Perm
+  var arg_2_x: Ref
+  var arg_2_y: Ref
+  foobar_log := ARPLog_Nil()
+  inhale none < foobar_rd && foobar_rd < write
+  inhale acc(p1(), write) && (acc(x.f, 3 / 4) && (acc(y.f, 3 / 4) && (x.f == 4 && y.f == 5)))
+  foobar_log := ARPLog_Cons(null, predicate_p1(), write, 6, foobar_log)
+  foobar_log := ARPLog_Cons(x, field_f(), 3 / 4, 6, foobar_log)
+  foobar_log := ARPLog_Cons(y, field_f(), 3 / 4, 6, foobar_log)
+  foobar_log := ARPLog_Cons(x, field_f(), -(1 / 2), 6, foobar_log)
+  foobar_log := ARPLog_Cons(y, field_f(), -(1 / 2), 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p3(x, y), write, 6, foobar_log)
+  fold acc(p3(x, y), write)
+  inhale none < bar_call_rd && bar_call_rd < write
+  arg_1_x := x
+  arg_1_y := y
+  foobar_log := ARPLog_Cons(null, predicate_p1(), -write, 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p3(arg_1_x, arg_1_y), -write, 6, foobar_log)
+  exhale acc(p1(), write) && acc(p3(arg_1_x, arg_1_y), write)
+  inhale acc(p1(), write) && acc(p3(arg_1_x, arg_1_y), write)
+  foobar_log := ARPLog_Cons(null, predicate_p1(), write, 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p3(arg_1_x, arg_1_y), write, 6, foobar_log)
+  unfold acc(p3(x, y), write)
+  foobar_log := ARPLog_Cons(x, field_f(), 1 / 2, 6, foobar_log)
+  foobar_log := ARPLog_Cons(y, field_f(), 1 / 2, 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p3(x, y), -write, 6, foobar_log)
+  foobar_log := ARPLog_Cons(x, field_f(), -(1 / 2), 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p2(x), write, 6, foobar_log)
+  fold acc(p2(x), write)
+  foobar_log := ARPLog_Cons(y, field_f(), -(1 / 2), 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p2(y), write, 6, foobar_log)
+  fold acc(p2(y), write)
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  arg_2_x := x
+  arg_2_y := y
+  label foo_1_call_label
+  foobar_log := ARPLog_Cons(null, predicate_p1(), -write, 6, foobar_log)
+  exhale acc(p1(), write)
+  inhale none < old[foo_1_call_label](ARPLog_sum_gt(null, predicate_p2(arg_2_x), 1, foobar_log)) ==> foo_1_call_rd < perm(p2(arg_2_x))
+  foobar_log := ARPLog_Cons(null, predicate_p2(arg_2_x), -foo_1_call_rd, 1, foobar_log)
+  exhale acc(p2(arg_2_x), foo_1_call_rd)
+  inhale none < old[foo_1_call_label](ARPLog_sum_gt(null, predicate_p2(arg_2_y), 1, foobar_log)) ==> foo_1_call_rd < perm(p2(arg_2_y))
+  foobar_log := ARPLog_Cons(null, predicate_p2(arg_2_y), -foo_1_call_rd, 1, foobar_log)
+  exhale acc(p2(arg_2_y), foo_1_call_rd)
+  inhale acc(p1(), write)
+  foobar_log := ARPLog_Cons(null, predicate_p1(), write, 6, foobar_log)
+  inhale acc(p2(arg_2_x), foo_1_call_rd)
+  inhale none < foo_1_call_rd
+  foobar_log := ARPLog_Cons(null, predicate_p2(arg_2_x), foo_1_call_rd, 1, foobar_log)
+  inhale acc(p2(arg_2_y), foo_1_call_rd)
+  inhale none < foo_1_call_rd
+  foobar_log := ARPLog_Cons(null, predicate_p2(arg_2_y), foo_1_call_rd, 1, foobar_log)
+  unfold acc(p2(x), write)
+  foobar_log := ARPLog_Cons(x, field_f(), 1 / 2, 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p2(x), -write, 6, foobar_log)
+  unfold acc(p2(y), write)
+  foobar_log := ARPLog_Cons(y, field_f(), 1 / 2, 6, foobar_log)
+  foobar_log := ARPLog_Cons(null, predicate_p2(y), -write, 6, foobar_log)
+  label foobar_end_label
+  foobar_log := ARPLog_Cons(null, predicate_p1(), -write, 6, foobar_log)
+  foobar_log := ARPLog_Cons(x, field_f(), -(3 / 4), 6, foobar_log)
+  foobar_log := ARPLog_Cons(y, field_f(), -(3 / 4), 6, foobar_log)
+  exhale acc(p1(), write) && (acc(x.f, 3 / 4) && (acc(y.f, 3 / 4) && old[foobar_end_label](x.f == 4 && y.f == 5)))
+}
+
+method foo(x: Ref, y: Ref, foo_0_rd: Perm)
+  requires none < foo_0_rd && foo_0_rd < write
+  requires acc(p1(), write) && (acc(p2(x), foo_0_rd) && acc(p2(y), foo_0_rd))
+  ensures acc(p1(), write) && (acc(p2(x), foo_0_rd) && acc(p2(y), foo_0_rd))
+
+
+method bar(x: Ref, y: Ref, bar_0_rd: Perm)
+  requires none < bar_0_rd && bar_0_rd < write
+  requires acc(p1(), write) && acc(p3(x, y), write)
+  ensures acc(p1(), write) && acc(p3(x, y), write)
+
+
+method foobar(x: Ref, y: Ref, foobar_0_rd: Perm)
+  requires none < foobar_0_rd && foobar_0_rd < write
+  requires acc(p1(), write) && (acc(x.f, 3 / 4) && (acc(y.f, 3 / 4) && (x.f == 4 && y.f == 5)))
+  ensures acc(p1(), write) && (acc(x.f, 3 / 4) && (acc(y.f, 3 / 4) && (x.f == 4 && y.f == 5)))
+
+
+method HavocPerm() returns (returnval: Perm)
+
+
+method HavocInt() returns (returnval_0: Int)
+
+
+method HavocBool() returns (returnval_1: Bool)
+
+
+method HavocRef() returns (returnval_2: Ref)

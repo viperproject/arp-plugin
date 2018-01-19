@@ -1,0 +1,401 @@
+domain ARPLog {
+
+  function ARPLog_Nil(): ARPLog
+
+  function ARPLog_Cons(arp_quant_ref: Ref, arp_quant_fieldId: Int, permission: Perm, arp_quant_level: Int, arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_head_ref_Cons(arp_quant_log: ARPLog): Ref
+
+  function ARPLog_head_fieldId_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_head_permission_Cons(arp_quant_log: ARPLog): Perm
+
+  function ARPLog_head_level_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_tail_Cons(arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_type(arp_quant_log: ARPLog): Int
+
+  unique function ARPLog_type_Nil(): Int
+
+  unique function ARPLog_type_Cons(): Int
+
+  function ARPLog_is_Nil(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_is_Cons(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_max_level(arp_quant_log: ARPLog): Int
+
+  function ARPLog_sum_gt(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  function ARPLog_sum(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  axiom ARPLog_destruct_over_construct_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: { ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail) } ARPLog_head_ref_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_ref && (ARPLog_head_fieldId_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_fieldId && (ARPLog_head_permission_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_permission && (ARPLog_head_level_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_level && ARPLog_tail_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_tail))))
+  }
+
+  axiom ARPLog_construct_over_destruct_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_head_ref_Cons(arp_quant_log) } { ARPLog_head_fieldId_Cons(arp_quant_log) } { ARPLog_head_permission_Cons(arp_quant_log) } { ARPLog_head_level_Cons(arp_quant_log) } { ARPLog_tail_Cons(arp_quant_log) } ARPLog_is_Cons(arp_quant_log) ==> arp_quant_log == ARPLog_Cons(ARPLog_head_ref_Cons(arp_quant_log), ARPLog_head_fieldId_Cons(arp_quant_log), ARPLog_head_permission_Cons(arp_quant_log), ARPLog_head_level_Cons(arp_quant_log), ARPLog_tail_Cons(arp_quant_log)))
+  }
+
+  axiom ARPLog_type_of_Nil {
+    ARPLog_type(ARPLog_Nil()) == ARPLog_type_Nil()
+  }
+
+  axiom ARPLog_type_of_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: ARPLog_type(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_existence {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } ARPLog_type(arp_quant_log) == ARPLog_type_Nil() || ARPLog_type(arp_quant_log) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_is_Nil {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Nil()) == ARPLog_is_Nil(arp_quant_log))
+  }
+
+  axiom ARPLog_type_is_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Cons()) == ARPLog_is_Cons(arp_quant_log))
+  }
+
+  axiom ARPLog_log_max_level {
+    (forall arp_quant_log: ARPLog :: { ARPLog_max_level(arp_quant_log) } ARPLog_max_level(arp_quant_log) == 6)
+  }
+
+  axiom ARPLog_sum_gt_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (arp_quant_level >= ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (arp_quant_level < ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log) + ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log)))
+  }
+
+  axiom ARPLog_sum_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (ARPLog_is_Nil(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (ARPLog_is_Cons(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, ARPLog_tail_Cons(arp_quant_log)) + (ARPLog_head_ref_Cons(arp_quant_log) == arp_quant_ref && (ARPLog_head_fieldId_Cons(arp_quant_log) == arp_quant_fieldId && ARPLog_head_level_Cons(arp_quant_log) == arp_quant_level) ? ARPLog_head_permission_Cons(arp_quant_log) : none)))
+  }
+}
+
+domain ARP_field_functions {
+
+  unique function field_f(): Int
+
+  unique function field_p(): Int
+}
+
+field f: Int
+
+field p: Perm
+
+function rd(): Perm
+  requires false
+
+
+function rdc(count: Int): Perm
+  requires false
+
+
+function rdw(): Perm
+  requires false
+
+
+function globalRd(): Perm
+  ensures none < result && result < write
+
+
+function epsilonRd(): Perm
+  ensures none < result && result < write
+
+
+method foo_ARP_TRANSFORMED(x: Ref, foo_rd: Perm)
+
+
+method bar_ARP_TRANSFORMED(x: Ref, y: Ref, bar_rd: Perm)
+{
+  var bar_log: ARPLog
+  var foo_call_rd: Perm
+  var arg_x: Ref
+  var foo_0_call_rd: Perm
+  var arg_0_x: Ref
+  var foo_1_call_rd: Perm
+  var arg_1_x: Ref
+  var foo_2_call_rd: Perm
+  var arg_2_x: Ref
+  var foo_3_call_rd: Perm
+  var arg_3_x: Ref
+  var foo_4_call_rd: Perm
+  var arg_4_x: Ref
+  var foo_5_call_rd: Perm
+  var arg_5_x: Ref
+  var foo_6_call_rd: Perm
+  var arg_6_x: Ref
+  var foo_7_call_rd: Perm
+  var arg_7_x: Ref
+  var foo_8_call_rd: Perm
+  var arg_8_x: Ref
+  bar_log := ARPLog_Nil()
+  inhale none < bar_rd && bar_rd < write
+  inhale acc(x.p, write) && (x.p > none && (x.p < write && (acc(x.f, write) && x.f == 5)))
+  bar_log := ARPLog_Cons(x, field_p(), write, 6, bar_log)
+  bar_log := ARPLog_Cons(x, field_f(), write, 6, bar_log)
+  inhale acc(y.p, write) && (y.p > none && (y.p < write && (acc(y.f, write) && y.f == 5)))
+  bar_log := ARPLog_Cons(y, field_p(), write, 6, bar_log)
+  bar_log := ARPLog_Cons(y, field_f(), write, 6, bar_log)
+  inhale none < foo_call_rd && foo_call_rd < write
+  arg_x := x
+  label foo_call_label
+  inhale none < old[foo_call_label](ARPLog_sum_gt(arg_x, field_p(), 1, bar_log)) ==> foo_call_rd < perm(arg_x.p)
+  bar_log := ARPLog_Cons(arg_x, field_p(), -foo_call_rd, 1, bar_log)
+  exhale acc(arg_x.p, foo_call_rd)
+  exhale old[foo_call_label](arg_x.p > none)
+  inhale old[foo_call_label](4 * (7 * epsilonRd()) < foo_call_rd && foo_call_rd < (write + -1 * old[foo_call_label](arg_x.p) < none ? -(write + -1 * old[foo_call_label](arg_x.p)) : write + -1 * old[foo_call_label](arg_x.p))) && (none < old[foo_call_label](ARPLog_sum_gt(arg_x, field_f(), 0, bar_log)) ? (none < old[foo_call_label](ARPLog_sum_gt(arg_x, field_f(), 1, bar_log)) ? old[foo_call_label](none <= write + -1 * old[foo_call_label](arg_x.p)) ==> (old[foo_call_label](write + -1 * old[foo_call_label](arg_x.p) < ARPLog_sum_gt(arg_x, field_f(), 5, bar_log)) ? old[foo_call_label](write + -1 * old[foo_call_label](arg_x.p) + (foo_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_x.f) : foo_call_rd + 4 * (7 * old[foo_call_label](epsilonRd())) < perm(arg_x.f)) : old[foo_call_label](none <= write + -1 * old[foo_call_label](arg_x.p)) ==> (old[foo_call_label](write + -1 * old[foo_call_label](arg_x.p) < ARPLog_sum_gt(arg_x, field_f(), 5, bar_log)) ? old[foo_call_label](write + -1 * old[foo_call_label](arg_x.p) + 4 * (7 * epsilonRd())) < perm(arg_x.f) : 4 * (7 * old[foo_call_label](epsilonRd())) < perm(arg_x.f))) : none < old[foo_call_label](ARPLog_sum_gt(arg_x, field_f(), 1, bar_log)) ==> old[foo_call_label](none <= write + -1 * old[foo_call_label](arg_x.p)) ==> (old[foo_call_label](write + -1 * old[foo_call_label](arg_x.p) < ARPLog_sum_gt(arg_x, field_f(), 5, bar_log)) ? old[foo_call_label](write + -1 * old[foo_call_label](arg_x.p) + foo_call_rd) < perm(arg_x.f) : foo_call_rd < perm(arg_x.f)))
+  bar_log := ARPLog_Cons(arg_x, field_f(), -(write + -1 * old[foo_call_label](arg_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_x, field_f(), -foo_call_rd, 1, bar_log)
+  exhale acc(arg_x.f, write - foo_call_rd - old[foo_call_label](arg_x.p) + 7 * epsilonRd() + 2 * foo_call_rd - 3 * epsilonRd())
+  inhale acc(arg_x.p, foo_call_rd)
+  inhale none < foo_call_rd
+  bar_log := ARPLog_Cons(arg_x, field_p(), foo_call_rd, 1, bar_log)
+  inhale arg_x.p > none
+  inhale acc(arg_x.f, write - foo_call_rd - arg_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_call_rd && foo_call_rd < (write + -1 * arg_x.p < none ? -(write + -1 * arg_x.p) : write + -1 * arg_x.p) && (none < write + -1 * arg_x.p ? none < write + -1 * arg_x.p : none == write + -1 * arg_x.p ==> none < foo_call_rd)
+  bar_log := ARPLog_Cons(arg_x, field_f(), write + -1 * arg_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_x, field_f(), foo_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  arg_0_x := y
+  label foo_0_call_label
+  inhale none < old[foo_0_call_label](ARPLog_sum_gt(arg_0_x, field_p(), 1, bar_log)) ==> foo_0_call_rd < perm(arg_0_x.p)
+  bar_log := ARPLog_Cons(arg_0_x, field_p(), -foo_0_call_rd, 1, bar_log)
+  exhale acc(arg_0_x.p, foo_0_call_rd)
+  exhale old[foo_0_call_label](arg_0_x.p > none)
+  inhale old[foo_0_call_label](4 * (7 * epsilonRd()) < foo_0_call_rd && foo_0_call_rd < (write + -1 * old[foo_0_call_label](arg_0_x.p) < none ? -(write + -1 * old[foo_0_call_label](arg_0_x.p)) : write + -1 * old[foo_0_call_label](arg_0_x.p))) && (none < old[foo_0_call_label](ARPLog_sum_gt(arg_0_x, field_f(), 0, bar_log)) ? (none < old[foo_0_call_label](ARPLog_sum_gt(arg_0_x, field_f(), 1, bar_log)) ? old[foo_0_call_label](none <= write + -1 * old[foo_0_call_label](arg_0_x.p)) ==> (old[foo_0_call_label](write + -1 * old[foo_0_call_label](arg_0_x.p) < ARPLog_sum_gt(arg_0_x, field_f(), 5, bar_log)) ? old[foo_0_call_label](write + -1 * old[foo_0_call_label](arg_0_x.p) + (foo_0_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_0_x.f) : foo_0_call_rd + 4 * (7 * old[foo_0_call_label](epsilonRd())) < perm(arg_0_x.f)) : old[foo_0_call_label](none <= write + -1 * old[foo_0_call_label](arg_0_x.p)) ==> (old[foo_0_call_label](write + -1 * old[foo_0_call_label](arg_0_x.p) < ARPLog_sum_gt(arg_0_x, field_f(), 5, bar_log)) ? old[foo_0_call_label](write + -1 * old[foo_0_call_label](arg_0_x.p) + 4 * (7 * epsilonRd())) < perm(arg_0_x.f) : 4 * (7 * old[foo_0_call_label](epsilonRd())) < perm(arg_0_x.f))) : none < old[foo_0_call_label](ARPLog_sum_gt(arg_0_x, field_f(), 1, bar_log)) ==> old[foo_0_call_label](none <= write + -1 * old[foo_0_call_label](arg_0_x.p)) ==> (old[foo_0_call_label](write + -1 * old[foo_0_call_label](arg_0_x.p) < ARPLog_sum_gt(arg_0_x, field_f(), 5, bar_log)) ? old[foo_0_call_label](write + -1 * old[foo_0_call_label](arg_0_x.p) + foo_0_call_rd) < perm(arg_0_x.f) : foo_0_call_rd < perm(arg_0_x.f)))
+  bar_log := ARPLog_Cons(arg_0_x, field_f(), -(write + -1 * old[foo_0_call_label](arg_0_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_0_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_0_x, field_f(), -foo_0_call_rd, 1, bar_log)
+  exhale acc(arg_0_x.f, write - foo_0_call_rd - old[foo_0_call_label](arg_0_x.p) + 7 * epsilonRd() + 2 * foo_0_call_rd - 3 * epsilonRd())
+  inhale acc(arg_0_x.p, foo_0_call_rd)
+  inhale none < foo_0_call_rd
+  bar_log := ARPLog_Cons(arg_0_x, field_p(), foo_0_call_rd, 1, bar_log)
+  inhale arg_0_x.p > none
+  inhale acc(arg_0_x.f, write - foo_0_call_rd - arg_0_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_0_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_0_call_rd && foo_0_call_rd < (write + -1 * arg_0_x.p < none ? -(write + -1 * arg_0_x.p) : write + -1 * arg_0_x.p) && (none < write + -1 * arg_0_x.p ? none < write + -1 * arg_0_x.p : none == write + -1 * arg_0_x.p ==> none < foo_0_call_rd)
+  bar_log := ARPLog_Cons(arg_0_x, field_f(), write + -1 * arg_0_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_0_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_0_x, field_f(), foo_0_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  arg_1_x := x
+  label foo_1_call_label
+  inhale none < old[foo_1_call_label](ARPLog_sum_gt(arg_1_x, field_p(), 1, bar_log)) ==> foo_1_call_rd < perm(arg_1_x.p)
+  bar_log := ARPLog_Cons(arg_1_x, field_p(), -foo_1_call_rd, 1, bar_log)
+  exhale acc(arg_1_x.p, foo_1_call_rd)
+  exhale old[foo_1_call_label](arg_1_x.p > none)
+  inhale old[foo_1_call_label](4 * (7 * epsilonRd()) < foo_1_call_rd && foo_1_call_rd < (write + -1 * old[foo_1_call_label](arg_1_x.p) < none ? -(write + -1 * old[foo_1_call_label](arg_1_x.p)) : write + -1 * old[foo_1_call_label](arg_1_x.p))) && (none < old[foo_1_call_label](ARPLog_sum_gt(arg_1_x, field_f(), 0, bar_log)) ? (none < old[foo_1_call_label](ARPLog_sum_gt(arg_1_x, field_f(), 1, bar_log)) ? old[foo_1_call_label](none <= write + -1 * old[foo_1_call_label](arg_1_x.p)) ==> (old[foo_1_call_label](write + -1 * old[foo_1_call_label](arg_1_x.p) < ARPLog_sum_gt(arg_1_x, field_f(), 5, bar_log)) ? old[foo_1_call_label](write + -1 * old[foo_1_call_label](arg_1_x.p) + (foo_1_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_1_x.f) : foo_1_call_rd + 4 * (7 * old[foo_1_call_label](epsilonRd())) < perm(arg_1_x.f)) : old[foo_1_call_label](none <= write + -1 * old[foo_1_call_label](arg_1_x.p)) ==> (old[foo_1_call_label](write + -1 * old[foo_1_call_label](arg_1_x.p) < ARPLog_sum_gt(arg_1_x, field_f(), 5, bar_log)) ? old[foo_1_call_label](write + -1 * old[foo_1_call_label](arg_1_x.p) + 4 * (7 * epsilonRd())) < perm(arg_1_x.f) : 4 * (7 * old[foo_1_call_label](epsilonRd())) < perm(arg_1_x.f))) : none < old[foo_1_call_label](ARPLog_sum_gt(arg_1_x, field_f(), 1, bar_log)) ==> old[foo_1_call_label](none <= write + -1 * old[foo_1_call_label](arg_1_x.p)) ==> (old[foo_1_call_label](write + -1 * old[foo_1_call_label](arg_1_x.p) < ARPLog_sum_gt(arg_1_x, field_f(), 5, bar_log)) ? old[foo_1_call_label](write + -1 * old[foo_1_call_label](arg_1_x.p) + foo_1_call_rd) < perm(arg_1_x.f) : foo_1_call_rd < perm(arg_1_x.f)))
+  bar_log := ARPLog_Cons(arg_1_x, field_f(), -(write + -1 * old[foo_1_call_label](arg_1_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_1_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_1_x, field_f(), -foo_1_call_rd, 1, bar_log)
+  exhale acc(arg_1_x.f, write - foo_1_call_rd - old[foo_1_call_label](arg_1_x.p) + 7 * epsilonRd() + 2 * foo_1_call_rd - 3 * epsilonRd())
+  inhale acc(arg_1_x.p, foo_1_call_rd)
+  inhale none < foo_1_call_rd
+  bar_log := ARPLog_Cons(arg_1_x, field_p(), foo_1_call_rd, 1, bar_log)
+  inhale arg_1_x.p > none
+  inhale acc(arg_1_x.f, write - foo_1_call_rd - arg_1_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_1_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_1_call_rd && foo_1_call_rd < (write + -1 * arg_1_x.p < none ? -(write + -1 * arg_1_x.p) : write + -1 * arg_1_x.p) && (none < write + -1 * arg_1_x.p ? none < write + -1 * arg_1_x.p : none == write + -1 * arg_1_x.p ==> none < foo_1_call_rd)
+  bar_log := ARPLog_Cons(arg_1_x, field_f(), write + -1 * arg_1_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_1_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_1_x, field_f(), foo_1_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_2_call_rd && foo_2_call_rd < write
+  arg_2_x := y
+  label foo_2_call_label
+  inhale none < old[foo_2_call_label](ARPLog_sum_gt(arg_2_x, field_p(), 1, bar_log)) ==> foo_2_call_rd < perm(arg_2_x.p)
+  bar_log := ARPLog_Cons(arg_2_x, field_p(), -foo_2_call_rd, 1, bar_log)
+  exhale acc(arg_2_x.p, foo_2_call_rd)
+  exhale old[foo_2_call_label](arg_2_x.p > none)
+  inhale old[foo_2_call_label](4 * (7 * epsilonRd()) < foo_2_call_rd && foo_2_call_rd < (write + -1 * old[foo_2_call_label](arg_2_x.p) < none ? -(write + -1 * old[foo_2_call_label](arg_2_x.p)) : write + -1 * old[foo_2_call_label](arg_2_x.p))) && (none < old[foo_2_call_label](ARPLog_sum_gt(arg_2_x, field_f(), 0, bar_log)) ? (none < old[foo_2_call_label](ARPLog_sum_gt(arg_2_x, field_f(), 1, bar_log)) ? old[foo_2_call_label](none <= write + -1 * old[foo_2_call_label](arg_2_x.p)) ==> (old[foo_2_call_label](write + -1 * old[foo_2_call_label](arg_2_x.p) < ARPLog_sum_gt(arg_2_x, field_f(), 5, bar_log)) ? old[foo_2_call_label](write + -1 * old[foo_2_call_label](arg_2_x.p) + (foo_2_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_2_x.f) : foo_2_call_rd + 4 * (7 * old[foo_2_call_label](epsilonRd())) < perm(arg_2_x.f)) : old[foo_2_call_label](none <= write + -1 * old[foo_2_call_label](arg_2_x.p)) ==> (old[foo_2_call_label](write + -1 * old[foo_2_call_label](arg_2_x.p) < ARPLog_sum_gt(arg_2_x, field_f(), 5, bar_log)) ? old[foo_2_call_label](write + -1 * old[foo_2_call_label](arg_2_x.p) + 4 * (7 * epsilonRd())) < perm(arg_2_x.f) : 4 * (7 * old[foo_2_call_label](epsilonRd())) < perm(arg_2_x.f))) : none < old[foo_2_call_label](ARPLog_sum_gt(arg_2_x, field_f(), 1, bar_log)) ==> old[foo_2_call_label](none <= write + -1 * old[foo_2_call_label](arg_2_x.p)) ==> (old[foo_2_call_label](write + -1 * old[foo_2_call_label](arg_2_x.p) < ARPLog_sum_gt(arg_2_x, field_f(), 5, bar_log)) ? old[foo_2_call_label](write + -1 * old[foo_2_call_label](arg_2_x.p) + foo_2_call_rd) < perm(arg_2_x.f) : foo_2_call_rd < perm(arg_2_x.f)))
+  bar_log := ARPLog_Cons(arg_2_x, field_f(), -(write + -1 * old[foo_2_call_label](arg_2_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_2_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_2_x, field_f(), -foo_2_call_rd, 1, bar_log)
+  exhale acc(arg_2_x.f, write - foo_2_call_rd - old[foo_2_call_label](arg_2_x.p) + 7 * epsilonRd() + 2 * foo_2_call_rd - 3 * epsilonRd())
+  inhale acc(arg_2_x.p, foo_2_call_rd)
+  inhale none < foo_2_call_rd
+  bar_log := ARPLog_Cons(arg_2_x, field_p(), foo_2_call_rd, 1, bar_log)
+  inhale arg_2_x.p > none
+  inhale acc(arg_2_x.f, write - foo_2_call_rd - arg_2_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_2_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_2_call_rd && foo_2_call_rd < (write + -1 * arg_2_x.p < none ? -(write + -1 * arg_2_x.p) : write + -1 * arg_2_x.p) && (none < write + -1 * arg_2_x.p ? none < write + -1 * arg_2_x.p : none == write + -1 * arg_2_x.p ==> none < foo_2_call_rd)
+  bar_log := ARPLog_Cons(arg_2_x, field_f(), write + -1 * arg_2_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_2_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_2_x, field_f(), foo_2_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_3_call_rd && foo_3_call_rd < write
+  arg_3_x := x
+  label foo_3_call_label
+  inhale none < old[foo_3_call_label](ARPLog_sum_gt(arg_3_x, field_p(), 1, bar_log)) ==> foo_3_call_rd < perm(arg_3_x.p)
+  bar_log := ARPLog_Cons(arg_3_x, field_p(), -foo_3_call_rd, 1, bar_log)
+  exhale acc(arg_3_x.p, foo_3_call_rd)
+  exhale old[foo_3_call_label](arg_3_x.p > none)
+  inhale old[foo_3_call_label](4 * (7 * epsilonRd()) < foo_3_call_rd && foo_3_call_rd < (write + -1 * old[foo_3_call_label](arg_3_x.p) < none ? -(write + -1 * old[foo_3_call_label](arg_3_x.p)) : write + -1 * old[foo_3_call_label](arg_3_x.p))) && (none < old[foo_3_call_label](ARPLog_sum_gt(arg_3_x, field_f(), 0, bar_log)) ? (none < old[foo_3_call_label](ARPLog_sum_gt(arg_3_x, field_f(), 1, bar_log)) ? old[foo_3_call_label](none <= write + -1 * old[foo_3_call_label](arg_3_x.p)) ==> (old[foo_3_call_label](write + -1 * old[foo_3_call_label](arg_3_x.p) < ARPLog_sum_gt(arg_3_x, field_f(), 5, bar_log)) ? old[foo_3_call_label](write + -1 * old[foo_3_call_label](arg_3_x.p) + (foo_3_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_3_x.f) : foo_3_call_rd + 4 * (7 * old[foo_3_call_label](epsilonRd())) < perm(arg_3_x.f)) : old[foo_3_call_label](none <= write + -1 * old[foo_3_call_label](arg_3_x.p)) ==> (old[foo_3_call_label](write + -1 * old[foo_3_call_label](arg_3_x.p) < ARPLog_sum_gt(arg_3_x, field_f(), 5, bar_log)) ? old[foo_3_call_label](write + -1 * old[foo_3_call_label](arg_3_x.p) + 4 * (7 * epsilonRd())) < perm(arg_3_x.f) : 4 * (7 * old[foo_3_call_label](epsilonRd())) < perm(arg_3_x.f))) : none < old[foo_3_call_label](ARPLog_sum_gt(arg_3_x, field_f(), 1, bar_log)) ==> old[foo_3_call_label](none <= write + -1 * old[foo_3_call_label](arg_3_x.p)) ==> (old[foo_3_call_label](write + -1 * old[foo_3_call_label](arg_3_x.p) < ARPLog_sum_gt(arg_3_x, field_f(), 5, bar_log)) ? old[foo_3_call_label](write + -1 * old[foo_3_call_label](arg_3_x.p) + foo_3_call_rd) < perm(arg_3_x.f) : foo_3_call_rd < perm(arg_3_x.f)))
+  bar_log := ARPLog_Cons(arg_3_x, field_f(), -(write + -1 * old[foo_3_call_label](arg_3_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_3_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_3_x, field_f(), -foo_3_call_rd, 1, bar_log)
+  exhale acc(arg_3_x.f, write - foo_3_call_rd - old[foo_3_call_label](arg_3_x.p) + 7 * epsilonRd() + 2 * foo_3_call_rd - 3 * epsilonRd())
+  inhale acc(arg_3_x.p, foo_3_call_rd)
+  inhale none < foo_3_call_rd
+  bar_log := ARPLog_Cons(arg_3_x, field_p(), foo_3_call_rd, 1, bar_log)
+  inhale arg_3_x.p > none
+  inhale acc(arg_3_x.f, write - foo_3_call_rd - arg_3_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_3_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_3_call_rd && foo_3_call_rd < (write + -1 * arg_3_x.p < none ? -(write + -1 * arg_3_x.p) : write + -1 * arg_3_x.p) && (none < write + -1 * arg_3_x.p ? none < write + -1 * arg_3_x.p : none == write + -1 * arg_3_x.p ==> none < foo_3_call_rd)
+  bar_log := ARPLog_Cons(arg_3_x, field_f(), write + -1 * arg_3_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_3_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_3_x, field_f(), foo_3_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_4_call_rd && foo_4_call_rd < write
+  arg_4_x := y
+  label foo_4_call_label
+  inhale none < old[foo_4_call_label](ARPLog_sum_gt(arg_4_x, field_p(), 1, bar_log)) ==> foo_4_call_rd < perm(arg_4_x.p)
+  bar_log := ARPLog_Cons(arg_4_x, field_p(), -foo_4_call_rd, 1, bar_log)
+  exhale acc(arg_4_x.p, foo_4_call_rd)
+  exhale old[foo_4_call_label](arg_4_x.p > none)
+  inhale old[foo_4_call_label](4 * (7 * epsilonRd()) < foo_4_call_rd && foo_4_call_rd < (write + -1 * old[foo_4_call_label](arg_4_x.p) < none ? -(write + -1 * old[foo_4_call_label](arg_4_x.p)) : write + -1 * old[foo_4_call_label](arg_4_x.p))) && (none < old[foo_4_call_label](ARPLog_sum_gt(arg_4_x, field_f(), 0, bar_log)) ? (none < old[foo_4_call_label](ARPLog_sum_gt(arg_4_x, field_f(), 1, bar_log)) ? old[foo_4_call_label](none <= write + -1 * old[foo_4_call_label](arg_4_x.p)) ==> (old[foo_4_call_label](write + -1 * old[foo_4_call_label](arg_4_x.p) < ARPLog_sum_gt(arg_4_x, field_f(), 5, bar_log)) ? old[foo_4_call_label](write + -1 * old[foo_4_call_label](arg_4_x.p) + (foo_4_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_4_x.f) : foo_4_call_rd + 4 * (7 * old[foo_4_call_label](epsilonRd())) < perm(arg_4_x.f)) : old[foo_4_call_label](none <= write + -1 * old[foo_4_call_label](arg_4_x.p)) ==> (old[foo_4_call_label](write + -1 * old[foo_4_call_label](arg_4_x.p) < ARPLog_sum_gt(arg_4_x, field_f(), 5, bar_log)) ? old[foo_4_call_label](write + -1 * old[foo_4_call_label](arg_4_x.p) + 4 * (7 * epsilonRd())) < perm(arg_4_x.f) : 4 * (7 * old[foo_4_call_label](epsilonRd())) < perm(arg_4_x.f))) : none < old[foo_4_call_label](ARPLog_sum_gt(arg_4_x, field_f(), 1, bar_log)) ==> old[foo_4_call_label](none <= write + -1 * old[foo_4_call_label](arg_4_x.p)) ==> (old[foo_4_call_label](write + -1 * old[foo_4_call_label](arg_4_x.p) < ARPLog_sum_gt(arg_4_x, field_f(), 5, bar_log)) ? old[foo_4_call_label](write + -1 * old[foo_4_call_label](arg_4_x.p) + foo_4_call_rd) < perm(arg_4_x.f) : foo_4_call_rd < perm(arg_4_x.f)))
+  bar_log := ARPLog_Cons(arg_4_x, field_f(), -(write + -1 * old[foo_4_call_label](arg_4_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_4_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_4_x, field_f(), -foo_4_call_rd, 1, bar_log)
+  exhale acc(arg_4_x.f, write - foo_4_call_rd - old[foo_4_call_label](arg_4_x.p) + 7 * epsilonRd() + 2 * foo_4_call_rd - 3 * epsilonRd())
+  inhale acc(arg_4_x.p, foo_4_call_rd)
+  inhale none < foo_4_call_rd
+  bar_log := ARPLog_Cons(arg_4_x, field_p(), foo_4_call_rd, 1, bar_log)
+  inhale arg_4_x.p > none
+  inhale acc(arg_4_x.f, write - foo_4_call_rd - arg_4_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_4_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_4_call_rd && foo_4_call_rd < (write + -1 * arg_4_x.p < none ? -(write + -1 * arg_4_x.p) : write + -1 * arg_4_x.p) && (none < write + -1 * arg_4_x.p ? none < write + -1 * arg_4_x.p : none == write + -1 * arg_4_x.p ==> none < foo_4_call_rd)
+  bar_log := ARPLog_Cons(arg_4_x, field_f(), write + -1 * arg_4_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_4_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_4_x, field_f(), foo_4_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_5_call_rd && foo_5_call_rd < write
+  arg_5_x := x
+  label foo_5_call_label
+  inhale none < old[foo_5_call_label](ARPLog_sum_gt(arg_5_x, field_p(), 1, bar_log)) ==> foo_5_call_rd < perm(arg_5_x.p)
+  bar_log := ARPLog_Cons(arg_5_x, field_p(), -foo_5_call_rd, 1, bar_log)
+  exhale acc(arg_5_x.p, foo_5_call_rd)
+  exhale old[foo_5_call_label](arg_5_x.p > none)
+  inhale old[foo_5_call_label](4 * (7 * epsilonRd()) < foo_5_call_rd && foo_5_call_rd < (write + -1 * old[foo_5_call_label](arg_5_x.p) < none ? -(write + -1 * old[foo_5_call_label](arg_5_x.p)) : write + -1 * old[foo_5_call_label](arg_5_x.p))) && (none < old[foo_5_call_label](ARPLog_sum_gt(arg_5_x, field_f(), 0, bar_log)) ? (none < old[foo_5_call_label](ARPLog_sum_gt(arg_5_x, field_f(), 1, bar_log)) ? old[foo_5_call_label](none <= write + -1 * old[foo_5_call_label](arg_5_x.p)) ==> (old[foo_5_call_label](write + -1 * old[foo_5_call_label](arg_5_x.p) < ARPLog_sum_gt(arg_5_x, field_f(), 5, bar_log)) ? old[foo_5_call_label](write + -1 * old[foo_5_call_label](arg_5_x.p) + (foo_5_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_5_x.f) : foo_5_call_rd + 4 * (7 * old[foo_5_call_label](epsilonRd())) < perm(arg_5_x.f)) : old[foo_5_call_label](none <= write + -1 * old[foo_5_call_label](arg_5_x.p)) ==> (old[foo_5_call_label](write + -1 * old[foo_5_call_label](arg_5_x.p) < ARPLog_sum_gt(arg_5_x, field_f(), 5, bar_log)) ? old[foo_5_call_label](write + -1 * old[foo_5_call_label](arg_5_x.p) + 4 * (7 * epsilonRd())) < perm(arg_5_x.f) : 4 * (7 * old[foo_5_call_label](epsilonRd())) < perm(arg_5_x.f))) : none < old[foo_5_call_label](ARPLog_sum_gt(arg_5_x, field_f(), 1, bar_log)) ==> old[foo_5_call_label](none <= write + -1 * old[foo_5_call_label](arg_5_x.p)) ==> (old[foo_5_call_label](write + -1 * old[foo_5_call_label](arg_5_x.p) < ARPLog_sum_gt(arg_5_x, field_f(), 5, bar_log)) ? old[foo_5_call_label](write + -1 * old[foo_5_call_label](arg_5_x.p) + foo_5_call_rd) < perm(arg_5_x.f) : foo_5_call_rd < perm(arg_5_x.f)))
+  bar_log := ARPLog_Cons(arg_5_x, field_f(), -(write + -1 * old[foo_5_call_label](arg_5_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_5_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_5_x, field_f(), -foo_5_call_rd, 1, bar_log)
+  exhale acc(arg_5_x.f, write - foo_5_call_rd - old[foo_5_call_label](arg_5_x.p) + 7 * epsilonRd() + 2 * foo_5_call_rd - 3 * epsilonRd())
+  inhale acc(arg_5_x.p, foo_5_call_rd)
+  inhale none < foo_5_call_rd
+  bar_log := ARPLog_Cons(arg_5_x, field_p(), foo_5_call_rd, 1, bar_log)
+  inhale arg_5_x.p > none
+  inhale acc(arg_5_x.f, write - foo_5_call_rd - arg_5_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_5_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_5_call_rd && foo_5_call_rd < (write + -1 * arg_5_x.p < none ? -(write + -1 * arg_5_x.p) : write + -1 * arg_5_x.p) && (none < write + -1 * arg_5_x.p ? none < write + -1 * arg_5_x.p : none == write + -1 * arg_5_x.p ==> none < foo_5_call_rd)
+  bar_log := ARPLog_Cons(arg_5_x, field_f(), write + -1 * arg_5_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_5_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_5_x, field_f(), foo_5_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_6_call_rd && foo_6_call_rd < write
+  arg_6_x := y
+  label foo_6_call_label
+  inhale none < old[foo_6_call_label](ARPLog_sum_gt(arg_6_x, field_p(), 1, bar_log)) ==> foo_6_call_rd < perm(arg_6_x.p)
+  bar_log := ARPLog_Cons(arg_6_x, field_p(), -foo_6_call_rd, 1, bar_log)
+  exhale acc(arg_6_x.p, foo_6_call_rd)
+  exhale old[foo_6_call_label](arg_6_x.p > none)
+  inhale old[foo_6_call_label](4 * (7 * epsilonRd()) < foo_6_call_rd && foo_6_call_rd < (write + -1 * old[foo_6_call_label](arg_6_x.p) < none ? -(write + -1 * old[foo_6_call_label](arg_6_x.p)) : write + -1 * old[foo_6_call_label](arg_6_x.p))) && (none < old[foo_6_call_label](ARPLog_sum_gt(arg_6_x, field_f(), 0, bar_log)) ? (none < old[foo_6_call_label](ARPLog_sum_gt(arg_6_x, field_f(), 1, bar_log)) ? old[foo_6_call_label](none <= write + -1 * old[foo_6_call_label](arg_6_x.p)) ==> (old[foo_6_call_label](write + -1 * old[foo_6_call_label](arg_6_x.p) < ARPLog_sum_gt(arg_6_x, field_f(), 5, bar_log)) ? old[foo_6_call_label](write + -1 * old[foo_6_call_label](arg_6_x.p) + (foo_6_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_6_x.f) : foo_6_call_rd + 4 * (7 * old[foo_6_call_label](epsilonRd())) < perm(arg_6_x.f)) : old[foo_6_call_label](none <= write + -1 * old[foo_6_call_label](arg_6_x.p)) ==> (old[foo_6_call_label](write + -1 * old[foo_6_call_label](arg_6_x.p) < ARPLog_sum_gt(arg_6_x, field_f(), 5, bar_log)) ? old[foo_6_call_label](write + -1 * old[foo_6_call_label](arg_6_x.p) + 4 * (7 * epsilonRd())) < perm(arg_6_x.f) : 4 * (7 * old[foo_6_call_label](epsilonRd())) < perm(arg_6_x.f))) : none < old[foo_6_call_label](ARPLog_sum_gt(arg_6_x, field_f(), 1, bar_log)) ==> old[foo_6_call_label](none <= write + -1 * old[foo_6_call_label](arg_6_x.p)) ==> (old[foo_6_call_label](write + -1 * old[foo_6_call_label](arg_6_x.p) < ARPLog_sum_gt(arg_6_x, field_f(), 5, bar_log)) ? old[foo_6_call_label](write + -1 * old[foo_6_call_label](arg_6_x.p) + foo_6_call_rd) < perm(arg_6_x.f) : foo_6_call_rd < perm(arg_6_x.f)))
+  bar_log := ARPLog_Cons(arg_6_x, field_f(), -(write + -1 * old[foo_6_call_label](arg_6_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_6_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_6_x, field_f(), -foo_6_call_rd, 1, bar_log)
+  exhale acc(arg_6_x.f, write - foo_6_call_rd - old[foo_6_call_label](arg_6_x.p) + 7 * epsilonRd() + 2 * foo_6_call_rd - 3 * epsilonRd())
+  inhale acc(arg_6_x.p, foo_6_call_rd)
+  inhale none < foo_6_call_rd
+  bar_log := ARPLog_Cons(arg_6_x, field_p(), foo_6_call_rd, 1, bar_log)
+  inhale arg_6_x.p > none
+  inhale acc(arg_6_x.f, write - foo_6_call_rd - arg_6_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_6_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_6_call_rd && foo_6_call_rd < (write + -1 * arg_6_x.p < none ? -(write + -1 * arg_6_x.p) : write + -1 * arg_6_x.p) && (none < write + -1 * arg_6_x.p ? none < write + -1 * arg_6_x.p : none == write + -1 * arg_6_x.p ==> none < foo_6_call_rd)
+  bar_log := ARPLog_Cons(arg_6_x, field_f(), write + -1 * arg_6_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_6_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_6_x, field_f(), foo_6_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_7_call_rd && foo_7_call_rd < write
+  arg_7_x := x
+  label foo_7_call_label
+  inhale none < old[foo_7_call_label](ARPLog_sum_gt(arg_7_x, field_p(), 1, bar_log)) ==> foo_7_call_rd < perm(arg_7_x.p)
+  bar_log := ARPLog_Cons(arg_7_x, field_p(), -foo_7_call_rd, 1, bar_log)
+  exhale acc(arg_7_x.p, foo_7_call_rd)
+  exhale old[foo_7_call_label](arg_7_x.p > none)
+  inhale old[foo_7_call_label](4 * (7 * epsilonRd()) < foo_7_call_rd && foo_7_call_rd < (write + -1 * old[foo_7_call_label](arg_7_x.p) < none ? -(write + -1 * old[foo_7_call_label](arg_7_x.p)) : write + -1 * old[foo_7_call_label](arg_7_x.p))) && (none < old[foo_7_call_label](ARPLog_sum_gt(arg_7_x, field_f(), 0, bar_log)) ? (none < old[foo_7_call_label](ARPLog_sum_gt(arg_7_x, field_f(), 1, bar_log)) ? old[foo_7_call_label](none <= write + -1 * old[foo_7_call_label](arg_7_x.p)) ==> (old[foo_7_call_label](write + -1 * old[foo_7_call_label](arg_7_x.p) < ARPLog_sum_gt(arg_7_x, field_f(), 5, bar_log)) ? old[foo_7_call_label](write + -1 * old[foo_7_call_label](arg_7_x.p) + (foo_7_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_7_x.f) : foo_7_call_rd + 4 * (7 * old[foo_7_call_label](epsilonRd())) < perm(arg_7_x.f)) : old[foo_7_call_label](none <= write + -1 * old[foo_7_call_label](arg_7_x.p)) ==> (old[foo_7_call_label](write + -1 * old[foo_7_call_label](arg_7_x.p) < ARPLog_sum_gt(arg_7_x, field_f(), 5, bar_log)) ? old[foo_7_call_label](write + -1 * old[foo_7_call_label](arg_7_x.p) + 4 * (7 * epsilonRd())) < perm(arg_7_x.f) : 4 * (7 * old[foo_7_call_label](epsilonRd())) < perm(arg_7_x.f))) : none < old[foo_7_call_label](ARPLog_sum_gt(arg_7_x, field_f(), 1, bar_log)) ==> old[foo_7_call_label](none <= write + -1 * old[foo_7_call_label](arg_7_x.p)) ==> (old[foo_7_call_label](write + -1 * old[foo_7_call_label](arg_7_x.p) < ARPLog_sum_gt(arg_7_x, field_f(), 5, bar_log)) ? old[foo_7_call_label](write + -1 * old[foo_7_call_label](arg_7_x.p) + foo_7_call_rd) < perm(arg_7_x.f) : foo_7_call_rd < perm(arg_7_x.f)))
+  bar_log := ARPLog_Cons(arg_7_x, field_f(), -(write + -1 * old[foo_7_call_label](arg_7_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_7_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_7_x, field_f(), -foo_7_call_rd, 1, bar_log)
+  exhale acc(arg_7_x.f, write - foo_7_call_rd - old[foo_7_call_label](arg_7_x.p) + 7 * epsilonRd() + 2 * foo_7_call_rd - 3 * epsilonRd())
+  inhale acc(arg_7_x.p, foo_7_call_rd)
+  inhale none < foo_7_call_rd
+  bar_log := ARPLog_Cons(arg_7_x, field_p(), foo_7_call_rd, 1, bar_log)
+  inhale arg_7_x.p > none
+  inhale acc(arg_7_x.f, write - foo_7_call_rd - arg_7_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_7_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_7_call_rd && foo_7_call_rd < (write + -1 * arg_7_x.p < none ? -(write + -1 * arg_7_x.p) : write + -1 * arg_7_x.p) && (none < write + -1 * arg_7_x.p ? none < write + -1 * arg_7_x.p : none == write + -1 * arg_7_x.p ==> none < foo_7_call_rd)
+  bar_log := ARPLog_Cons(arg_7_x, field_f(), write + -1 * arg_7_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_7_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_7_x, field_f(), foo_7_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  inhale none < foo_8_call_rd && foo_8_call_rd < write
+  arg_8_x := y
+  label foo_8_call_label
+  inhale none < old[foo_8_call_label](ARPLog_sum_gt(arg_8_x, field_p(), 1, bar_log)) ==> foo_8_call_rd < perm(arg_8_x.p)
+  bar_log := ARPLog_Cons(arg_8_x, field_p(), -foo_8_call_rd, 1, bar_log)
+  exhale acc(arg_8_x.p, foo_8_call_rd)
+  exhale old[foo_8_call_label](arg_8_x.p > none)
+  inhale old[foo_8_call_label](4 * (7 * epsilonRd()) < foo_8_call_rd && foo_8_call_rd < (write + -1 * old[foo_8_call_label](arg_8_x.p) < none ? -(write + -1 * old[foo_8_call_label](arg_8_x.p)) : write + -1 * old[foo_8_call_label](arg_8_x.p))) && (none < old[foo_8_call_label](ARPLog_sum_gt(arg_8_x, field_f(), 0, bar_log)) ? (none < old[foo_8_call_label](ARPLog_sum_gt(arg_8_x, field_f(), 1, bar_log)) ? old[foo_8_call_label](none <= write + -1 * old[foo_8_call_label](arg_8_x.p)) ==> (old[foo_8_call_label](write + -1 * old[foo_8_call_label](arg_8_x.p) < ARPLog_sum_gt(arg_8_x, field_f(), 5, bar_log)) ? old[foo_8_call_label](write + -1 * old[foo_8_call_label](arg_8_x.p) + (foo_8_call_rd + 4 * (7 * epsilonRd()))) < perm(arg_8_x.f) : foo_8_call_rd + 4 * (7 * old[foo_8_call_label](epsilonRd())) < perm(arg_8_x.f)) : old[foo_8_call_label](none <= write + -1 * old[foo_8_call_label](arg_8_x.p)) ==> (old[foo_8_call_label](write + -1 * old[foo_8_call_label](arg_8_x.p) < ARPLog_sum_gt(arg_8_x, field_f(), 5, bar_log)) ? old[foo_8_call_label](write + -1 * old[foo_8_call_label](arg_8_x.p) + 4 * (7 * epsilonRd())) < perm(arg_8_x.f) : 4 * (7 * old[foo_8_call_label](epsilonRd())) < perm(arg_8_x.f))) : none < old[foo_8_call_label](ARPLog_sum_gt(arg_8_x, field_f(), 1, bar_log)) ==> old[foo_8_call_label](none <= write + -1 * old[foo_8_call_label](arg_8_x.p)) ==> (old[foo_8_call_label](write + -1 * old[foo_8_call_label](arg_8_x.p) < ARPLog_sum_gt(arg_8_x, field_f(), 5, bar_log)) ? old[foo_8_call_label](write + -1 * old[foo_8_call_label](arg_8_x.p) + foo_8_call_rd) < perm(arg_8_x.f) : foo_8_call_rd < perm(arg_8_x.f)))
+  bar_log := ARPLog_Cons(arg_8_x, field_f(), -(write + -1 * old[foo_8_call_label](arg_8_x.p)), 6, bar_log)
+  bar_log := ARPLog_Cons(arg_8_x, field_f(), -(4 * (7 * epsilonRd())), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_8_x, field_f(), -foo_8_call_rd, 1, bar_log)
+  exhale acc(arg_8_x.f, write - foo_8_call_rd - old[foo_8_call_label](arg_8_x.p) + 7 * epsilonRd() + 2 * foo_8_call_rd - 3 * epsilonRd())
+  inhale acc(arg_8_x.p, foo_8_call_rd)
+  inhale none < foo_8_call_rd
+  bar_log := ARPLog_Cons(arg_8_x, field_p(), foo_8_call_rd, 1, bar_log)
+  inhale arg_8_x.p > none
+  inhale acc(arg_8_x.f, write - foo_8_call_rd - arg_8_x.p + 7 * epsilonRd() - 3 * epsilonRd() + 2 * foo_8_call_rd)
+  inhale 4 * (7 * epsilonRd()) < foo_8_call_rd && foo_8_call_rd < (write + -1 * arg_8_x.p < none ? -(write + -1 * arg_8_x.p) : write + -1 * arg_8_x.p) && (none < write + -1 * arg_8_x.p ? none < write + -1 * arg_8_x.p : none == write + -1 * arg_8_x.p ==> none < foo_8_call_rd)
+  bar_log := ARPLog_Cons(arg_8_x, field_f(), write + -1 * arg_8_x.p, 6, bar_log)
+  bar_log := ARPLog_Cons(arg_8_x, field_f(), 4 * (7 * epsilonRd()), 0, bar_log)
+  bar_log := ARPLog_Cons(arg_8_x, field_f(), foo_8_call_rd, 1, bar_log)
+  assert acc(x.f, write)
+  assert acc(y.f, write)
+  label bar_end_label
+  bar_log := ARPLog_Cons(x, field_p(), -write, 6, bar_log)
+  bar_log := ARPLog_Cons(x, field_f(), -write, 6, bar_log)
+  exhale acc(x.p, write) && (old[bar_end_label](x.p > none) && (old[bar_end_label](x.p < write) && (acc(x.f, write) && old[bar_end_label](x.f == 5))))
+  bar_log := ARPLog_Cons(y, field_p(), -write, 6, bar_log)
+  bar_log := ARPLog_Cons(y, field_f(), -write, 6, bar_log)
+  exhale acc(y.p, write) && (old[bar_end_label](y.p > none) && (old[bar_end_label](y.p < write) && (acc(y.f, write) && old[bar_end_label](y.f == 5))))
+}
+
+method foo(x: Ref, foo_0_rd: Perm)
+  requires none < foo_0_rd && foo_0_rd < write
+  requires acc(x.p, foo_0_rd) && (x.p > none && acc(x.f, 1 / 2))
+  ensures acc(x.p, foo_0_rd) && (x.p > none && acc(x.f, 1 / 2))
+
+
+method bar(x: Ref, y: Ref, bar_0_rd: Perm)
+  requires none < bar_0_rd && bar_0_rd < write
+  requires acc(x.p, write) && (x.p > none && (x.p < write && (acc(x.f, write) && x.f == 5)))
+  requires acc(y.p, write) && (y.p > none && (y.p < write && (acc(y.f, write) && y.f == 5)))
+  ensures acc(x.p, write) && (x.p > none && (x.p < write && (acc(x.f, write) && x.f == 5)))
+  ensures acc(y.p, write) && (y.p > none && (y.p < write && (acc(y.f, write) && y.f == 5)))
+
+
+method HavocPerm() returns (returnval: Perm)
+
+
+method HavocInt() returns (returnval_0: Int)
+
+
+method HavocBool() returns (returnval_1: Bool)
+
+
+method HavocRef() returns (returnval_2: Ref)

@@ -1,0 +1,16 @@
+field f: Int
+
+method foo(x: Ref)
+requires acc(x.f, 1/4)
+ensures acc(x.f, 1/4)
+
+method bar(x: Ref)
+requires acc(x.f, 1/4)
+ensures acc(x.f, 1/4)
+{
+	foo(x)
+	foo(x)
+	foo(x)
+	foo(x)
+	foo(x)
+}

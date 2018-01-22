@@ -1,0 +1,551 @@
+domain ARPLog {
+
+  function ARPLog_Nil(): ARPLog
+
+  function ARPLog_Cons(arp_quant_ref: Ref, arp_quant_fieldId: Int, permission: Perm, arp_quant_level: Int, arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_head_ref_Cons(arp_quant_log: ARPLog): Ref
+
+  function ARPLog_head_fieldId_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_head_permission_Cons(arp_quant_log: ARPLog): Perm
+
+  function ARPLog_head_level_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_tail_Cons(arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_type(arp_quant_log: ARPLog): Int
+
+  unique function ARPLog_type_Nil(): Int
+
+  unique function ARPLog_type_Cons(): Int
+
+  function ARPLog_is_Nil(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_is_Cons(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_max_level(arp_quant_log: ARPLog): Int
+
+  function ARPLog_sum_gt(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  function ARPLog_sum(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  axiom ARPLog_destruct_over_construct_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: { ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail) } ARPLog_head_ref_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_ref && (ARPLog_head_fieldId_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_fieldId && (ARPLog_head_permission_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_permission && (ARPLog_head_level_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_level && ARPLog_tail_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_tail))))
+  }
+
+  axiom ARPLog_construct_over_destruct_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_head_ref_Cons(arp_quant_log) } { ARPLog_head_fieldId_Cons(arp_quant_log) } { ARPLog_head_permission_Cons(arp_quant_log) } { ARPLog_head_level_Cons(arp_quant_log) } { ARPLog_tail_Cons(arp_quant_log) } ARPLog_is_Cons(arp_quant_log) ==> arp_quant_log == ARPLog_Cons(ARPLog_head_ref_Cons(arp_quant_log), ARPLog_head_fieldId_Cons(arp_quant_log), ARPLog_head_permission_Cons(arp_quant_log), ARPLog_head_level_Cons(arp_quant_log), ARPLog_tail_Cons(arp_quant_log)))
+  }
+
+  axiom ARPLog_type_of_Nil {
+    ARPLog_type(ARPLog_Nil()) == ARPLog_type_Nil()
+  }
+
+  axiom ARPLog_type_of_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: ARPLog_type(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_existence {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } ARPLog_type(arp_quant_log) == ARPLog_type_Nil() || ARPLog_type(arp_quant_log) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_is_Nil {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Nil()) == ARPLog_is_Nil(arp_quant_log))
+  }
+
+  axiom ARPLog_type_is_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Cons()) == ARPLog_is_Cons(arp_quant_log))
+  }
+
+  axiom ARPLog_log_max_level {
+    (forall arp_quant_log: ARPLog :: { ARPLog_max_level(arp_quant_log) } ARPLog_max_level(arp_quant_log) == 6)
+  }
+
+  axiom ARPLog_sum_gt_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (arp_quant_level >= ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (arp_quant_level < ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log) + ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log)))
+  }
+
+  axiom ARPLog_sum_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (ARPLog_is_Nil(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (ARPLog_is_Cons(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, ARPLog_tail_Cons(arp_quant_log)) + (ARPLog_head_ref_Cons(arp_quant_log) == arp_quant_ref && (ARPLog_head_fieldId_Cons(arp_quant_log) == arp_quant_fieldId && ARPLog_head_level_Cons(arp_quant_log) == arp_quant_level) ? ARPLog_head_permission_Cons(arp_quant_log) : none)))
+  }
+}
+
+domain ARP_field_functions {
+
+  unique function field_f(): Int
+}
+
+field f: Int
+
+function rd(): Perm
+  requires false
+
+
+function rdc(count: Int): Perm
+  requires false
+
+
+function rdw(): Perm
+  requires false
+
+
+function globalRd(): Perm
+  ensures none < result && result < write
+
+
+function epsilonRd(): Perm
+  ensures none < result && result < write
+
+
+method foo_ARP_TRANSFORMED(foo_rd: Perm)
+
+
+method bar_ARP_TRANSFORMED(bar_rd: Perm)
+{
+  var bar_log: ARPLog
+  var ARP_tmpLog: ARPLog
+  var ARP_havoc: ARPLog
+  var foo_call_rd: Perm
+  var ARP_0_tmpLog: ARPLog
+  var ARP_0_havoc: ARPLog
+  var ARP_1_tmpLog: ARPLog
+  var ARP_1_havoc: ARPLog
+  var ARP_2_tmpLog: ARPLog
+  var ARP_2_havoc: ARPLog
+  var foo_0_call_rd: Perm
+  var ARP_3_tmpLog: ARPLog
+  var ARP_3_havoc: ARPLog
+  var ARP_4_tmpLog: ARPLog
+  var ARP_4_havoc: ARPLog
+  var ARP_5_tmpLog: ARPLog
+  var ARP_5_havoc: ARPLog
+  var foo_1_call_rd: Perm
+  var ARP_6_tmpLog: ARPLog
+  var ARP_6_havoc: ARPLog
+  var ARP_7_tmpLog: ARPLog
+  var ARP_7_havoc: ARPLog
+  var ARP_8_tmpLog: ARPLog
+  var ARP_8_havoc: ARPLog
+  var foo_2_call_rd: Perm
+  var ARP_9_tmpLog: ARPLog
+  var ARP_9_havoc: ARPLog
+  var ARP_10_tmpLog: ARPLog
+  var ARP_10_havoc: ARPLog
+  var ARP_11_tmpLog: ARPLog
+  var ARP_11_havoc: ARPLog
+  var foo_3_call_rd: Perm
+  var ARP_12_tmpLog: ARPLog
+  var ARP_12_havoc: ARPLog
+  var ARP_13_tmpLog: ARPLog
+  var ARP_13_havoc: ARPLog
+  var ARP_14_tmpLog: ARPLog
+  var ARP_14_havoc: ARPLog
+  var foo_4_call_rd: Perm
+  var ARP_15_tmpLog: ARPLog
+  var ARP_15_havoc: ARPLog
+  var ARP_16_tmpLog: ARPLog
+  var ARP_16_havoc: ARPLog
+  var ARP_17_tmpLog: ARPLog
+  var ARP_17_havoc: ARPLog
+  var foo_5_call_rd: Perm
+  var ARP_18_tmpLog: ARPLog
+  var ARP_18_havoc: ARPLog
+  var ARP_19_tmpLog: ARPLog
+  var ARP_19_havoc: ARPLog
+  var ARP_20_tmpLog: ARPLog
+  var ARP_20_havoc: ARPLog
+  var foo_6_call_rd: Perm
+  var ARP_21_tmpLog: ARPLog
+  var ARP_21_havoc: ARPLog
+  var ARP_22_tmpLog: ARPLog
+  var ARP_22_havoc: ARPLog
+  var ARP_23_tmpLog: ARPLog
+  var ARP_23_havoc: ARPLog
+  var foo_7_call_rd: Perm
+  var ARP_24_tmpLog: ARPLog
+  var ARP_24_havoc: ARPLog
+  var ARP_25_tmpLog: ARPLog
+  var ARP_25_havoc: ARPLog
+  var ARP_26_tmpLog: ARPLog
+  var ARP_26_havoc: ARPLog
+  var foo_8_call_rd: Perm
+  var ARP_27_tmpLog: ARPLog
+  var ARP_27_havoc: ARPLog
+  var ARP_28_tmpLog: ARPLog
+  var ARP_28_havoc: ARPLog
+  var ARP_29_tmpLog: ARPLog
+  var ARP_29_havoc: ARPLog
+  var foo_9_call_rd: Perm
+  var ARP_30_tmpLog: ARPLog
+  var ARP_30_havoc: ARPLog
+  var ARP_31_tmpLog: ARPLog
+  var ARP_31_havoc: ARPLog
+  var ARP_32_tmpLog: ARPLog
+  var ARP_32_havoc: ARPLog
+  var foo_10_call_rd: Perm
+  var ARP_33_tmpLog: ARPLog
+  var ARP_33_havoc: ARPLog
+  var ARP_34_tmpLog: ARPLog
+  var ARP_34_havoc: ARPLog
+  var ARP_35_tmpLog: ARPLog
+  var ARP_35_havoc: ARPLog
+  var foo_11_call_rd: Perm
+  var ARP_36_tmpLog: ARPLog
+  var ARP_36_havoc: ARPLog
+  var ARP_37_tmpLog: ARPLog
+  var ARP_37_havoc: ARPLog
+  var ARP_38_tmpLog: ARPLog
+  var ARP_38_havoc: ARPLog
+  var foo_12_call_rd: Perm
+  var ARP_39_tmpLog: ARPLog
+  var ARP_39_havoc: ARPLog
+  var ARP_40_tmpLog: ARPLog
+  var ARP_40_havoc: ARPLog
+  var ARP_41_tmpLog: ARPLog
+  var ARP_41_havoc: ARPLog
+  var foo_13_call_rd: Perm
+  var ARP_42_tmpLog: ARPLog
+  var ARP_42_havoc: ARPLog
+  var ARP_43_tmpLog: ARPLog
+  var ARP_43_havoc: ARPLog
+  var ARP_44_tmpLog: ARPLog
+  var ARP_44_havoc: ARPLog
+  var foo_14_call_rd: Perm
+  var ARP_45_tmpLog: ARPLog
+  var ARP_45_havoc: ARPLog
+  var ARP_46_tmpLog: ARPLog
+  var ARP_46_havoc: ARPLog
+  var ARP_47_tmpLog: ARPLog
+  var ARP_47_havoc: ARPLog
+  var foo_15_call_rd: Perm
+  var ARP_48_tmpLog: ARPLog
+  var ARP_48_havoc: ARPLog
+  var ARP_49_tmpLog: ARPLog
+  var ARP_49_havoc: ARPLog
+  var ARP_50_tmpLog: ARPLog
+  var ARP_50_havoc: ARPLog
+  var foo_16_call_rd: Perm
+  var ARP_51_tmpLog: ARPLog
+  var ARP_51_havoc: ARPLog
+  var ARP_52_tmpLog: ARPLog
+  var ARP_52_havoc: ARPLog
+  var ARP_53_tmpLog: ARPLog
+  var ARP_53_havoc: ARPLog
+  var foo_17_call_rd: Perm
+  var ARP_54_tmpLog: ARPLog
+  var ARP_54_havoc: ARPLog
+  var ARP_55_tmpLog: ARPLog
+  var ARP_55_havoc: ARPLog
+  var ARP_56_tmpLog: ARPLog
+  var ARP_56_havoc: ARPLog
+  bar_log := ARPLog_Nil()
+  inhale none < bar_rd && bar_rd < write
+  inhale (forall x: Ref :: x != null ==> acc(x.f, write))
+  ARP_tmpLog := bar_log
+  bar_log := ARP_havoc
+  inhale (forall quantRef: Ref, quantLevel: Int, quantField: Int :: { ARPLog_sum(quantRef, quantField, quantLevel, bar_log) } ARPLog_sum(quantRef, quantField, quantLevel, bar_log) == (quantRef != null ? ARPLog_sum(quantRef, quantField, quantLevel, ARP_tmpLog) + (quantLevel == 6 ? write : none) : ARPLog_sum(quantRef, quantField, quantLevel, ARP_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> x.f == 5)
+  inhale none < foo_call_rd && foo_call_rd < write
+  label foo_call_label
+  ARP_0_tmpLog := bar_log
+  bar_log := ARP_0_havoc
+  inhale (forall quantRef_0: Ref, quantLevel_0: Int, quantField_0: Int :: { ARPLog_sum(quantRef_0, quantField_0, quantLevel_0, bar_log) } old[foo_call_label](ARPLog_sum(quantRef_0, quantField_0, quantLevel_0, bar_log)) == (quantRef_0 != null ? old[foo_call_label](ARPLog_sum(quantRef_0, quantField_0, quantLevel_0, ARP_0_tmpLog)) - (quantLevel_0 == 6 ? 1 / 20 : none) : old[foo_call_label](ARPLog_sum(quantRef_0, quantField_0, quantLevel_0, ARP_0_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_1_tmpLog := bar_log
+  bar_log := ARP_1_havoc
+  inhale (forall quantRef_1: Ref, quantLevel_1: Int, quantField_1: Int :: { ARPLog_sum(quantRef_1, quantField_1, quantLevel_1, bar_log) } ARPLog_sum(quantRef_1, quantField_1, quantLevel_1, bar_log) == (quantRef_1 != null ? ARPLog_sum(quantRef_1, quantField_1, quantLevel_1, ARP_1_tmpLog) + (quantLevel_1 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_1, quantField_1, quantLevel_1, ARP_1_tmpLog)))
+  label ARP_0_exhale_label
+  ARP_2_tmpLog := bar_log
+  bar_log := ARP_2_havoc
+  inhale (forall quantRef_2: Ref, quantLevel_2: Int, quantField_2: Int :: { ARPLog_sum(quantRef_2, quantField_2, quantLevel_2, bar_log) } old[ARP_0_exhale_label](ARPLog_sum(quantRef_2, quantField_2, quantLevel_2, bar_log)) == (quantRef_2 != null ? old[ARP_0_exhale_label](ARPLog_sum(quantRef_2, quantField_2, quantLevel_2, ARP_2_tmpLog)) - (quantLevel_2 == 6 ? 1 / 10 : none) : old[ARP_0_exhale_label](ARPLog_sum(quantRef_2, quantField_2, quantLevel_2, ARP_2_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  label foo_0_call_label
+  ARP_3_tmpLog := bar_log
+  bar_log := ARP_3_havoc
+  inhale (forall quantRef_3: Ref, quantLevel_3: Int, quantField_3: Int :: { ARPLog_sum(quantRef_3, quantField_3, quantLevel_3, bar_log) } old[foo_0_call_label](ARPLog_sum(quantRef_3, quantField_3, quantLevel_3, bar_log)) == (quantRef_3 != null ? old[foo_0_call_label](ARPLog_sum(quantRef_3, quantField_3, quantLevel_3, ARP_3_tmpLog)) - (quantLevel_3 == 6 ? 1 / 20 : none) : old[foo_0_call_label](ARPLog_sum(quantRef_3, quantField_3, quantLevel_3, ARP_3_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_4_tmpLog := bar_log
+  bar_log := ARP_4_havoc
+  inhale (forall quantRef_4: Ref, quantLevel_4: Int, quantField_4: Int :: { ARPLog_sum(quantRef_4, quantField_4, quantLevel_4, bar_log) } ARPLog_sum(quantRef_4, quantField_4, quantLevel_4, bar_log) == (quantRef_4 != null ? ARPLog_sum(quantRef_4, quantField_4, quantLevel_4, ARP_4_tmpLog) + (quantLevel_4 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_4, quantField_4, quantLevel_4, ARP_4_tmpLog)))
+  label ARP_2_exhale_label
+  ARP_5_tmpLog := bar_log
+  bar_log := ARP_5_havoc
+  inhale (forall quantRef_5: Ref, quantLevel_5: Int, quantField_5: Int :: { ARPLog_sum(quantRef_5, quantField_5, quantLevel_5, bar_log) } old[ARP_2_exhale_label](ARPLog_sum(quantRef_5, quantField_5, quantLevel_5, bar_log)) == (quantRef_5 != null ? old[ARP_2_exhale_label](ARPLog_sum(quantRef_5, quantField_5, quantLevel_5, ARP_5_tmpLog)) - (quantLevel_5 == 6 ? 1 / 10 : none) : old[ARP_2_exhale_label](ARPLog_sum(quantRef_5, quantField_5, quantLevel_5, ARP_5_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  label foo_1_call_label
+  ARP_6_tmpLog := bar_log
+  bar_log := ARP_6_havoc
+  inhale (forall quantRef_6: Ref, quantLevel_6: Int, quantField_6: Int :: { ARPLog_sum(quantRef_6, quantField_6, quantLevel_6, bar_log) } old[foo_1_call_label](ARPLog_sum(quantRef_6, quantField_6, quantLevel_6, bar_log)) == (quantRef_6 != null ? old[foo_1_call_label](ARPLog_sum(quantRef_6, quantField_6, quantLevel_6, ARP_6_tmpLog)) - (quantLevel_6 == 6 ? 1 / 20 : none) : old[foo_1_call_label](ARPLog_sum(quantRef_6, quantField_6, quantLevel_6, ARP_6_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_7_tmpLog := bar_log
+  bar_log := ARP_7_havoc
+  inhale (forall quantRef_7: Ref, quantLevel_7: Int, quantField_7: Int :: { ARPLog_sum(quantRef_7, quantField_7, quantLevel_7, bar_log) } ARPLog_sum(quantRef_7, quantField_7, quantLevel_7, bar_log) == (quantRef_7 != null ? ARPLog_sum(quantRef_7, quantField_7, quantLevel_7, ARP_7_tmpLog) + (quantLevel_7 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_7, quantField_7, quantLevel_7, ARP_7_tmpLog)))
+  label ARP_4_exhale_label
+  ARP_8_tmpLog := bar_log
+  bar_log := ARP_8_havoc
+  inhale (forall quantRef_8: Ref, quantLevel_8: Int, quantField_8: Int :: { ARPLog_sum(quantRef_8, quantField_8, quantLevel_8, bar_log) } old[ARP_4_exhale_label](ARPLog_sum(quantRef_8, quantField_8, quantLevel_8, bar_log)) == (quantRef_8 != null ? old[ARP_4_exhale_label](ARPLog_sum(quantRef_8, quantField_8, quantLevel_8, ARP_8_tmpLog)) - (quantLevel_8 == 6 ? 1 / 10 : none) : old[ARP_4_exhale_label](ARPLog_sum(quantRef_8, quantField_8, quantLevel_8, ARP_8_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_2_call_rd && foo_2_call_rd < write
+  label foo_2_call_label
+  ARP_9_tmpLog := bar_log
+  bar_log := ARP_9_havoc
+  inhale (forall quantRef_9: Ref, quantLevel_9: Int, quantField_9: Int :: { ARPLog_sum(quantRef_9, quantField_9, quantLevel_9, bar_log) } old[foo_2_call_label](ARPLog_sum(quantRef_9, quantField_9, quantLevel_9, bar_log)) == (quantRef_9 != null ? old[foo_2_call_label](ARPLog_sum(quantRef_9, quantField_9, quantLevel_9, ARP_9_tmpLog)) - (quantLevel_9 == 6 ? 1 / 20 : none) : old[foo_2_call_label](ARPLog_sum(quantRef_9, quantField_9, quantLevel_9, ARP_9_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_10_tmpLog := bar_log
+  bar_log := ARP_10_havoc
+  inhale (forall quantRef_10: Ref, quantLevel_10: Int, quantField_10: Int :: { ARPLog_sum(quantRef_10, quantField_10, quantLevel_10, bar_log) } ARPLog_sum(quantRef_10, quantField_10, quantLevel_10, bar_log) == (quantRef_10 != null ? ARPLog_sum(quantRef_10, quantField_10, quantLevel_10, ARP_10_tmpLog) + (quantLevel_10 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_10, quantField_10, quantLevel_10, ARP_10_tmpLog)))
+  label ARP_6_exhale_label
+  ARP_11_tmpLog := bar_log
+  bar_log := ARP_11_havoc
+  inhale (forall quantRef_11: Ref, quantLevel_11: Int, quantField_11: Int :: { ARPLog_sum(quantRef_11, quantField_11, quantLevel_11, bar_log) } old[ARP_6_exhale_label](ARPLog_sum(quantRef_11, quantField_11, quantLevel_11, bar_log)) == (quantRef_11 != null ? old[ARP_6_exhale_label](ARPLog_sum(quantRef_11, quantField_11, quantLevel_11, ARP_11_tmpLog)) - (quantLevel_11 == 6 ? 1 / 10 : none) : old[ARP_6_exhale_label](ARPLog_sum(quantRef_11, quantField_11, quantLevel_11, ARP_11_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_3_call_rd && foo_3_call_rd < write
+  label foo_3_call_label
+  ARP_12_tmpLog := bar_log
+  bar_log := ARP_12_havoc
+  inhale (forall quantRef_12: Ref, quantLevel_12: Int, quantField_12: Int :: { ARPLog_sum(quantRef_12, quantField_12, quantLevel_12, bar_log) } old[foo_3_call_label](ARPLog_sum(quantRef_12, quantField_12, quantLevel_12, bar_log)) == (quantRef_12 != null ? old[foo_3_call_label](ARPLog_sum(quantRef_12, quantField_12, quantLevel_12, ARP_12_tmpLog)) - (quantLevel_12 == 6 ? 1 / 20 : none) : old[foo_3_call_label](ARPLog_sum(quantRef_12, quantField_12, quantLevel_12, ARP_12_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_13_tmpLog := bar_log
+  bar_log := ARP_13_havoc
+  inhale (forall quantRef_13: Ref, quantLevel_13: Int, quantField_13: Int :: { ARPLog_sum(quantRef_13, quantField_13, quantLevel_13, bar_log) } ARPLog_sum(quantRef_13, quantField_13, quantLevel_13, bar_log) == (quantRef_13 != null ? ARPLog_sum(quantRef_13, quantField_13, quantLevel_13, ARP_13_tmpLog) + (quantLevel_13 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_13, quantField_13, quantLevel_13, ARP_13_tmpLog)))
+  label ARP_8_exhale_label
+  ARP_14_tmpLog := bar_log
+  bar_log := ARP_14_havoc
+  inhale (forall quantRef_14: Ref, quantLevel_14: Int, quantField_14: Int :: { ARPLog_sum(quantRef_14, quantField_14, quantLevel_14, bar_log) } old[ARP_8_exhale_label](ARPLog_sum(quantRef_14, quantField_14, quantLevel_14, bar_log)) == (quantRef_14 != null ? old[ARP_8_exhale_label](ARPLog_sum(quantRef_14, quantField_14, quantLevel_14, ARP_14_tmpLog)) - (quantLevel_14 == 6 ? 1 / 10 : none) : old[ARP_8_exhale_label](ARPLog_sum(quantRef_14, quantField_14, quantLevel_14, ARP_14_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_4_call_rd && foo_4_call_rd < write
+  label foo_4_call_label
+  ARP_15_tmpLog := bar_log
+  bar_log := ARP_15_havoc
+  inhale (forall quantRef_15: Ref, quantLevel_15: Int, quantField_15: Int :: { ARPLog_sum(quantRef_15, quantField_15, quantLevel_15, bar_log) } old[foo_4_call_label](ARPLog_sum(quantRef_15, quantField_15, quantLevel_15, bar_log)) == (quantRef_15 != null ? old[foo_4_call_label](ARPLog_sum(quantRef_15, quantField_15, quantLevel_15, ARP_15_tmpLog)) - (quantLevel_15 == 6 ? 1 / 20 : none) : old[foo_4_call_label](ARPLog_sum(quantRef_15, quantField_15, quantLevel_15, ARP_15_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_16_tmpLog := bar_log
+  bar_log := ARP_16_havoc
+  inhale (forall quantRef_16: Ref, quantLevel_16: Int, quantField_16: Int :: { ARPLog_sum(quantRef_16, quantField_16, quantLevel_16, bar_log) } ARPLog_sum(quantRef_16, quantField_16, quantLevel_16, bar_log) == (quantRef_16 != null ? ARPLog_sum(quantRef_16, quantField_16, quantLevel_16, ARP_16_tmpLog) + (quantLevel_16 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_16, quantField_16, quantLevel_16, ARP_16_tmpLog)))
+  label ARP_10_exhale_label
+  ARP_17_tmpLog := bar_log
+  bar_log := ARP_17_havoc
+  inhale (forall quantRef_17: Ref, quantLevel_17: Int, quantField_17: Int :: { ARPLog_sum(quantRef_17, quantField_17, quantLevel_17, bar_log) } old[ARP_10_exhale_label](ARPLog_sum(quantRef_17, quantField_17, quantLevel_17, bar_log)) == (quantRef_17 != null ? old[ARP_10_exhale_label](ARPLog_sum(quantRef_17, quantField_17, quantLevel_17, ARP_17_tmpLog)) - (quantLevel_17 == 6 ? 1 / 10 : none) : old[ARP_10_exhale_label](ARPLog_sum(quantRef_17, quantField_17, quantLevel_17, ARP_17_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_5_call_rd && foo_5_call_rd < write
+  label foo_5_call_label
+  ARP_18_tmpLog := bar_log
+  bar_log := ARP_18_havoc
+  inhale (forall quantRef_18: Ref, quantLevel_18: Int, quantField_18: Int :: { ARPLog_sum(quantRef_18, quantField_18, quantLevel_18, bar_log) } old[foo_5_call_label](ARPLog_sum(quantRef_18, quantField_18, quantLevel_18, bar_log)) == (quantRef_18 != null ? old[foo_5_call_label](ARPLog_sum(quantRef_18, quantField_18, quantLevel_18, ARP_18_tmpLog)) - (quantLevel_18 == 6 ? 1 / 20 : none) : old[foo_5_call_label](ARPLog_sum(quantRef_18, quantField_18, quantLevel_18, ARP_18_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_19_tmpLog := bar_log
+  bar_log := ARP_19_havoc
+  inhale (forall quantRef_19: Ref, quantLevel_19: Int, quantField_19: Int :: { ARPLog_sum(quantRef_19, quantField_19, quantLevel_19, bar_log) } ARPLog_sum(quantRef_19, quantField_19, quantLevel_19, bar_log) == (quantRef_19 != null ? ARPLog_sum(quantRef_19, quantField_19, quantLevel_19, ARP_19_tmpLog) + (quantLevel_19 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_19, quantField_19, quantLevel_19, ARP_19_tmpLog)))
+  label ARP_12_exhale_label
+  ARP_20_tmpLog := bar_log
+  bar_log := ARP_20_havoc
+  inhale (forall quantRef_20: Ref, quantLevel_20: Int, quantField_20: Int :: { ARPLog_sum(quantRef_20, quantField_20, quantLevel_20, bar_log) } old[ARP_12_exhale_label](ARPLog_sum(quantRef_20, quantField_20, quantLevel_20, bar_log)) == (quantRef_20 != null ? old[ARP_12_exhale_label](ARPLog_sum(quantRef_20, quantField_20, quantLevel_20, ARP_20_tmpLog)) - (quantLevel_20 == 6 ? 1 / 10 : none) : old[ARP_12_exhale_label](ARPLog_sum(quantRef_20, quantField_20, quantLevel_20, ARP_20_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_6_call_rd && foo_6_call_rd < write
+  label foo_6_call_label
+  ARP_21_tmpLog := bar_log
+  bar_log := ARP_21_havoc
+  inhale (forall quantRef_21: Ref, quantLevel_21: Int, quantField_21: Int :: { ARPLog_sum(quantRef_21, quantField_21, quantLevel_21, bar_log) } old[foo_6_call_label](ARPLog_sum(quantRef_21, quantField_21, quantLevel_21, bar_log)) == (quantRef_21 != null ? old[foo_6_call_label](ARPLog_sum(quantRef_21, quantField_21, quantLevel_21, ARP_21_tmpLog)) - (quantLevel_21 == 6 ? 1 / 20 : none) : old[foo_6_call_label](ARPLog_sum(quantRef_21, quantField_21, quantLevel_21, ARP_21_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_22_tmpLog := bar_log
+  bar_log := ARP_22_havoc
+  inhale (forall quantRef_22: Ref, quantLevel_22: Int, quantField_22: Int :: { ARPLog_sum(quantRef_22, quantField_22, quantLevel_22, bar_log) } ARPLog_sum(quantRef_22, quantField_22, quantLevel_22, bar_log) == (quantRef_22 != null ? ARPLog_sum(quantRef_22, quantField_22, quantLevel_22, ARP_22_tmpLog) + (quantLevel_22 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_22, quantField_22, quantLevel_22, ARP_22_tmpLog)))
+  label ARP_14_exhale_label
+  ARP_23_tmpLog := bar_log
+  bar_log := ARP_23_havoc
+  inhale (forall quantRef_23: Ref, quantLevel_23: Int, quantField_23: Int :: { ARPLog_sum(quantRef_23, quantField_23, quantLevel_23, bar_log) } old[ARP_14_exhale_label](ARPLog_sum(quantRef_23, quantField_23, quantLevel_23, bar_log)) == (quantRef_23 != null ? old[ARP_14_exhale_label](ARPLog_sum(quantRef_23, quantField_23, quantLevel_23, ARP_23_tmpLog)) - (quantLevel_23 == 6 ? 1 / 10 : none) : old[ARP_14_exhale_label](ARPLog_sum(quantRef_23, quantField_23, quantLevel_23, ARP_23_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_7_call_rd && foo_7_call_rd < write
+  label foo_7_call_label
+  ARP_24_tmpLog := bar_log
+  bar_log := ARP_24_havoc
+  inhale (forall quantRef_24: Ref, quantLevel_24: Int, quantField_24: Int :: { ARPLog_sum(quantRef_24, quantField_24, quantLevel_24, bar_log) } old[foo_7_call_label](ARPLog_sum(quantRef_24, quantField_24, quantLevel_24, bar_log)) == (quantRef_24 != null ? old[foo_7_call_label](ARPLog_sum(quantRef_24, quantField_24, quantLevel_24, ARP_24_tmpLog)) - (quantLevel_24 == 6 ? 1 / 20 : none) : old[foo_7_call_label](ARPLog_sum(quantRef_24, quantField_24, quantLevel_24, ARP_24_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_25_tmpLog := bar_log
+  bar_log := ARP_25_havoc
+  inhale (forall quantRef_25: Ref, quantLevel_25: Int, quantField_25: Int :: { ARPLog_sum(quantRef_25, quantField_25, quantLevel_25, bar_log) } ARPLog_sum(quantRef_25, quantField_25, quantLevel_25, bar_log) == (quantRef_25 != null ? ARPLog_sum(quantRef_25, quantField_25, quantLevel_25, ARP_25_tmpLog) + (quantLevel_25 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_25, quantField_25, quantLevel_25, ARP_25_tmpLog)))
+  label ARP_16_exhale_label
+  ARP_26_tmpLog := bar_log
+  bar_log := ARP_26_havoc
+  inhale (forall quantRef_26: Ref, quantLevel_26: Int, quantField_26: Int :: { ARPLog_sum(quantRef_26, quantField_26, quantLevel_26, bar_log) } old[ARP_16_exhale_label](ARPLog_sum(quantRef_26, quantField_26, quantLevel_26, bar_log)) == (quantRef_26 != null ? old[ARP_16_exhale_label](ARPLog_sum(quantRef_26, quantField_26, quantLevel_26, ARP_26_tmpLog)) - (quantLevel_26 == 6 ? 1 / 10 : none) : old[ARP_16_exhale_label](ARPLog_sum(quantRef_26, quantField_26, quantLevel_26, ARP_26_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_8_call_rd && foo_8_call_rd < write
+  label foo_8_call_label
+  ARP_27_tmpLog := bar_log
+  bar_log := ARP_27_havoc
+  inhale (forall quantRef_27: Ref, quantLevel_27: Int, quantField_27: Int :: { ARPLog_sum(quantRef_27, quantField_27, quantLevel_27, bar_log) } old[foo_8_call_label](ARPLog_sum(quantRef_27, quantField_27, quantLevel_27, bar_log)) == (quantRef_27 != null ? old[foo_8_call_label](ARPLog_sum(quantRef_27, quantField_27, quantLevel_27, ARP_27_tmpLog)) - (quantLevel_27 == 6 ? 1 / 20 : none) : old[foo_8_call_label](ARPLog_sum(quantRef_27, quantField_27, quantLevel_27, ARP_27_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_28_tmpLog := bar_log
+  bar_log := ARP_28_havoc
+  inhale (forall quantRef_28: Ref, quantLevel_28: Int, quantField_28: Int :: { ARPLog_sum(quantRef_28, quantField_28, quantLevel_28, bar_log) } ARPLog_sum(quantRef_28, quantField_28, quantLevel_28, bar_log) == (quantRef_28 != null ? ARPLog_sum(quantRef_28, quantField_28, quantLevel_28, ARP_28_tmpLog) + (quantLevel_28 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_28, quantField_28, quantLevel_28, ARP_28_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_29_tmpLog := bar_log
+  bar_log := ARP_29_havoc
+  inhale (forall quantRef_29: Ref, quantLevel_29: Int, quantField_29: Int :: { ARPLog_sum(quantRef_29, quantField_29, quantLevel_29, bar_log) } ARPLog_sum(quantRef_29, quantField_29, quantLevel_29, bar_log) == (quantRef_29 != null ? ARPLog_sum(quantRef_29, quantField_29, quantLevel_29, ARP_29_tmpLog) + (quantLevel_29 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_29, quantField_29, quantLevel_29, ARP_29_tmpLog)))
+  inhale none < foo_9_call_rd && foo_9_call_rd < write
+  label foo_9_call_label
+  ARP_30_tmpLog := bar_log
+  bar_log := ARP_30_havoc
+  inhale (forall quantRef_30: Ref, quantLevel_30: Int, quantField_30: Int :: { ARPLog_sum(quantRef_30, quantField_30, quantLevel_30, bar_log) } old[foo_9_call_label](ARPLog_sum(quantRef_30, quantField_30, quantLevel_30, bar_log)) == (quantRef_30 != null ? old[foo_9_call_label](ARPLog_sum(quantRef_30, quantField_30, quantLevel_30, ARP_30_tmpLog)) - (quantLevel_30 == 6 ? 1 / 20 : none) : old[foo_9_call_label](ARPLog_sum(quantRef_30, quantField_30, quantLevel_30, ARP_30_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_31_tmpLog := bar_log
+  bar_log := ARP_31_havoc
+  inhale (forall quantRef_31: Ref, quantLevel_31: Int, quantField_31: Int :: { ARPLog_sum(quantRef_31, quantField_31, quantLevel_31, bar_log) } ARPLog_sum(quantRef_31, quantField_31, quantLevel_31, bar_log) == (quantRef_31 != null ? ARPLog_sum(quantRef_31, quantField_31, quantLevel_31, ARP_31_tmpLog) + (quantLevel_31 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_31, quantField_31, quantLevel_31, ARP_31_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_32_tmpLog := bar_log
+  bar_log := ARP_32_havoc
+  inhale (forall quantRef_32: Ref, quantLevel_32: Int, quantField_32: Int :: { ARPLog_sum(quantRef_32, quantField_32, quantLevel_32, bar_log) } ARPLog_sum(quantRef_32, quantField_32, quantLevel_32, bar_log) == (quantRef_32 != null ? ARPLog_sum(quantRef_32, quantField_32, quantLevel_32, ARP_32_tmpLog) + (quantLevel_32 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_32, quantField_32, quantLevel_32, ARP_32_tmpLog)))
+  inhale none < foo_10_call_rd && foo_10_call_rd < write
+  label foo_10_call_label
+  ARP_33_tmpLog := bar_log
+  bar_log := ARP_33_havoc
+  inhale (forall quantRef_33: Ref, quantLevel_33: Int, quantField_33: Int :: { ARPLog_sum(quantRef_33, quantField_33, quantLevel_33, bar_log) } old[foo_10_call_label](ARPLog_sum(quantRef_33, quantField_33, quantLevel_33, bar_log)) == (quantRef_33 != null ? old[foo_10_call_label](ARPLog_sum(quantRef_33, quantField_33, quantLevel_33, ARP_33_tmpLog)) - (quantLevel_33 == 6 ? 1 / 20 : none) : old[foo_10_call_label](ARPLog_sum(quantRef_33, quantField_33, quantLevel_33, ARP_33_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_34_tmpLog := bar_log
+  bar_log := ARP_34_havoc
+  inhale (forall quantRef_34: Ref, quantLevel_34: Int, quantField_34: Int :: { ARPLog_sum(quantRef_34, quantField_34, quantLevel_34, bar_log) } ARPLog_sum(quantRef_34, quantField_34, quantLevel_34, bar_log) == (quantRef_34 != null ? ARPLog_sum(quantRef_34, quantField_34, quantLevel_34, ARP_34_tmpLog) + (quantLevel_34 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_34, quantField_34, quantLevel_34, ARP_34_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_35_tmpLog := bar_log
+  bar_log := ARP_35_havoc
+  inhale (forall quantRef_35: Ref, quantLevel_35: Int, quantField_35: Int :: { ARPLog_sum(quantRef_35, quantField_35, quantLevel_35, bar_log) } ARPLog_sum(quantRef_35, quantField_35, quantLevel_35, bar_log) == (quantRef_35 != null ? ARPLog_sum(quantRef_35, quantField_35, quantLevel_35, ARP_35_tmpLog) + (quantLevel_35 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_35, quantField_35, quantLevel_35, ARP_35_tmpLog)))
+  inhale none < foo_11_call_rd && foo_11_call_rd < write
+  label foo_11_call_label
+  ARP_36_tmpLog := bar_log
+  bar_log := ARP_36_havoc
+  inhale (forall quantRef_36: Ref, quantLevel_36: Int, quantField_36: Int :: { ARPLog_sum(quantRef_36, quantField_36, quantLevel_36, bar_log) } old[foo_11_call_label](ARPLog_sum(quantRef_36, quantField_36, quantLevel_36, bar_log)) == (quantRef_36 != null ? old[foo_11_call_label](ARPLog_sum(quantRef_36, quantField_36, quantLevel_36, ARP_36_tmpLog)) - (quantLevel_36 == 6 ? 1 / 20 : none) : old[foo_11_call_label](ARPLog_sum(quantRef_36, quantField_36, quantLevel_36, ARP_36_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_37_tmpLog := bar_log
+  bar_log := ARP_37_havoc
+  inhale (forall quantRef_37: Ref, quantLevel_37: Int, quantField_37: Int :: { ARPLog_sum(quantRef_37, quantField_37, quantLevel_37, bar_log) } ARPLog_sum(quantRef_37, quantField_37, quantLevel_37, bar_log) == (quantRef_37 != null ? ARPLog_sum(quantRef_37, quantField_37, quantLevel_37, ARP_37_tmpLog) + (quantLevel_37 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_37, quantField_37, quantLevel_37, ARP_37_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_38_tmpLog := bar_log
+  bar_log := ARP_38_havoc
+  inhale (forall quantRef_38: Ref, quantLevel_38: Int, quantField_38: Int :: { ARPLog_sum(quantRef_38, quantField_38, quantLevel_38, bar_log) } ARPLog_sum(quantRef_38, quantField_38, quantLevel_38, bar_log) == (quantRef_38 != null ? ARPLog_sum(quantRef_38, quantField_38, quantLevel_38, ARP_38_tmpLog) + (quantLevel_38 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_38, quantField_38, quantLevel_38, ARP_38_tmpLog)))
+  inhale none < foo_12_call_rd && foo_12_call_rd < write
+  label foo_12_call_label
+  ARP_39_tmpLog := bar_log
+  bar_log := ARP_39_havoc
+  inhale (forall quantRef_39: Ref, quantLevel_39: Int, quantField_39: Int :: { ARPLog_sum(quantRef_39, quantField_39, quantLevel_39, bar_log) } old[foo_12_call_label](ARPLog_sum(quantRef_39, quantField_39, quantLevel_39, bar_log)) == (quantRef_39 != null ? old[foo_12_call_label](ARPLog_sum(quantRef_39, quantField_39, quantLevel_39, ARP_39_tmpLog)) - (quantLevel_39 == 6 ? 1 / 20 : none) : old[foo_12_call_label](ARPLog_sum(quantRef_39, quantField_39, quantLevel_39, ARP_39_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_40_tmpLog := bar_log
+  bar_log := ARP_40_havoc
+  inhale (forall quantRef_40: Ref, quantLevel_40: Int, quantField_40: Int :: { ARPLog_sum(quantRef_40, quantField_40, quantLevel_40, bar_log) } ARPLog_sum(quantRef_40, quantField_40, quantLevel_40, bar_log) == (quantRef_40 != null ? ARPLog_sum(quantRef_40, quantField_40, quantLevel_40, ARP_40_tmpLog) + (quantLevel_40 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_40, quantField_40, quantLevel_40, ARP_40_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_41_tmpLog := bar_log
+  bar_log := ARP_41_havoc
+  inhale (forall quantRef_41: Ref, quantLevel_41: Int, quantField_41: Int :: { ARPLog_sum(quantRef_41, quantField_41, quantLevel_41, bar_log) } ARPLog_sum(quantRef_41, quantField_41, quantLevel_41, bar_log) == (quantRef_41 != null ? ARPLog_sum(quantRef_41, quantField_41, quantLevel_41, ARP_41_tmpLog) + (quantLevel_41 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_41, quantField_41, quantLevel_41, ARP_41_tmpLog)))
+  inhale none < foo_13_call_rd && foo_13_call_rd < write
+  label foo_13_call_label
+  ARP_42_tmpLog := bar_log
+  bar_log := ARP_42_havoc
+  inhale (forall quantRef_42: Ref, quantLevel_42: Int, quantField_42: Int :: { ARPLog_sum(quantRef_42, quantField_42, quantLevel_42, bar_log) } old[foo_13_call_label](ARPLog_sum(quantRef_42, quantField_42, quantLevel_42, bar_log)) == (quantRef_42 != null ? old[foo_13_call_label](ARPLog_sum(quantRef_42, quantField_42, quantLevel_42, ARP_42_tmpLog)) - (quantLevel_42 == 6 ? 1 / 20 : none) : old[foo_13_call_label](ARPLog_sum(quantRef_42, quantField_42, quantLevel_42, ARP_42_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_43_tmpLog := bar_log
+  bar_log := ARP_43_havoc
+  inhale (forall quantRef_43: Ref, quantLevel_43: Int, quantField_43: Int :: { ARPLog_sum(quantRef_43, quantField_43, quantLevel_43, bar_log) } ARPLog_sum(quantRef_43, quantField_43, quantLevel_43, bar_log) == (quantRef_43 != null ? ARPLog_sum(quantRef_43, quantField_43, quantLevel_43, ARP_43_tmpLog) + (quantLevel_43 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_43, quantField_43, quantLevel_43, ARP_43_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_44_tmpLog := bar_log
+  bar_log := ARP_44_havoc
+  inhale (forall quantRef_44: Ref, quantLevel_44: Int, quantField_44: Int :: { ARPLog_sum(quantRef_44, quantField_44, quantLevel_44, bar_log) } ARPLog_sum(quantRef_44, quantField_44, quantLevel_44, bar_log) == (quantRef_44 != null ? ARPLog_sum(quantRef_44, quantField_44, quantLevel_44, ARP_44_tmpLog) + (quantLevel_44 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_44, quantField_44, quantLevel_44, ARP_44_tmpLog)))
+  inhale none < foo_14_call_rd && foo_14_call_rd < write
+  label foo_14_call_label
+  ARP_45_tmpLog := bar_log
+  bar_log := ARP_45_havoc
+  inhale (forall quantRef_45: Ref, quantLevel_45: Int, quantField_45: Int :: { ARPLog_sum(quantRef_45, quantField_45, quantLevel_45, bar_log) } old[foo_14_call_label](ARPLog_sum(quantRef_45, quantField_45, quantLevel_45, bar_log)) == (quantRef_45 != null ? old[foo_14_call_label](ARPLog_sum(quantRef_45, quantField_45, quantLevel_45, ARP_45_tmpLog)) - (quantLevel_45 == 6 ? 1 / 20 : none) : old[foo_14_call_label](ARPLog_sum(quantRef_45, quantField_45, quantLevel_45, ARP_45_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_46_tmpLog := bar_log
+  bar_log := ARP_46_havoc
+  inhale (forall quantRef_46: Ref, quantLevel_46: Int, quantField_46: Int :: { ARPLog_sum(quantRef_46, quantField_46, quantLevel_46, bar_log) } ARPLog_sum(quantRef_46, quantField_46, quantLevel_46, bar_log) == (quantRef_46 != null ? ARPLog_sum(quantRef_46, quantField_46, quantLevel_46, ARP_46_tmpLog) + (quantLevel_46 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_46, quantField_46, quantLevel_46, ARP_46_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_47_tmpLog := bar_log
+  bar_log := ARP_47_havoc
+  inhale (forall quantRef_47: Ref, quantLevel_47: Int, quantField_47: Int :: { ARPLog_sum(quantRef_47, quantField_47, quantLevel_47, bar_log) } ARPLog_sum(quantRef_47, quantField_47, quantLevel_47, bar_log) == (quantRef_47 != null ? ARPLog_sum(quantRef_47, quantField_47, quantLevel_47, ARP_47_tmpLog) + (quantLevel_47 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_47, quantField_47, quantLevel_47, ARP_47_tmpLog)))
+  inhale none < foo_15_call_rd && foo_15_call_rd < write
+  label foo_15_call_label
+  ARP_48_tmpLog := bar_log
+  bar_log := ARP_48_havoc
+  inhale (forall quantRef_48: Ref, quantLevel_48: Int, quantField_48: Int :: { ARPLog_sum(quantRef_48, quantField_48, quantLevel_48, bar_log) } old[foo_15_call_label](ARPLog_sum(quantRef_48, quantField_48, quantLevel_48, bar_log)) == (quantRef_48 != null ? old[foo_15_call_label](ARPLog_sum(quantRef_48, quantField_48, quantLevel_48, ARP_48_tmpLog)) - (quantLevel_48 == 6 ? 1 / 20 : none) : old[foo_15_call_label](ARPLog_sum(quantRef_48, quantField_48, quantLevel_48, ARP_48_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_49_tmpLog := bar_log
+  bar_log := ARP_49_havoc
+  inhale (forall quantRef_49: Ref, quantLevel_49: Int, quantField_49: Int :: { ARPLog_sum(quantRef_49, quantField_49, quantLevel_49, bar_log) } ARPLog_sum(quantRef_49, quantField_49, quantLevel_49, bar_log) == (quantRef_49 != null ? ARPLog_sum(quantRef_49, quantField_49, quantLevel_49, ARP_49_tmpLog) + (quantLevel_49 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_49, quantField_49, quantLevel_49, ARP_49_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_50_tmpLog := bar_log
+  bar_log := ARP_50_havoc
+  inhale (forall quantRef_50: Ref, quantLevel_50: Int, quantField_50: Int :: { ARPLog_sum(quantRef_50, quantField_50, quantLevel_50, bar_log) } ARPLog_sum(quantRef_50, quantField_50, quantLevel_50, bar_log) == (quantRef_50 != null ? ARPLog_sum(quantRef_50, quantField_50, quantLevel_50, ARP_50_tmpLog) + (quantLevel_50 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_50, quantField_50, quantLevel_50, ARP_50_tmpLog)))
+  inhale none < foo_16_call_rd && foo_16_call_rd < write
+  label foo_16_call_label
+  ARP_51_tmpLog := bar_log
+  bar_log := ARP_51_havoc
+  inhale (forall quantRef_51: Ref, quantLevel_51: Int, quantField_51: Int :: { ARPLog_sum(quantRef_51, quantField_51, quantLevel_51, bar_log) } old[foo_16_call_label](ARPLog_sum(quantRef_51, quantField_51, quantLevel_51, bar_log)) == (quantRef_51 != null ? old[foo_16_call_label](ARPLog_sum(quantRef_51, quantField_51, quantLevel_51, ARP_51_tmpLog)) - (quantLevel_51 == 6 ? 1 / 20 : none) : old[foo_16_call_label](ARPLog_sum(quantRef_51, quantField_51, quantLevel_51, ARP_51_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_52_tmpLog := bar_log
+  bar_log := ARP_52_havoc
+  inhale (forall quantRef_52: Ref, quantLevel_52: Int, quantField_52: Int :: { ARPLog_sum(quantRef_52, quantField_52, quantLevel_52, bar_log) } ARPLog_sum(quantRef_52, quantField_52, quantLevel_52, bar_log) == (quantRef_52 != null ? ARPLog_sum(quantRef_52, quantField_52, quantLevel_52, ARP_52_tmpLog) + (quantLevel_52 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_52, quantField_52, quantLevel_52, ARP_52_tmpLog)))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  ARP_53_tmpLog := bar_log
+  bar_log := ARP_53_havoc
+  inhale (forall quantRef_53: Ref, quantLevel_53: Int, quantField_53: Int :: { ARPLog_sum(quantRef_53, quantField_53, quantLevel_53, bar_log) } ARPLog_sum(quantRef_53, quantField_53, quantLevel_53, bar_log) == (quantRef_53 != null ? ARPLog_sum(quantRef_53, quantField_53, quantLevel_53, ARP_53_tmpLog) + (quantLevel_53 == 6 ? 1 / 10 : none) : ARPLog_sum(quantRef_53, quantField_53, quantLevel_53, ARP_53_tmpLog)))
+  inhale none < foo_17_call_rd && foo_17_call_rd < write
+  label foo_17_call_label
+  ARP_54_tmpLog := bar_log
+  bar_log := ARP_54_havoc
+  inhale (forall quantRef_54: Ref, quantLevel_54: Int, quantField_54: Int :: { ARPLog_sum(quantRef_54, quantField_54, quantLevel_54, bar_log) } old[foo_17_call_label](ARPLog_sum(quantRef_54, quantField_54, quantLevel_54, bar_log)) == (quantRef_54 != null ? old[foo_17_call_label](ARPLog_sum(quantRef_54, quantField_54, quantLevel_54, ARP_54_tmpLog)) - (quantLevel_54 == 6 ? 1 / 20 : none) : old[foo_17_call_label](ARPLog_sum(quantRef_54, quantField_54, quantLevel_54, ARP_54_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ARP_55_tmpLog := bar_log
+  bar_log := ARP_55_havoc
+  inhale (forall quantRef_55: Ref, quantLevel_55: Int, quantField_55: Int :: { ARPLog_sum(quantRef_55, quantField_55, quantLevel_55, bar_log) } ARPLog_sum(quantRef_55, quantField_55, quantLevel_55, bar_log) == (quantRef_55 != null ? ARPLog_sum(quantRef_55, quantField_55, quantLevel_55, ARP_55_tmpLog) + (quantLevel_55 == 6 ? 1 / 20 : none) : ARPLog_sum(quantRef_55, quantField_55, quantLevel_55, ARP_55_tmpLog)))
+  label bar_end_label
+  ARP_56_tmpLog := bar_log
+  bar_log := ARP_56_havoc
+  inhale (forall quantRef_56: Ref, quantLevel_56: Int, quantField_56: Int :: { ARPLog_sum(quantRef_56, quantField_56, quantLevel_56, bar_log) } old[bar_end_label](ARPLog_sum(quantRef_56, quantField_56, quantLevel_56, bar_log)) == (quantRef_56 != null ? old[bar_end_label](ARPLog_sum(quantRef_56, quantField_56, quantLevel_56, ARP_56_tmpLog)) - (quantLevel_56 == 6 ? write : none) : old[bar_end_label](ARPLog_sum(quantRef_56, quantField_56, quantLevel_56, ARP_56_tmpLog))))
+  exhale (forall x: Ref :: x != null ==> acc(x.f, write))
+  exhale (forall x: Ref :: old[bar_end_label](x != null ==> x.f == 5))
+}
+
+method foo(foo_0_rd: Perm)
+  requires none < foo_0_rd && foo_0_rd < write
+  requires (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  ensures (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+
+
+method bar(bar_0_rd: Perm)
+  requires none < bar_0_rd && bar_0_rd < write
+  requires (forall x: Ref :: x != null ==> acc(x.f, write))
+  requires (forall x: Ref :: x != null ==> x.f == 5)
+  ensures (forall x: Ref :: x != null ==> acc(x.f, write))
+  ensures (forall x: Ref :: x != null ==> x.f == 5)
+
+
+method HavocPerm() returns (returnval: Perm)
+
+
+method HavocInt() returns (returnval_0: Int)
+
+
+method HavocBool() returns (returnval_1: Bool)
+
+
+method HavocRef() returns (returnval_2: Ref)

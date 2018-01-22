@@ -1,0 +1,95 @@
+field f: Int
+
+field g: Int
+
+field h: Int
+
+field r: Ref
+
+method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
+{
+  inhale none < bar_rd && bar_rd < write
+  inhale x != y && (x != z && y != z)
+  inhale acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(x.r.h, 1 / 4)))
+  inhale acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(y.r.h, 1 / 4)))
+  inhale acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
+  var foo_call_rd: Perm
+  var arg_x: Ref
+  var arg_y: Ref
+  var arg_z: Ref
+  inhale none < foo_call_rd && foo_call_rd < write
+  arg_x := x
+  arg_y := y
+  arg_z := z
+  label foo_call_label
+  label ARP_exhale_label
+  exhale acc(arg_x.f, 1 / 4) && (acc(arg_y.g, 1 / 4) && (acc(arg_z.r, 1 / 4) && acc(old[foo_call_label](arg_z.r).h, 1 / 4)))
+  inhale acc(arg_x.f, 1 / 4) && (acc(arg_y.g, 1 / 4) && (acc(arg_z.r, 1 / 4) && acc(arg_z.r.h, 1 / 4)))
+  var foo_0_call_rd: Perm
+  var arg_0_x: Ref
+  var arg_0_y: Ref
+  var arg_0_z: Ref
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  arg_0_x := x
+  arg_0_y := z
+  arg_0_z := y
+  label foo_0_call_label
+  label ARP_0_exhale_label
+  exhale acc(arg_0_x.f, 1 / 4) && (acc(arg_0_y.g, 1 / 4) && (acc(arg_0_z.r, 1 / 4) && acc(old[foo_0_call_label](arg_0_z.r).h, 1 / 4)))
+  inhale acc(arg_0_x.f, 1 / 4) && (acc(arg_0_y.g, 1 / 4) && (acc(arg_0_z.r, 1 / 4) && acc(arg_0_z.r.h, 1 / 4)))
+  var foo_1_call_rd: Perm
+  var arg_1_x: Ref
+  var arg_1_y: Ref
+  var arg_1_z: Ref
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  arg_1_x := y
+  arg_1_y := x
+  arg_1_z := z
+  label foo_1_call_label
+  label ARP_1_exhale_label
+  exhale acc(arg_1_x.f, 1 / 4) && (acc(arg_1_y.g, 1 / 4) && (acc(arg_1_z.r, 1 / 4) && acc(old[foo_1_call_label](arg_1_z.r).h, 1 / 4)))
+  inhale acc(arg_1_x.f, 1 / 4) && (acc(arg_1_y.g, 1 / 4) && (acc(arg_1_z.r, 1 / 4) && acc(arg_1_z.r.h, 1 / 4)))
+  var foo_2_call_rd: Perm
+  var arg_2_x: Ref
+  var arg_2_y: Ref
+  var arg_2_z: Ref
+  inhale none < foo_2_call_rd && foo_2_call_rd < write
+  arg_2_x := y
+  arg_2_y := z
+  arg_2_z := x
+  label foo_2_call_label
+  label ARP_2_exhale_label
+  exhale acc(arg_2_x.f, 1 / 4) && (acc(arg_2_y.g, 1 / 4) && (acc(arg_2_z.r, 1 / 4) && acc(old[foo_2_call_label](arg_2_z.r).h, 1 / 4)))
+  inhale acc(arg_2_x.f, 1 / 4) && (acc(arg_2_y.g, 1 / 4) && (acc(arg_2_z.r, 1 / 4) && acc(arg_2_z.r.h, 1 / 4)))
+  var foo_3_call_rd: Perm
+  var arg_3_x: Ref
+  var arg_3_y: Ref
+  var arg_3_z: Ref
+  inhale none < foo_3_call_rd && foo_3_call_rd < write
+  arg_3_x := z
+  arg_3_y := x
+  arg_3_z := y
+  label foo_3_call_label
+  label ARP_3_exhale_label
+  exhale acc(arg_3_x.f, 1 / 4) && (acc(arg_3_y.g, 1 / 4) && (acc(arg_3_z.r, 1 / 4) && acc(old[foo_3_call_label](arg_3_z.r).h, 1 / 4)))
+  inhale acc(arg_3_x.f, 1 / 4) && (acc(arg_3_y.g, 1 / 4) && (acc(arg_3_z.r, 1 / 4) && acc(arg_3_z.r.h, 1 / 4)))
+  var foo_4_call_rd: Perm
+  var arg_4_x: Ref
+  var arg_4_y: Ref
+  var arg_4_z: Ref
+  inhale none < foo_4_call_rd && foo_4_call_rd < write
+  arg_4_x := z
+  arg_4_y := y
+  arg_4_z := x
+  label foo_4_call_label
+  label ARP_4_exhale_label
+  exhale acc(arg_4_x.f, 1 / 4) && (acc(arg_4_y.g, 1 / 4) && (acc(arg_4_z.r, 1 / 4) && acc(old[foo_4_call_label](arg_4_z.r).h, 1 / 4)))
+  inhale acc(arg_4_x.f, 1 / 4) && (acc(arg_4_y.g, 1 / 4) && (acc(arg_4_z.r, 1 / 4) && acc(arg_4_z.r.h, 1 / 4)))
+  label bar_end_label
+  label ARP_5_exhale_label
+  exhale acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(old[bar_end_label](x.r).h, 1 / 4)))
+  label ARP_6_exhale_label
+  exhale acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(old[bar_end_label](y.r).h, 1 / 4)))
+  label ARP_7_exhale_label
+  exhale acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(old[bar_end_label](z.r).h, 1 / 4)))
+}

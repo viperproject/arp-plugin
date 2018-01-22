@@ -1,0 +1,134 @@
+field f: Int
+
+
+method bar_ARP_TRANSFORMED(bar_rd: Perm)
+{
+  var foo_call_rd: Perm
+  var foo_0_call_rd: Perm
+  var foo_1_call_rd: Perm
+  var foo_2_call_rd: Perm
+  var foo_3_call_rd: Perm
+  var foo_4_call_rd: Perm
+  var foo_5_call_rd: Perm
+  var foo_6_call_rd: Perm
+  var foo_7_call_rd: Perm
+  var foo_8_call_rd: Perm
+  var foo_9_call_rd: Perm
+  var foo_10_call_rd: Perm
+  var foo_11_call_rd: Perm
+  var foo_12_call_rd: Perm
+  var foo_13_call_rd: Perm
+  var foo_14_call_rd: Perm
+  var foo_15_call_rd: Perm
+  var foo_16_call_rd: Perm
+  var foo_17_call_rd: Perm
+  inhale none < bar_rd && bar_rd < write
+  inhale (forall x: Ref :: x != null ==> acc(x.f, write))
+  inhale (forall x: Ref :: x != null ==> x.f == 5)
+  inhale none < foo_call_rd && foo_call_rd < write
+  label foo_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_0_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  label foo_0_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_2_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  label foo_1_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_4_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_2_call_rd && foo_2_call_rd < write
+  label foo_2_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_6_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_3_call_rd && foo_3_call_rd < write
+  label foo_3_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_8_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_4_call_rd && foo_4_call_rd < write
+  label foo_4_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_10_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_5_call_rd && foo_5_call_rd < write
+  label foo_5_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_12_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_6_call_rd && foo_6_call_rd < write
+  label foo_6_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_14_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_7_call_rd && foo_7_call_rd < write
+  label foo_7_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label ARP_16_exhale_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_8_call_rd && foo_8_call_rd < write
+  label foo_8_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_9_call_rd && foo_9_call_rd < write
+  label foo_9_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_10_call_rd && foo_10_call_rd < write
+  label foo_10_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_11_call_rd && foo_11_call_rd < write
+  label foo_11_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_12_call_rd && foo_12_call_rd < write
+  label foo_12_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_13_call_rd && foo_13_call_rd < write
+  label foo_13_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_14_call_rd && foo_14_call_rd < write
+  label foo_14_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_15_call_rd && foo_15_call_rd < write
+  label foo_15_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_16_call_rd && foo_16_call_rd < write
+  label foo_16_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 10))
+  inhale none < foo_17_call_rd && foo_17_call_rd < write
+  label foo_17_call_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  inhale (forall x: Ref :: x != null ==> acc(x.f, 1 / 20))
+  label bar_end_label
+  exhale (forall x: Ref :: x != null ==> acc(x.f, write))
+  exhale (forall x: Ref :: old[bar_end_label](x != null ==> x.f == 5))
+}

@@ -1,0 +1,81 @@
+field f: Int
+
+predicate p1()
+
+predicate p2(x: Ref) {
+  acc(x.f, 1 / 2)
+}
+
+predicate p3(x: Ref, y: Ref) {
+  acc(x.f, 1 / 2) && acc(y.f, 1 / 2)
+}
+
+
+method bar_ARP_TRANSFORMED(x: Ref, y: Ref, bar_rd: Perm)
+{
+  inhale none < bar_rd && bar_rd < write
+  inhale acc(p1(), write) && acc(p3(x, y), write)
+  unfold acc(p3(x, y), write)
+  fold acc(p2(x), write)
+  fold acc(p2(y), write)
+  var foo_call_rd: Perm
+  var arg_x: Ref
+  var arg_y: Ref
+  inhale none < foo_call_rd && foo_call_rd < write
+  arg_x := x
+  arg_y := y
+  label foo_call_label
+  label ARP_exhale_label
+  exhale acc(p1(), write) && (acc(p2(arg_x), 1 / 2) && acc(p2(arg_y), 1 / 2))
+  inhale acc(p1(), write) && (acc(p2(arg_x), 1 / 2) && acc(p2(arg_y), 1 / 2))
+  var foo_0_call_rd: Perm
+  var arg_0_x: Ref
+  var arg_0_y: Ref
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  arg_0_x := y
+  arg_0_y := x
+  label foo_0_call_label
+  label ARP_0_exhale_label
+  exhale acc(p1(), write) && (acc(p2(arg_0_x), 1 / 2) && acc(p2(arg_0_y), 1 / 2))
+  inhale acc(p1(), write) && (acc(p2(arg_0_x), 1 / 2) && acc(p2(arg_0_y), 1 / 2))
+  unfold acc(p2(x), write)
+  unfold acc(p2(y), write)
+  fold acc(p3(x, y), write)
+  label ARP_1_exhale_label
+  exhale acc(p1(), write) && acc(p3(x, y), write)
+}
+
+method foobar_ARP_TRANSFORMED(x: Ref, y: Ref, foobar_rd: Perm)
+{
+  inhale none < foobar_rd && foobar_rd < write
+  inhale acc(p1(), write) && (acc(x.f, 3 / 4) && (acc(y.f, 3 / 4) && (x.f == 4 && y.f == 5)))
+  fold acc(p3(x, y), write)
+  var bar_call_rd: Perm
+  var arg_1_x: Ref
+  var arg_1_y: Ref
+  inhale none < bar_call_rd && bar_call_rd < write
+  arg_1_x := x
+  arg_1_y := y
+  label bar_call_label
+  label ARP_2_exhale_label
+  exhale acc(p1(), write) && acc(p3(arg_1_x, arg_1_y), write)
+  inhale acc(p1(), write) && acc(p3(arg_1_x, arg_1_y), write)
+  unfold acc(p3(x, y), write)
+  fold acc(p2(x), write)
+  fold acc(p2(y), write)
+  var foo_1_call_rd: Perm
+  var arg_2_x: Ref
+  var arg_2_y: Ref
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  arg_2_x := x
+  arg_2_y := y
+  label foo_1_call_label
+  label ARP_3_exhale_label
+  exhale acc(p1(), write) && (acc(p2(arg_2_x), 1 / 2) && acc(p2(arg_2_y), 1 / 2))
+  inhale acc(p1(), write) && (acc(p2(arg_2_x), 1 / 2) && acc(p2(arg_2_y), 1 / 2))
+  unfold acc(p2(x), write)
+  unfold acc(p2(y), write)
+  label foobar_end_label
+  label ARP_4_exhale_label
+  exhale acc(p1(), write) && (acc(x.f, 3 / 4) && (acc(y.f, 3 / 4) && old[foobar_end_label](x.f == 4 && y.f == 5)))
+}

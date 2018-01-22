@@ -1,0 +1,1354 @@
+domain ARPLog {
+
+  function ARPLog_Nil(): ARPLog
+
+  function ARPLog_Cons(arp_quant_ref: Ref, arp_quant_fieldId: Int, permission: Perm, arp_quant_level: Int, arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_head_ref_Cons(arp_quant_log: ARPLog): Ref
+
+  function ARPLog_head_fieldId_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_head_permission_Cons(arp_quant_log: ARPLog): Perm
+
+  function ARPLog_head_level_Cons(arp_quant_log: ARPLog): Int
+
+  function ARPLog_tail_Cons(arp_quant_log: ARPLog): ARPLog
+
+  function ARPLog_type(arp_quant_log: ARPLog): Int
+
+  unique function ARPLog_type_Nil(): Int
+
+  unique function ARPLog_type_Cons(): Int
+
+  function ARPLog_is_Nil(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_is_Cons(arp_quant_log: ARPLog): Bool
+
+  function ARPLog_max_level(arp_quant_log: ARPLog): Int
+
+  function ARPLog_sum_gt(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  function ARPLog_sum(arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog): Perm
+
+  axiom ARPLog_destruct_over_construct_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: { ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail) } ARPLog_head_ref_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_ref && (ARPLog_head_fieldId_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_fieldId && (ARPLog_head_permission_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_permission && (ARPLog_head_level_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_head_level && ARPLog_tail_Cons(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == arp_quant_tail))))
+  }
+
+  axiom ARPLog_construct_over_destruct_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_head_ref_Cons(arp_quant_log) } { ARPLog_head_fieldId_Cons(arp_quant_log) } { ARPLog_head_permission_Cons(arp_quant_log) } { ARPLog_head_level_Cons(arp_quant_log) } { ARPLog_tail_Cons(arp_quant_log) } ARPLog_is_Cons(arp_quant_log) ==> arp_quant_log == ARPLog_Cons(ARPLog_head_ref_Cons(arp_quant_log), ARPLog_head_fieldId_Cons(arp_quant_log), ARPLog_head_permission_Cons(arp_quant_log), ARPLog_head_level_Cons(arp_quant_log), ARPLog_tail_Cons(arp_quant_log)))
+  }
+
+  axiom ARPLog_type_of_Nil {
+    ARPLog_type(ARPLog_Nil()) == ARPLog_type_Nil()
+  }
+
+  axiom ARPLog_type_of_Cons {
+    (forall arp_quant_head_ref: Ref, arp_quant_head_fieldId: Int, arp_quant_head_permission: Perm, arp_quant_head_level: Int, arp_quant_tail: ARPLog :: ARPLog_type(ARPLog_Cons(arp_quant_head_ref, arp_quant_head_fieldId, arp_quant_head_permission, arp_quant_head_level, arp_quant_tail)) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_existence {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } ARPLog_type(arp_quant_log) == ARPLog_type_Nil() || ARPLog_type(arp_quant_log) == ARPLog_type_Cons())
+  }
+
+  axiom ARPLog_type_is_Nil {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Nil(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Nil()) == ARPLog_is_Nil(arp_quant_log))
+  }
+
+  axiom ARPLog_type_is_Cons {
+    (forall arp_quant_log: ARPLog :: { ARPLog_is_Cons(arp_quant_log) } { ARPLog_type(arp_quant_log) } (ARPLog_type(arp_quant_log) == ARPLog_type_Cons()) == ARPLog_is_Cons(arp_quant_log))
+  }
+
+  axiom ARPLog_log_max_level {
+    (forall arp_quant_log: ARPLog :: { ARPLog_max_level(arp_quant_log) } ARPLog_max_level(arp_quant_log) == 6)
+  }
+
+  axiom ARPLog_sum_gt_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (arp_quant_level >= ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (arp_quant_level < ARPLog_max_level(arp_quant_log) ==> ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum_gt(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log) + ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level + 1, arp_quant_log)))
+  }
+
+  axiom ARPLog_sum_of_log {
+    (forall arp_quant_ref: Ref, arp_quant_fieldId: Int, arp_quant_level: Int, arp_quant_log: ARPLog :: { ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) } (ARPLog_is_Nil(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == none) && (ARPLog_is_Cons(arp_quant_log) ==> ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, arp_quant_log) == ARPLog_sum(arp_quant_ref, arp_quant_fieldId, arp_quant_level, ARPLog_tail_Cons(arp_quant_log)) + (ARPLog_head_ref_Cons(arp_quant_log) == arp_quant_ref && (ARPLog_head_fieldId_Cons(arp_quant_log) == arp_quant_fieldId && ARPLog_head_level_Cons(arp_quant_log) == arp_quant_level) ? ARPLog_head_permission_Cons(arp_quant_log) : none)))
+  }
+}
+
+domain ARP_field_functions {
+
+  function predicate_p0(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p1(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p2(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p3(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p4(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p5(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p6(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p7(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p8(x: Ref, y: Ref, z: Ref): Int
+
+  function predicate_p9(x: Ref, y: Ref, z: Ref): Int
+}
+
+
+predicate p0(x: Ref, y: Ref, z: Ref)
+
+predicate p1(x: Ref, y: Ref, z: Ref)
+
+predicate p2(x: Ref, y: Ref, z: Ref)
+
+predicate p3(x: Ref, y: Ref, z: Ref)
+
+predicate p4(x: Ref, y: Ref, z: Ref)
+
+predicate p5(x: Ref, y: Ref, z: Ref)
+
+predicate p6(x: Ref, y: Ref, z: Ref)
+
+predicate p7(x: Ref, y: Ref, z: Ref)
+
+predicate p8(x: Ref, y: Ref, z: Ref)
+
+predicate p9(x: Ref, y: Ref, z: Ref)
+
+
+method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
+{
+  var bar_log: ARPLog
+  bar_log := ARPLog_Nil()
+  inhale none < bar_rd && bar_rd < write
+  inhale acc(p0(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p1(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p2(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p3(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p4(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p5(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p6(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p7(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p8(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(z, x, y), 1 / 2, 6, bar_log)
+  inhale acc(p9(z, x, y), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(z, x, y), 1 / 2, 6, bar_log)
+  var foo_call_rd: Perm
+  var arg_x: Ref
+  var arg_y: Ref
+  var arg_z: Ref
+  inhale none < foo_call_rd && foo_call_rd < write
+  arg_x := z
+  arg_y := x
+  arg_z := y
+  label foo_call_label
+  label ARP_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_0_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_1_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_2_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_3_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_4_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_5_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_6_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_7_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_x, arg_y, arg_z), 1 / 2)
+  label ARP_8_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_x, arg_y, arg_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_x, arg_y, arg_z), 1 / 2)
+  inhale acc(p0(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_x, arg_y, arg_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_x, arg_y, arg_z), 1 / 2, 6, bar_log)
+  var foo_0_call_rd: Perm
+  var arg_0_x: Ref
+  var arg_0_y: Ref
+  var arg_0_z: Ref
+  inhale none < foo_0_call_rd && foo_0_call_rd < write
+  arg_0_x := z
+  arg_0_y := x
+  arg_0_z := y
+  label foo_0_call_label
+  label ARP_9_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_10_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_11_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_12_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_13_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_14_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_15_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_16_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_17_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  label ARP_18_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_0_x, arg_0_y, arg_0_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  inhale acc(p0(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_0_x, arg_0_y, arg_0_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_0_x, arg_0_y, arg_0_z), 1 / 2, 6, bar_log)
+  var foo_1_call_rd: Perm
+  var arg_1_x: Ref
+  var arg_1_y: Ref
+  var arg_1_z: Ref
+  inhale none < foo_1_call_rd && foo_1_call_rd < write
+  arg_1_x := z
+  arg_1_y := x
+  arg_1_z := y
+  label foo_1_call_label
+  label ARP_19_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_20_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_21_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_22_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_23_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_24_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_25_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_26_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_27_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  label ARP_28_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_1_x, arg_1_y, arg_1_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  inhale acc(p0(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_1_x, arg_1_y, arg_1_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_1_x, arg_1_y, arg_1_z), 1 / 2, 6, bar_log)
+  var foo_2_call_rd: Perm
+  var arg_2_x: Ref
+  var arg_2_y: Ref
+  var arg_2_z: Ref
+  inhale none < foo_2_call_rd && foo_2_call_rd < write
+  arg_2_x := z
+  arg_2_y := x
+  arg_2_z := y
+  label foo_2_call_label
+  label ARP_29_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_30_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_31_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_32_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_33_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_34_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_35_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_36_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_37_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  label ARP_38_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_2_x, arg_2_y, arg_2_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  inhale acc(p0(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_2_x, arg_2_y, arg_2_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_2_x, arg_2_y, arg_2_z), 1 / 2, 6, bar_log)
+  var foo_3_call_rd: Perm
+  var arg_3_x: Ref
+  var arg_3_y: Ref
+  var arg_3_z: Ref
+  inhale none < foo_3_call_rd && foo_3_call_rd < write
+  arg_3_x := z
+  arg_3_y := x
+  arg_3_z := y
+  label foo_3_call_label
+  label ARP_39_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_40_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_41_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_42_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_43_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_44_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_45_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_46_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_47_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  label ARP_48_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_3_x, arg_3_y, arg_3_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  inhale acc(p0(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_3_x, arg_3_y, arg_3_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_3_x, arg_3_y, arg_3_z), 1 / 2, 6, bar_log)
+  var foo_4_call_rd: Perm
+  var arg_4_x: Ref
+  var arg_4_y: Ref
+  var arg_4_z: Ref
+  inhale none < foo_4_call_rd && foo_4_call_rd < write
+  arg_4_x := z
+  arg_4_y := x
+  arg_4_z := y
+  label foo_4_call_label
+  label ARP_49_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_50_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_51_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_52_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_53_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_54_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_55_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_56_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_57_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  label ARP_58_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_4_x, arg_4_y, arg_4_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  inhale acc(p0(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_4_x, arg_4_y, arg_4_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_4_x, arg_4_y, arg_4_z), 1 / 2, 6, bar_log)
+  var foo_5_call_rd: Perm
+  var arg_5_x: Ref
+  var arg_5_y: Ref
+  var arg_5_z: Ref
+  inhale none < foo_5_call_rd && foo_5_call_rd < write
+  arg_5_x := z
+  arg_5_y := x
+  arg_5_z := y
+  label foo_5_call_label
+  label ARP_59_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_60_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_61_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_62_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_63_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_64_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_65_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_66_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_67_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  label ARP_68_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_5_x, arg_5_y, arg_5_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  inhale acc(p0(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_5_x, arg_5_y, arg_5_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_5_x, arg_5_y, arg_5_z), 1 / 2, 6, bar_log)
+  var foo_6_call_rd: Perm
+  var arg_6_x: Ref
+  var arg_6_y: Ref
+  var arg_6_z: Ref
+  inhale none < foo_6_call_rd && foo_6_call_rd < write
+  arg_6_x := z
+  arg_6_y := x
+  arg_6_z := y
+  label foo_6_call_label
+  label ARP_69_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_70_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_71_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_72_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_73_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_74_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_75_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_76_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_77_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  label ARP_78_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_6_x, arg_6_y, arg_6_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  inhale acc(p0(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_6_x, arg_6_y, arg_6_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_6_x, arg_6_y, arg_6_z), 1 / 2, 6, bar_log)
+  var foo_7_call_rd: Perm
+  var arg_7_x: Ref
+  var arg_7_y: Ref
+  var arg_7_z: Ref
+  inhale none < foo_7_call_rd && foo_7_call_rd < write
+  arg_7_x := z
+  arg_7_y := x
+  arg_7_z := y
+  label foo_7_call_label
+  label ARP_79_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_80_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_81_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_82_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_83_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_84_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_85_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_86_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_87_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  label ARP_88_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_7_x, arg_7_y, arg_7_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  inhale acc(p0(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_7_x, arg_7_y, arg_7_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_7_x, arg_7_y, arg_7_z), 1 / 2, 6, bar_log)
+  var foo_8_call_rd: Perm
+  var arg_8_x: Ref
+  var arg_8_y: Ref
+  var arg_8_z: Ref
+  inhale none < foo_8_call_rd && foo_8_call_rd < write
+  arg_8_x := z
+  arg_8_y := x
+  arg_8_z := y
+  label foo_8_call_label
+  label ARP_89_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_90_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_91_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_92_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_93_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_94_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_95_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_96_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_97_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  label ARP_98_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_8_x, arg_8_y, arg_8_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  inhale acc(p0(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_8_x, arg_8_y, arg_8_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_8_x, arg_8_y, arg_8_z), 1 / 2, 6, bar_log)
+  var foo_9_call_rd: Perm
+  var arg_9_x: Ref
+  var arg_9_y: Ref
+  var arg_9_z: Ref
+  inhale none < foo_9_call_rd && foo_9_call_rd < write
+  arg_9_x := z
+  arg_9_y := x
+  arg_9_z := y
+  label foo_9_call_label
+  label ARP_99_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_100_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_101_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_102_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_103_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_104_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_105_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_106_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_107_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  label ARP_108_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_9_x, arg_9_y, arg_9_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  inhale acc(p0(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_9_x, arg_9_y, arg_9_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_9_x, arg_9_y, arg_9_z), 1 / 2, 6, bar_log)
+  var foo_10_call_rd: Perm
+  var arg_10_x: Ref
+  var arg_10_y: Ref
+  var arg_10_z: Ref
+  inhale none < foo_10_call_rd && foo_10_call_rd < write
+  arg_10_x := z
+  arg_10_y := x
+  arg_10_z := y
+  label foo_10_call_label
+  label ARP_109_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_110_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_111_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_112_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_113_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_114_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_115_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_116_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_117_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  label ARP_118_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_10_x, arg_10_y, arg_10_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  inhale acc(p0(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_10_x, arg_10_y, arg_10_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_10_x, arg_10_y, arg_10_z), 1 / 2, 6, bar_log)
+  var foo_11_call_rd: Perm
+  var arg_11_x: Ref
+  var arg_11_y: Ref
+  var arg_11_z: Ref
+  inhale none < foo_11_call_rd && foo_11_call_rd < write
+  arg_11_x := z
+  arg_11_y := x
+  arg_11_z := y
+  label foo_11_call_label
+  label ARP_119_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_120_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_121_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_122_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_123_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_124_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_125_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_126_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_127_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  label ARP_128_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_11_x, arg_11_y, arg_11_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  inhale acc(p0(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_11_x, arg_11_y, arg_11_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_11_x, arg_11_y, arg_11_z), 1 / 2, 6, bar_log)
+  var foo_12_call_rd: Perm
+  var arg_12_x: Ref
+  var arg_12_y: Ref
+  var arg_12_z: Ref
+  inhale none < foo_12_call_rd && foo_12_call_rd < write
+  arg_12_x := z
+  arg_12_y := x
+  arg_12_z := y
+  label foo_12_call_label
+  label ARP_129_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_130_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_131_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_132_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_133_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_134_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_135_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_136_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_137_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  label ARP_138_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_12_x, arg_12_y, arg_12_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  inhale acc(p0(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_12_x, arg_12_y, arg_12_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_12_x, arg_12_y, arg_12_z), 1 / 2, 6, bar_log)
+  var foo_13_call_rd: Perm
+  var arg_13_x: Ref
+  var arg_13_y: Ref
+  var arg_13_z: Ref
+  inhale none < foo_13_call_rd && foo_13_call_rd < write
+  arg_13_x := z
+  arg_13_y := x
+  arg_13_z := y
+  label foo_13_call_label
+  label ARP_139_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_140_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_141_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_142_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_143_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_144_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_145_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_146_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_147_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  label ARP_148_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_13_x, arg_13_y, arg_13_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  inhale acc(p0(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_13_x, arg_13_y, arg_13_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_13_x, arg_13_y, arg_13_z), 1 / 2, 6, bar_log)
+  var foo_14_call_rd: Perm
+  var arg_14_x: Ref
+  var arg_14_y: Ref
+  var arg_14_z: Ref
+  inhale none < foo_14_call_rd && foo_14_call_rd < write
+  arg_14_x := z
+  arg_14_y := x
+  arg_14_z := y
+  label foo_14_call_label
+  label ARP_149_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_150_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_151_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_152_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_153_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_154_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_155_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_156_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_157_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  label ARP_158_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_14_x, arg_14_y, arg_14_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  inhale acc(p0(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_14_x, arg_14_y, arg_14_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_14_x, arg_14_y, arg_14_z), 1 / 2, 6, bar_log)
+  var foo_15_call_rd: Perm
+  var arg_15_x: Ref
+  var arg_15_y: Ref
+  var arg_15_z: Ref
+  inhale none < foo_15_call_rd && foo_15_call_rd < write
+  arg_15_x := z
+  arg_15_y := x
+  arg_15_z := y
+  label foo_15_call_label
+  label ARP_159_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_160_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_161_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_162_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_163_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_164_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_165_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_166_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_167_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  label ARP_168_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_15_x, arg_15_y, arg_15_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  inhale acc(p0(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_15_x, arg_15_y, arg_15_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_15_x, arg_15_y, arg_15_z), 1 / 2, 6, bar_log)
+  var foo_16_call_rd: Perm
+  var arg_16_x: Ref
+  var arg_16_y: Ref
+  var arg_16_z: Ref
+  inhale none < foo_16_call_rd && foo_16_call_rd < write
+  arg_16_x := z
+  arg_16_y := x
+  arg_16_z := y
+  label foo_16_call_label
+  label ARP_169_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_170_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_171_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_172_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_173_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_174_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_175_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_176_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_177_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  label ARP_178_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_16_x, arg_16_y, arg_16_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  inhale acc(p0(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_16_x, arg_16_y, arg_16_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_16_x, arg_16_y, arg_16_z), 1 / 2, 6, bar_log)
+  var foo_17_call_rd: Perm
+  var arg_17_x: Ref
+  var arg_17_y: Ref
+  var arg_17_z: Ref
+  inhale none < foo_17_call_rd && foo_17_call_rd < write
+  arg_17_x := z
+  arg_17_y := x
+  arg_17_z := y
+  label foo_17_call_label
+  label ARP_179_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_180_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_181_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_182_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_183_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_184_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_185_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_186_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_187_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  label ARP_188_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_17_x, arg_17_y, arg_17_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  inhale acc(p0(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_17_x, arg_17_y, arg_17_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_17_x, arg_17_y, arg_17_z), 1 / 2, 6, bar_log)
+  var foo_18_call_rd: Perm
+  var arg_18_x: Ref
+  var arg_18_y: Ref
+  var arg_18_z: Ref
+  inhale none < foo_18_call_rd && foo_18_call_rd < write
+  arg_18_x := z
+  arg_18_y := x
+  arg_18_z := y
+  label foo_18_call_label
+  label ARP_189_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p0(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_190_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p1(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_191_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p2(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_192_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p3(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_193_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p4(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_194_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p5(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_195_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p6(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_196_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p7(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_197_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p8(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  label ARP_198_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_18_x, arg_18_y, arg_18_z), -(1 / 2), 6, bar_log)
+  exhale acc(p9(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  inhale acc(p0(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p0(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p1(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p1(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p2(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p2(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p3(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p3(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p4(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p4(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p5(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p5(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p6(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p6(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p7(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p7(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p8(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p8(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  inhale acc(p9(arg_18_x, arg_18_y, arg_18_z), 1 / 2)
+  bar_log := ARPLog_Cons(null, predicate_p9(arg_18_x, arg_18_y, arg_18_z), 1 / 2, 6, bar_log)
+  label ARP_199_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p0(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p0(z, x, y), 1 / 2)
+  label ARP_200_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p1(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p1(z, x, y), 1 / 2)
+  label ARP_201_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p2(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p2(z, x, y), 1 / 2)
+  label ARP_202_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p3(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p3(z, x, y), 1 / 2)
+  label ARP_203_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p4(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p4(z, x, y), 1 / 2)
+  label ARP_204_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p5(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p5(z, x, y), 1 / 2)
+  label ARP_205_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p6(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p6(z, x, y), 1 / 2)
+  label ARP_206_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p7(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p7(z, x, y), 1 / 2)
+  label ARP_207_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p8(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p8(z, x, y), 1 / 2)
+  label ARP_208_exhale_label
+  bar_log := ARPLog_Cons(null, predicate_p9(z, x, y), -(1 / 2), 6, bar_log)
+  exhale acc(p9(z, x, y), 1 / 2)
+}

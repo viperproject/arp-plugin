@@ -1,0 +1,13 @@
+field f: Int
+
+predicate valid(x: Ref)
+{
+    acc(x.f)
+}
+
+method foo(x: Ref) returns (y: Int)
+requires acc(valid(x), rd)
+ensures acc(valid(x), rd)
+{
+    y := unfolding acc(valid(x), rd) in x.f
+}

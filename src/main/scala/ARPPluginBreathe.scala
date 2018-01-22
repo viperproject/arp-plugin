@@ -191,6 +191,10 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     ctx.noRec(handlePredicateFolding(input, unfold, unfold.acc, foldBefore = true, minus = false, ctx))
   }
 
+  def handleUnfolding(input: Program, unfolding: Unfolding, ctx: ContextC[Node, ARPContext]): Node = {
+    ctx.noRec(plugin.utils.rewriteRd(ctx.c.rdName, Seq())(unfolding))
+  }
+
   def handlePredicateFolding(input: Program, fold: Stmt, acc: PredicateAccessPredicate, foldBefore: Boolean, minus: Boolean, ctx: ContextC[Node, ARPContext]): Node = {
     val wildcardNames = getWildcardNames(acc)
     val normalizedPred = plugin.normalize.normalizeExpression(acc.perm, plugin.normalize.rdPermContext)

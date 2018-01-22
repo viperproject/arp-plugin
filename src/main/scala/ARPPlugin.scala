@@ -206,6 +206,8 @@ class ARPPlugin extends SilverPlugin {
           breathe.handleFold(enhancedInput, f, ctx)
         case (f: Unfold, ctx) =>
           breathe.handleUnfold(enhancedInput, f, ctx)
+        case (f: Unfolding, ctx) =>
+          breathe.handleUnfolding(enhancedInput, f, ctx)
         case (a: AbstractAssign, ctx) =>
           misc.handleAssignment(enhancedInput, a, ctx)
         case (c: Constraining, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, c))

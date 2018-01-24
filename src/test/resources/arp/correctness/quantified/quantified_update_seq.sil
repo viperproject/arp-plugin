@@ -9,10 +9,11 @@ ensures r.f == r.g + 1
     r.f := r.g + 1
 }
 
-method bar(x: Ref)
-requires x != null
-requires acc(x.f) && (forall r: Ref :: r != null ==> acc(r.g, 1/2))
-ensures acc(x.f) && (forall r: Ref :: r != null ==> acc(r.g, 1/2))
+method bar(s: Seq[Ref], x: Ref)
+requires x != null && x in s
+requires !(null in s)
+requires acc(x.f) && (forall r: Ref :: r in s ==> acc(r.g, 1/2))
+ensures acc(x.f) && (forall r: Ref :: r in s ==> acc(r.g, 1/2))
 {
     x.f := 4
     inhale x.g == 5

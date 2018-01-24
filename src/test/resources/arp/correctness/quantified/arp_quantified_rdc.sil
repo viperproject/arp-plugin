@@ -22,3 +22,13 @@ ensures acc(a.g) && (forall x: Ref :: x != null ==> acc(x.f, 1/2))
     foo(a, b)
     assert a.g == 11
 }
+
+/*
+Works with:
+
+Does not work with:
+ - Silicon
+ - Carbon
+ - Silicon Simple
+ - Carbon Simple
+*/

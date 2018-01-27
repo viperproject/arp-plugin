@@ -1,0 +1,12 @@
+[info] ArpTests:
+[info] - testperf/predicates2_enc.sil [Silicon-Silver]
+[info]   + Verifier used: Silicon 1.1-SNAPSHOT (c44b7a019ee3+).
+[info]   + Time required: 1.60 sec (parse), 8.83 sec (typecheck), 1 msec (translate), 5.41 sec (verify).
+[info] - testperf/predicates2.sil [Silicon-Silver]
+[info]   + Verifier used: Silicon 1.1-SNAPSHOT (c44b7a019ee3+).
+[info]   + Time required: 36 msec (parse), 45 msec (typecheck), 0 msec (translate), 726 msec (verify).
+[info] Run completed in 18 seconds, 778 milliseconds.
+[info] Total number of tests run: 2
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 2, failed 0, canceled 0, ignored 0, pending 0
+[info] All tests passed.

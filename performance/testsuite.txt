@@ -1,0 +1,37 @@
+Silicon:
+[info] Run completed in 3 minutes, 57 seconds.
+[info] Total number of tests run: 512
+[info] Suites: completed 7, aborted 0
+[info] Tests: succeeded 512, failed 0, canceled 39, ignored 29, pending 0
+[info] All tests passed.
+[success] Total time: 255 s, completed Jan 26, 2018 6:23:31 PM
+
+Carbon:
+[info] Run completed in 18 minutes, 19 seconds.
+[info] Total number of tests run: 438
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 438, failed 0, canceled 39, ignored 49, pending 0
+[info] All tests passed.
+[success] Total time: 1123 s, completed Jan 26, 2018 11:28:41 PM
+
+SiliconARP:
+[info] Run completed in 5 minutes, 46 seconds.
+[info] Total number of tests run: 468
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 452, failed 16, canceled 34, ignored 24, pending 0
+[info] *** 16 TESTS FAILED ***
+[error] Failed tests:
+[error] 	viper.silicon.tests.ArpTests
+[error] (arp/test:test) sbt.TestsFailedException: Tests unsuccessful
+[error] Total time: 371 s, completed Jan 26, 2018 6:31:18 PM
+
+CarbonARP:
+[info] Run completed in 35 minutes, 11 seconds.
+[info] Total number of tests run: 443
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 428, failed 15, canceled 34, ignored 49, pending 0
+[info] *** 15 TESTS FAILED ***
+[error] Failed tests:
+[error] 	viper.carbon.ArpTestsCarbon
+[error] (arp/test:test) sbt.TestsFailedException: Tests unsuccessful
+[error] Total time: 2136 s, completed Jan 27, 2018 12:14:00 AM

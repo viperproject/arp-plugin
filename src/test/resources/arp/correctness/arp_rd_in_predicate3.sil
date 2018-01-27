@@ -18,3 +18,5 @@ ensures acc(pred(x, n), 1/2)
     assert acc(x.f, 1/2 * (write - rdc(n)))
     fold acc(pred(x, n), 1/2)
 }
+
+// does not terminate

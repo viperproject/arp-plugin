@@ -18,3 +18,5 @@ ensures acc(pred(x, n))
     assert acc(x.f, write - n * globalRd)
     fold acc(pred(x, n))
 }
+
+// does not verify

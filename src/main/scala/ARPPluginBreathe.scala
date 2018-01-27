@@ -183,6 +183,38 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     )
   }
 
+  def handlePredicate(input: Program, predicate: Predicate, ctx: ContextC[Node, ARPContext]): Predicate = {
+    if (predicate.body.isDefined && plugin.utils.containsRd(predicate.body.get)){
+      var assumption: Option[Exp] = None
+      def add(exp: Option[Exp]): Unit ={
+        if (exp.isDefined) {
+          if (assumption.isDefined) {
+            assumption = Some(And(assumption.get, exp.get)(predicate.pos, predicate.info))
+          } else {
+            assumption = exp
+          }
+        }
+      }
+      splitBreathing(predicate.body.get, true, None, {
+        case accessPredicate: AccessPredicate =>
+          add(generatePredicateAssumption(input, accessPredicate.perm)(accessPredicate.pos, accessPredicate.info, NoTrafos))
+          Seq()
+        case _ => Seq()
+      })
+      if (assumption.isDefined) {
+        Predicate(
+          predicate.name,
+          predicate.formalArgs,
+          Some(And(assumption.get, predicate.body.get)(predicate.pos, predicate.info, NodeTrafo(predicate.body.get)))
+        )(predicate.pos, predicate.info, NodeTrafo(predicate))
+      } else {
+        predicate
+      }
+    } else {
+      predicate
+    }
+  }
+
   def handleFold(input: Program, fold: Fold, ctx: ContextC[Node, ARPContext]): Node = {
     ctx.noRec(handlePredicateFolding(input, fold, fold.acc, foldBefore = false, minus = true, ctx))
   }
@@ -221,14 +253,36 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           plugin.naming.getNewName(suffix = "not_enough_names")
         }
 
-        Seqn(
-          (if (foldBefore) {
-            Seq(
-              fold
-            )
-          } else {
+        val assumption = splitBreathing(body, complete = true, None, {
+          case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
+            val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
+            if (normalized.isDefined) {
+              if (normalized.get.wildcard.isDefined) {
+                val wildcardName = if (wildcardNames.nonEmpty) wildcardNames.head else nextWildcardName()
+                generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName)(accessPredicate.pos, accessPredicate.info, NoTrafos)
+                  .map(plugin.utils.rewriteRd(wildcardName, Seq(wildcardName)))
+              } else {
+                generateAssumptionInhale(input, accessPredicate.loc, normalized.get, ctx.c.logName)(accessPredicate.pos, accessPredicate.info, NoTrafos)
+                  .map(plugin.utils.rewriteRd(ctx.c.rdName, Seq()))
+              }
+            } else {
+              Seq(Assert(BoolLit(b = false)())())
+            }
+          case _ =>
             Seq()
-          }) ++
+        })
+
+        currentWildcardNames = bodyWildcardNames
+
+        Seqn(
+          assumption ++
+            (if (foldBefore) {
+              Seq(
+                fold
+              )
+            } else {
+              Seq()
+            }) ++
             splitBreathing(body, complete = true, None, {
               case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
                 val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
@@ -301,7 +355,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
   def splitBreathing(breath: Exp, complete: Boolean, isInhale: Option[Boolean], handle: Exp => Seq[Stmt]): Seq[Stmt] = {
     def recursive(b: Exp) = splitBreathing(b, complete, isInhale, handle)
 
-    def needSplit(exp: Exp): Boolean ={
+    def needSplit(exp: Exp): Boolean = {
       exp.exists({
         case ap: AccessPredicate =>
           ap.perm.exists({
@@ -601,6 +655,49 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
       lazy val expEq0 = recursive(newNormalized)
       lazy val expLt0 = None
       generateCond(const.exp, expGt0, expEq0, expLt0)
+    }
+  }
+
+  def generatePredicateAssumption(input: Program,  perm: Exp)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] ={
+    val normalizedMaybe = plugin.normalize.normalizeExpression(perm, plugin.normalize.globalPerm)
+    if (normalizedMaybe.isEmpty || normalizedMaybe.get.wildcard.isDefined){
+      None
+    } else {
+      val normalized = normalizedMaybe.get
+      if (normalized.exps.isEmpty){
+        None
+      } else {
+        val rdOrderAssumption = generateRdOrderAssumption(normalized)(pos, info, errT)
+
+        def generateCond(exp: Exp, ge0: Option[Exp], lt0: Option[Exp]): Option[Exp] = {
+          plugin.utils.simplify(exp) match {
+            case IntLit(x) if x >= 0 && plugin.Optimize.removeProvableIf => ge0
+            case IntLit(x) if x < 0 && plugin.Optimize.removeProvableIf => lt0
+            case PermDiv(IntLit(left), IntLit(right)) if right != 0 && plugin.Optimize.removeProvableIf =>
+              if (left == 0 || ((left > 0) == (right > 0))) {
+                ge0
+              } else {
+                lt0
+              }
+            case default =>
+              putInCond(PermLeCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT), ge0, lt0)(pos, info, errT)
+          }
+        }
+
+        val assumption = generateCond(
+          normalized.exps.last.exp,
+          Some(And(
+            PermLeCmp(NoPerm()(pos, info, errT), perm)(pos, info, errT),
+            PermLtCmp(perm, FullPerm()(pos, info, errT))(pos, info, errT)
+          )(pos, info, errT)),
+          Some(And(
+            PermLtCmp(NoPerm()(pos, info, errT), perm)(pos, info, errT),
+            PermLeCmp(perm, FullPerm()(pos, info, errT))(pos, info, errT)
+          )(pos, info, errT))
+        )
+
+        combineAssumptions(rdOrderAssumption, assumption)(pos, info, errT)
+      }
     }
   }
 

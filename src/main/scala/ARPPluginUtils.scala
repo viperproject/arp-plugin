@@ -32,11 +32,11 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     domain.functions.find(f => f.name == function)
   }
 
-  def getARPLogType(program: Program): DomainType ={
+  def getARPLogType(program: Program): DomainType = {
     DomainType(getDomain(program, plugin.naming.logDomainName).get, Map[TypeVar, Type]())
   }
 
-  def getARPLogFunction(program: Program, name: String): DomainFunc ={
+  def getARPLogFunction(program: Program, name: String): DomainFunc = {
     getDomainFunction(getDomain(program, plugin.naming.logDomainName).get, name).get
   }
 
@@ -86,7 +86,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       }).execute[Exp](perm)
     }
 
-    def removeOld(trigger: Trigger): Trigger ={
+    def removeOld(trigger: Trigger): Trigger = {
       StrategyBuilder.Slim[Node]({
         case Old(e) => e
       }).execute[Trigger](trigger)
@@ -186,6 +186,16 @@ class ARPPluginUtils(plugin: ARPPlugin) {
   def rewriteRdPredicate[T <: Node](node: T): T = {
     StrategyBuilder.Slim[Node]({
       case f@FuncApp(plugin.naming.rdName, Seq()) => FuncApp(plugin.naming.rdGlobalName, Seq())(f.pos, f.info, Perm, Seq(), NodeTrafo(f))
+      case f@FuncApp(plugin.naming.rdCountingName, Seq(arg: Exp)) =>
+        arg match {
+          case IntLit(x) if x == 1 =>
+            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
+          case default =>
+            IntPermMul(
+              default,
+              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
+            )(f.pos, f.info, NodeTrafo(f))
+        }
     }).execute[T](node)
   }
 
@@ -245,7 +255,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
 
     def getFieldFun(f: Field) = {
       val maybeFunc = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getFieldFunctionName(f))
-      if (maybeFunc.isDefined){
+      if (maybeFunc.isDefined) {
         maybeFunc.get
       } else {
         throw new NoSuchElementException("FieldFunction for " + f.toString() + " / " + plugin.naming.getFieldFunctionName(f)
@@ -256,7 +266,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
 
     def getPredicateFun(p: String) = {
       val maybeFunc = getDomainFunction(arpFieldFunctionDomain, plugin.naming.getPredicateFunctionName(getPredicate(input, p).get))
-      if (maybeFunc.isDefined){
+      if (maybeFunc.isDefined) {
         maybeFunc.get
       } else {
         throw new NoSuchElementException("FieldFunction for predicate " + p + " / " + plugin.naming.getPredicateFunctionName(getPredicate(input, p).get)
@@ -297,16 +307,30 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           IntLit(left / right)(root.pos, root.info, NodeTrafo(root))
         case root@Mod(IntLit(left), IntLit(right)) if right != bigIntZero =>
           IntLit(left % right)(root.pos, root.info, NodeTrafo(root))
-        case PermMul(f: FullPerm, IntLit(x)) if x == 1 => f
-        case PermMul(IntLit(x), f: FullPerm) if x == 1 => f
+        case root@Mul(IntLit(left), o) if left == 1 => o
+        case root@Mul(IntLit(left), o) if left == -1 => Minus(o)(root.pos, root.info, NodeTrafo(root))
+        case root@Mul(o, IntLit(right)) if right == 1 => o
+        case root@Mul(o, IntLit(right)) if right == -1 => Minus(o)(root.pos, root.info, NodeTrafo(root))
+
         case PermMul(_: FullPerm, e: PermExp) => e
         case PermMul(e: PermExp, _: FullPerm) => e
         case PermMul(e: NoPerm, _: Exp) => e
         case PermMul(_: Exp, e: NoPerm) => e
+        case IntPermMul(IntLit(x), p) if x == 1 => p
+        case root@IntPermMul(IntLit(x), p) if x == -1 => PermMinus(p)(root.pos, root.info, NodeTrafo(root))
       }, Traverse.BottomUp).execute[Exp](exp)
     } else {
       exp
     }
+  }
+
+  def containsRd(exp: Exp): Boolean = {
+    exp.exists(n => n.isInstanceOf[FuncApp] && (
+      n.asInstanceOf[FuncApp].funcname == plugin.naming.rdGlobalName
+      || n.asInstanceOf[FuncApp].funcname == plugin.naming.rdName
+      || n.asInstanceOf[FuncApp].funcname == plugin.naming.rdEpsilonName
+      || n.asInstanceOf[FuncApp].funcname == plugin.naming.rdWildcardName
+      ))
   }
 
   def getZeroEquivalent(exp: Exp): Exp = {

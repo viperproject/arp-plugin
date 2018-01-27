@@ -47,6 +47,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case l@LabelledOld(fa: FieldAccess, _) => Some(constPerm(l))
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, f))
+      case f@FuncApp(plugin.naming.rdEpsilonName, _) => Some(rdcPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdGlobalName, _) => Some(globalPerm(IntLit(1)(), f))
       case f: FuncApp => Some(constPerm(f))
@@ -155,13 +156,13 @@ object ARPPluginNormalize {
         case default: PermExp =>
           CondExp(
             PermLtCmp(default, plugin.utils.getZeroEquivalent(default))(pos, info, errT),
-            PermMinus(default)(pos, info, errT),
+            negate(default),
             default
           )(pos, info, errT)
         case default =>
           CondExp(
             LtCmp(default, plugin.utils.getZeroEquivalent(default))(pos, info, errT),
-            Minus(default)(pos, info, errT),
+            negate(default),
             default
           )(pos, info, errT)
       }

@@ -1,0 +1,20 @@
+field f: Int
+
+predicate pred(x: Ref, n: Int){
+    n > 0 && acc(x.f, write - rdc(n)) && x.f > 0
+}
+
+method foo(y: Ref)
+requires acc(y.f, rd)
+ensures acc(y.f, rd)
+
+method bar(x: Ref, n: Int)
+requires n > 0
+requires acc(pred(x, n), 1/2)
+ensures acc(pred(x, n), 1/2)
+{
+    unfold acc(pred(x, n), 1/2)
+    foo(x)
+    assert acc(x.f, 1/2 * (write - rdc(n)))
+    fold acc(pred(x, n), 1/2)
+}

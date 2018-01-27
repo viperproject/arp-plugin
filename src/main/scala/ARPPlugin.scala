@@ -91,14 +91,18 @@ class ARPPlugin extends SilverPlugin {
 
     val wildcardFunction = PFunction(PIdnDef(naming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
+    val globalFunction = PFunction(PIdnDef(naming.rdGlobalName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
+
     // If a program already contains a definition for rd we can't use our arp rd
     var alreadyContainsRd = false
     var alreadyContainsRdc = false
     var alreadyContainsRdw = false
+    var alreadyContainsGlobalRd = false
     StrategyBuilder.SlimVisitor[PNode]({
       case PIdnDef(naming.rdName) => alreadyContainsRd = true
       case PIdnDef(naming.rdCountingName) => alreadyContainsRdc = true
       case PIdnDef(naming.rdWildcardName) => alreadyContainsRdw = true
+      case PIdnDef(naming.rdGlobalName) => alreadyContainsGlobalRd = true
       case _ =>
     }).visit(input)
 
@@ -109,6 +113,7 @@ class ARPPlugin extends SilverPlugin {
       case p@PIdnDef(naming.rdCountingName) if alreadyContainsRdc => PIdnDef("WAS_RDC_BUT_IS_NOT_ARP_RDC").setPos(p)
       case p@PIdnUse(naming.rdWildcardName) if alreadyContainsRdw => PIdnUse("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
       case p@PIdnDef(naming.rdWildcardName) if alreadyContainsRdw => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
+      case p@PIdnDef(naming.rdGlobalName) if alreadyContainsGlobalRd => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_GLOBALRD").setPos(p)
     }).execute[PProgram](input)
 
     val blacklistMethod = sanitizedInput.methods.find(p => p.idndef.name == naming.blacklistName)
@@ -125,7 +130,7 @@ class ARPPlugin extends SilverPlugin {
       sanitizedInput.macros,
       sanitizedInput.domains,
       sanitizedInput.fields,
-      sanitizedInput.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction,
+      sanitizedInput.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction :+ globalFunction,
       sanitizedInput.predicates,
       sanitizedInput.methods.filterNot(p => p.idndef.name == naming.blacklistName),
       sanitizedInput.errors
@@ -135,6 +140,7 @@ class ARPPlugin extends SilverPlugin {
     val rdRewriter = StrategyBuilder.Ancestor[PNode]({
       case (p@PIdnUse(naming.rdName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
       case (p@PIdnUse(naming.rdWildcardName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
+      case (p@PIdnUse(naming.rdGlobalName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
     }, Traverse.BottomUp)
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
@@ -186,6 +192,8 @@ class ARPPlugin extends SilverPlugin {
 
     val arpRewriter = StrategyBuilder.Context[Node, ARPContext](
       {
+        case (p: Predicate, ctx) =>
+          breathe.handlePredicate(enhancedInput, p, ctx)
         case (m: Method, ctx) =>
           if (Optimize.mixSimpleEncoding && methodBodyDifficulty(m.name) <= 1){
             ctx.noRec(simple.transformNode(enhancedInput, m))
@@ -317,7 +325,8 @@ class ARPPlugin extends SilverPlugin {
       input.functions.filterNot(f =>
         f.name == naming.rdName ||
           f.name == naming.rdCountingName ||
-          f.name == naming.rdWildcardName
+          f.name == naming.rdWildcardName ||
+          f.name == naming.rdGlobalName
       ) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
       input.methods ++ arpDomainFile.methods
@@ -609,7 +618,8 @@ class ARPPlugin extends SilverPlugin {
     input.functions.filterNot(f =>
       f.name == naming.rdName ||
         f.name == naming.rdCountingName ||
-        f.name == naming.rdWildcardName
+        f.name == naming.rdWildcardName ||
+        f.name == naming.rdGlobalName
     ).filter(f => inputPrime.functions.exists(ff => ff.name == f.name)).foreach(f => {
       reportError(TypecheckerError(s"Duplicate function '${f.name}'", f.pos))
     })

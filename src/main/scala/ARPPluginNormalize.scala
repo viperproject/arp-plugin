@@ -22,13 +22,13 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
     def recursive(e: Exp) = collect(e, rdPerm, ignoreErrors)
 
     exp match {
-      case PermMinus(left) => op(recursive(left), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
+      case PermMinus(left) => op(recursive(left), Some(constPerm(IntLit(-1)(left.pos, left.info))), _ *? _, exp)
       case PermAdd(left, right) => op(recursive(left), recursive(right), _ +? _, exp)
       case PermSub(left, right) => recursive(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))(left.pos, left.info, NodeTrafo(left)))
       case PermMul(left, right) => op(recursive(left), recursive(right), _ *? _, exp)
       case IntPermMul(left, right) => op(recursive(left), recursive(right), _ *? _, exp)
       case PermDiv(left, right) => op(recursive(left), recursive(right), _ /? _, exp)
-      case Minus(left) => op(recursive(left), Some(constPerm(IntLit(-1)(left.pos, left.info, NodeTrafo(left)))), _ *? _, exp)
+      case Minus(left) => op(recursive(left), Some(constPerm(IntLit(-1)(left.pos, left.info))), _ *? _, exp)
       case Add(left, right) => op(recursive(left), recursive(right), _ +? _, exp)
       case Sub(left, right) => recursive(PermAdd(left, PermMinus(right)(right.pos, right.info, NodeTrafo(right)))())
       case Mul(left, right) => op(recursive(left), recursive(right), _ *? _, exp)

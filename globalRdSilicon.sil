@@ -1,0 +1,11 @@
+field f: Int
+
+function globalRd(): Perm
+  ensures none < result && result < write
+
+method bar_ARP_TRANSFORMED(x: Ref, n: Int)
+{
+  inhale n > 0
+  inhale (-n < 0 ? n : -n) * globalRd() < write
+  assert (-n < 0 ? n : -n) * globalRd() < write
+}

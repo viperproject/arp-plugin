@@ -1,0 +1,14 @@
+field f: Int
+
+method foo(x: Ref)
+requires acc(x.f)
+ensures acc(x.f)
+{
+    var a: Int := 1
+
+    while(a == 1)
+      invariant acc(x.f, rd)
+    {
+      a := 2
+    }
+}

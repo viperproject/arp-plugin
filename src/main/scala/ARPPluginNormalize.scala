@@ -138,7 +138,7 @@ object ARPPluginNormalize {
           case Minus(ee) => ee
           case PermMinus(ee) => ee
           case IntLit(x) => IntLit(-x)(e.pos, e.info, e.errT)
-          case default: PermExp => PermMinus(default)(e.pos, e.info, e.errT)
+          case default if plugin.utils.isPermExp(default) => PermMinus(default)(e.pos, e.info, e.errT)
           case default => Minus(default)(e.pos, e.info, e.errT)
         }
       }
@@ -153,7 +153,7 @@ object ARPPluginNormalize {
         case FractionalPerm(IntLit(x), IntLit(y)) if (x >= 0) != (y >= 0) => negate(simplified)
         case FullPerm() => simplified
         case NoPerm() => simplified
-        case default: PermExp =>
+        case default if plugin.utils.isPermExp(default) =>
           CondExp(
             PermLtCmp(default, plugin.utils.getZeroEquivalent(default))(pos, info, errT),
             negate(default),
@@ -169,7 +169,7 @@ object ARPPluginNormalize {
       if (unit.isDefined) {
         absVal match {
           case IntLit(x) if x == 1 => unit.get
-          case default: PermExp => PermMul(default, unit.get)(pos, info, errT)
+          case default if plugin.utils.isPermExp(default) => PermMul(default, unit.get)(pos, info, errT)
           case default => IntPermMul(default, unit.get)(pos, info, errT)
         }
       } else {
@@ -182,7 +182,7 @@ object ARPPluginNormalize {
       if (unit.isDefined) {
         simplified match {
           case IntLit(x) if x == 1 => unit.get
-          case default: PermExp => PermMul(default, unit.get)(pos, info, errT)
+          case default if plugin.utils.isPermExp(default) => PermMul(default, unit.get)(pos, info, errT)
           case default => IntPermMul(default, unit.get)(pos, info, errT)
         }
       } else {

@@ -337,9 +337,17 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     val intLit = IntLit(bigIntZero)(exp.pos, exp.info)
     val permLit = NoPerm()(exp.pos, exp.info)
     exp match {
-      case _: PermExp => permLit
-      case v: LocalVar if v.typ == Perm => permLit
+      case default if plugin.utils.isPermExp(default) => permLit
       case _ => intLit
+    }
+  }
+
+  def isPermExp(exp: Exp): Boolean = {
+    exp match {
+      case _: PermExp => true
+      case v: LocalVar if v.typ == Perm => true
+      case x: CondExp => isPermExp(x.thn)
+      case _ => false
     }
   }
 

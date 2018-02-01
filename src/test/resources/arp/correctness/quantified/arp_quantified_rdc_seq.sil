@@ -1,0 +1,37 @@
+field f: Int
+field g: Int
+
+method foo(s: Seq[Ref], a: Ref, b: Ref)
+requires b != null && a in s && b in s
+requires !(null in s)
+requires acc(a.g) && (forall x: Ref :: x in s ==> acc(x.f, rdc(1)))
+ensures (forall x: Ref :: x in s ==> acc(x.f, rdc(1))) && acc(a.g)
+ensures a.g == a.f + b.f
+{
+    a.g := a.f + b.f
+}
+
+method bar(s: Seq[Ref], a: Ref, b: Ref)
+requires b != null && a in s && b in s
+requires !(null in s)
+requires acc(a.g) && (forall x: Ref :: x in s ==> acc(x.f, 1/2))
+ensures acc(a.g) && (forall x: Ref :: x in s ==> acc(x.f, 1/2))
+{
+    a.g := 6
+    inhale a.f == 5
+    inhale b.f == 6
+    foo(s, a, b)
+    assert a.g == 11
+}
+
+/*
+Maybe:
+ - Carbon
+ - Carbon Simple
+
+Works with:
+ - Silicon
+ - Silicon Simple
+
+Does not work with:
+*/

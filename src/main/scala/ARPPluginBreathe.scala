@@ -184,7 +184,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
   }
 
   def handlePredicate(input: Program, predicate: Predicate, ctx: ContextC[Node, ARPContext]): Predicate = {
-    if (predicate.body.isDefined && plugin.utils.containsRd(predicate.body.get)){
+    if (predicate.body.isDefined && plugin.utils.containsRd(predicate.body.get)) {
       StrategyBuilder.Ancestor[Node]({
         case (ap@AccessPredicate(_, perm), innerCtx) if plugin.utils.containsRd(perm) =>
           val maybeExp = generatePredicateAssumption(input, perm)(ap.pos, ap.info, NoTrafos)
@@ -255,14 +255,14 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         currentWildcardNames = bodyWildcardNames
 
         Seqn(
-          assumption ++
-            (if (foldBefore) {
-              Seq(
-                fold
-              )
-            } else {
-              Seq()
-            }) ++
+          (if (foldBefore) {
+            Seq(
+              fold
+            )
+          } else {
+            Seq()
+          }) ++
+            assumption ++
             splitBreathing(body, complete = true, None, {
               case accessPredicate: AccessPredicate if !plugin.isAccIgnored(accessPredicate.loc) =>
                 val normalized = plugin.normalize.normalizeExpression(newPerm(accessPredicate.perm), plugin.normalize.rdPermContext)
@@ -497,6 +497,67 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
+  def generateCond2(exp: Exp, ge0: Option[Exp], lt0: Option[Exp])(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+    plugin.utils.simplify(exp) match {
+      case IntLit(x) if x >= 0 && plugin.Optimize.removeProvableIf => ge0
+      case IntLit(x) if x < 0 && plugin.Optimize.removeProvableIf => lt0
+      case FullPerm() if plugin.Optimize.removeProvableIf => ge0
+      case PermDiv(IntLit(left), IntLit(right)) if right != 0 && plugin.Optimize.removeProvableIf =>
+        if (left == 0 || ((left > 0) == (right > 0))) {
+          ge0
+        } else {
+          lt0
+        }
+      case default =>
+        putInCond(PermLeCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT), ge0, lt0)(pos, info, errT)
+    }
+  }
+
+  def generateCond2Eq(exp: Exp, eq0: Option[Exp], neq0: Option[Exp])(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+    plugin.utils.simplify(exp) match {
+      case IntLit(x) if x == 0 && plugin.Optimize.removeProvableIf => eq0
+      case IntLit(x) if x < 0 && plugin.Optimize.removeProvableIf => neq0
+      case FullPerm() if plugin.Optimize.removeProvableIf => neq0
+      case PermDiv(IntLit(left), IntLit(right)) if right != 0 && plugin.Optimize.removeProvableIf =>
+        if (left == 0) {
+          eq0
+        } else {
+          neq0
+        }
+      case default =>
+        putInCond(EqCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT), eq0, neq0)(pos, info, errT)
+    }
+  }
+
+  def generateCond3(exp: Exp, gt0: Option[Exp], eq0: Option[Exp], lt0: Option[Exp])(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+    plugin.utils.simplify(exp) match {
+      case IntLit(x) if x > 0 && plugin.Optimize.removeProvableIf => gt0
+      case IntLit(x) if x == 0 && plugin.Optimize.removeProvableIf => eq0
+      case IntLit(x) if x < 0 && plugin.Optimize.removeProvableIf => lt0
+      case FullPerm() if plugin.Optimize.removeProvableIf => gt0
+      case PermDiv(IntLit(left), IntLit(right)) if right != 0 && plugin.Optimize.removeProvableIf =>
+        if (left == 0) {
+          eq0
+        } else if ((left > 0) == (right > 0)) {
+          gt0
+        } else {
+          lt0
+        }
+      case NoPerm() if plugin.Optimize.removeProvableIf => eq0
+      case FullPerm() if plugin.Optimize.removeProvableIf => gt0
+      case default =>
+        putInCond(
+          PermLtCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT),
+          gt0,
+          putInCond(
+            EqCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT),
+            eq0,
+            lt0
+          )(pos, info, errT)
+        )(pos, info, errT)
+    }
+  }
+
   def generateAssumptionWorker(fieldAccess: LocationAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], onlyPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     def addAssumption(exp: Exp) = if (assumption.isDefined) Some(PermAdd(exp, assumption.get)(pos, info, errT)) else Some(exp)
 
@@ -505,21 +566,6 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     def recursiveNegative(n: NormalizedExpression = normalized, a: Option[Exp] = assumption) =
       generateAssumptionWorkerNegative(fieldAccess, getSumCall, n, a, foundPositive = false)(pos, info, errT)
-
-    def generateCond(exp: Exp, ge0: Option[Exp], lt0: Option[Exp]): Option[Exp] = {
-      plugin.utils.simplify(exp) match {
-        case IntLit(x) if x >= 0 && plugin.Optimize.removeProvableIf => ge0
-        case IntLit(x) if x < 0 && plugin.Optimize.removeProvableIf => lt0
-        case PermDiv(IntLit(left), IntLit(right)) if right != 0 && plugin.Optimize.removeProvableIf =>
-          if (left == 0 || ((left > 0) == (right > 0))) {
-            ge0
-          } else {
-            lt0
-          }
-        case default =>
-          putInCond(PermLeCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT), ge0, lt0)(pos, info, errT)
-      }
-    }
 
     val currentPerm = CurrentPerm(fieldAccess)(pos, info, errT)
     if (normalized.exps.isEmpty) {
@@ -535,13 +581,13 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         val newNormalized = NormalizedExpression(Seq(), None, None)
         val const = normalized.const.get
         if (assumption.isDefined) {
-          generateCond(const.exp,
+          generateCond2(const.exp,
             putInCond(
               PermLtCmp(const.exp, getSumCall(const.check))(pos, info, errT),
               recursive(newNormalized, addAssumption(const.exp)),
               recursive(newNormalized)
             )(pos, info, errT),
-            None)
+            None)(pos, info, errT)
         } else {
           None
         }
@@ -563,7 +609,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           recursive(newNormalized, p = true)
         )(pos, info, errT)
       }
-      generateCond(cur.exp, expGe0, expLt0)
+      generateCond2(cur.exp, expGe0, expLt0)(pos, info, errT)
     }
   }
 
@@ -572,34 +618,6 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     def recursive(n: NormalizedExpression = normalized, a: Option[Exp] = assumption, f: Boolean = foundPositive) =
       generateAssumptionWorkerNegative(fieldAccess, getSumCall, n, a, f)(pos, info, errT)
-
-    def generateCond(exp: Exp, gt0: Option[Exp], eq0: Option[Exp], lt0: Option[Exp]): Option[Exp] = {
-      plugin.utils.simplify(exp) match {
-        case IntLit(x) if x > 0 && plugin.Optimize.removeProvableIf => gt0
-        case IntLit(x) if x == 0 && plugin.Optimize.removeProvableIf => eq0
-        case IntLit(x) if x < 0 && plugin.Optimize.removeProvableIf => lt0
-        case PermDiv(IntLit(left), IntLit(right)) if right != 0 && plugin.Optimize.removeProvableIf =>
-          if (left == 0) {
-            eq0
-          } else if ((left > 0) == (right > 0)) {
-            gt0
-          } else {
-            lt0
-          }
-        case NoPerm() if plugin.Optimize.removeProvableIf => eq0
-        case FullPerm() if plugin.Optimize.removeProvableIf => gt0
-        case default =>
-          putInCond(
-            PermLtCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT),
-            gt0,
-            putInCond(
-              EqCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT),
-              eq0,
-              lt0
-            )(pos, info, errT)
-          )(pos, info, errT)
-      }
-    }
 
     if (normalized.const.isEmpty) {
       if (normalized.exps.isEmpty) {
@@ -625,7 +643,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         } else {
           None
         }
-        generateCond(cur.exp, expGt0, expEq0, expLt0)
+        generateCond3(cur.exp, expGt0, expEq0, expLt0)(pos, info, errT)
       }
     } else {
       // start with const
@@ -634,47 +652,36 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
       lazy val expGt0 = recursive(newNormalized, addAssumption(const.exp), f = true)
       lazy val expEq0 = recursive(newNormalized)
       lazy val expLt0 = None
-      generateCond(const.exp, expGt0, expEq0, expLt0)
+      generateCond3(const.exp, expGt0, expEq0, expLt0)(pos, info, errT)
     }
   }
 
-  def generatePredicateAssumption(input: Program,  perm: Exp)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] ={
+  def generatePredicateAssumption(input: Program, perm: Exp)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     val normalizedMaybe = plugin.normalize.normalizeExpression(perm, plugin.normalize.globalPerm)
-    if (normalizedMaybe.isEmpty || normalizedMaybe.get.wildcard.isDefined){
+    if (normalizedMaybe.isEmpty || normalizedMaybe.get.wildcard.isDefined) {
       None
     } else {
       val normalized = normalizedMaybe.get
-      if (normalized.exps.isEmpty){
+      if (normalized.exps.isEmpty) {
         None
       } else {
         val rdOrderAssumption = generateRdOrderAssumption(normalized)(pos, info, errT)
 
-        def generateCond(exp: Exp, ge0: Option[Exp], lt0: Option[Exp]): Option[Exp] = {
-          plugin.utils.simplify(exp) match {
-            case IntLit(x) if x >= 0 && plugin.Optimize.removeProvableIf => ge0
-            case IntLit(x) if x < 0 && plugin.Optimize.removeProvableIf => lt0
-            case PermDiv(IntLit(left), IntLit(right)) if right != 0 && plugin.Optimize.removeProvableIf =>
-              if (left == 0 || ((left > 0) == (right > 0))) {
-                ge0
-              } else {
-                lt0
-              }
-            case default =>
-              putInCond(PermLeCmp(plugin.utils.getZeroEquivalent(default), default)(pos, info, errT), ge0, lt0)(pos, info, errT)
-          }
-        }
-
-        val assumption = generateCond(
+        val assumption = generateCond3(
           normalized.exps.last.exp,
           Some(And(
-            PermLeCmp(NoPerm()(pos, info, errT), perm)(pos, info, errT),
+            PermLtCmp(NoPerm()(pos, info, errT), perm)(pos, info, errT),
             PermLtCmp(perm, FullPerm()(pos, info, errT))(pos, info, errT)
+          )(pos, info, errT)),
+          Some(And(
+            PermLeCmp(NoPerm()(pos, info, errT), perm)(pos, info, errT),
+            PermLeCmp(perm, FullPerm()(pos, info, errT))(pos, info, errT)
           )(pos, info, errT)),
           Some(And(
             PermLtCmp(NoPerm()(pos, info, errT), perm)(pos, info, errT),
             PermLeCmp(perm, FullPerm()(pos, info, errT))(pos, info, errT)
           )(pos, info, errT))
-        )
+        )(pos, info, errT)
 
         combineAssumptions(rdOrderAssumption, assumption)(pos, info, errT)
       }

@@ -10,7 +10,7 @@ requires acc(y.f, rd)
 ensures acc(y.f, rd)
 
 method bar(x: Ref, m: Int)
-requires m > 0
+requires m >= 0
 requires acc(pred(x)) && unfolding pred(x) in x.n == m
 ensures acc(pred(x))
 {
@@ -18,5 +18,3 @@ ensures acc(pred(x))
     foo(x)
     fold acc(pred(x))
 }
-
-// does not verify in silicon

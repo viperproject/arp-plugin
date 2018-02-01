@@ -19,4 +19,4 @@ ensures acc(pred(x, n), 1/2)
     fold acc(pred(x, n), 1/2)
 }
 
-// does not terminate
+// does not verify in silicon

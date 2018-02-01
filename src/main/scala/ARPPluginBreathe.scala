@@ -185,31 +185,11 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
   def handlePredicate(input: Program, predicate: Predicate, ctx: ContextC[Node, ARPContext]): Predicate = {
     if (predicate.body.isDefined && plugin.utils.containsRd(predicate.body.get)){
-      var assumption: Option[Exp] = None
-      def add(exp: Option[Exp]): Unit ={
-        if (exp.isDefined) {
-          if (assumption.isDefined) {
-            assumption = Some(And(assumption.get, exp.get)(predicate.pos, predicate.info))
-          } else {
-            assumption = exp
-          }
-        }
-      }
-      splitBreathing(predicate.body.get, true, None, {
-        case accessPredicate: AccessPredicate =>
-          add(generatePredicateAssumption(input, accessPredicate.perm)(accessPredicate.pos, accessPredicate.info, NoTrafos))
-          Seq()
-        case _ => Seq()
-      })
-      if (assumption.isDefined) {
-        Predicate(
-          predicate.name,
-          predicate.formalArgs,
-          Some(And(assumption.get, predicate.body.get)(predicate.pos, predicate.info, NodeTrafo(predicate.body.get)))
-        )(predicate.pos, predicate.info, NodeTrafo(predicate))
-      } else {
-        predicate
-      }
+      StrategyBuilder.Ancestor[Node]({
+        case (ap@AccessPredicate(_, perm), innerCtx) if plugin.utils.containsRd(perm) =>
+          val maybeExp = generatePredicateAssumption(input, perm)(ap.pos, ap.info, NoTrafos)
+          innerCtx.noRec(maybeExp.map(assumption => And(assumption, ap)(ap.pos, ap.info, NodeTrafo(ap))).getOrElse(ap))
+      }).execute[Predicate](predicate)
     } else {
       predicate
     }

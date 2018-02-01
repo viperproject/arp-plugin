@@ -46,7 +46,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case LabelledOld(l: LocalVar, _) => Some(constPerm(l))
       case l@LabelledOld(fa: FieldAccess, _) => Some(constPerm(l))
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
-      case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, f))
+      case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NodeTrafo(f))))
       case f@FuncApp(plugin.naming.rdEpsilonName, _) => Some(rdcPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdGlobalName, _) => Some(globalPerm(IntLit(1)(), f))

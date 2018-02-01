@@ -1,0 +1,26 @@
+input file;carbon, average runtime [s];silicon, average runtime [s]
+../arp-plugin/performance/test_arp_enc_fast/predicates2_enc.sil;5.28624339920002;2.8900042121500973
+../arp-plugin/performance/test_arp_enc_fast/fields1_enc_nodummy_nolog_nodomain_nocallrd.sil;10.602419048849999;0.3639850993000081
+../arp-plugin/performance/test_arp_enc_fast/predicates2_enc_nodummy_noprax_nolog_nodomain.sil;2.6866172272000086;1.2018194911999671
+../arp-plugin/performance/test_arp_enc_fast/fields1_enc_nodummy.sil;9.85798638680003;0.5069413994999991
+../arp-plugin/performance/test_arp_enc_fast/quantifiers1_enc_nodummy_nolog.sil;1.9248229410499562;6.293397844999992
+../arp-plugin/performance/test_arp_enc_fast/predicates1_enc_nodummy_noprax_nolog_nodomain.sil;1.2833918839000262;0.3185915213000044
+../arp-plugin/performance/test_arp_enc_fast/predicates2_enc_nodummy_noprax.sil;3.1657822725500067;2.642555020999987
+../arp-plugin/performance/test_arp_enc_fast/predicates2.sil;1.9625027180500183;0.4919581663499912
+../arp-plugin/performance/test_arp_enc_fast/fields1_enc_nodummy_nolog.sil;10.807484332950008;0.41392575780000695
+../arp-plugin/performance/test_arp_enc_fast/predicates1.sil;2.392327751999994;0.30593659754999863
+../arp-plugin/performance/test_arp_enc_fast/quantifiers1_enc.sil;4.591255963899971;10.707833662700045
+../arp-plugin/performance/test_arp_enc_fast/predicates1_enc_nodummy.sil;1.3578516486499894;0.4244045986000401
+../arp-plugin/performance/test_arp_enc_fast/quantifiers1_enc_nodummy_nolog_nodomain.sil;1.912360312750002;6.251112729250008
+../arp-plugin/performance/test_arp_enc_fast/fields1.sil;7.712392063999994;0.36181114940000614
+../arp-plugin/performance/test_arp_enc_fast/quantifiers1_enc_nodummy.sil;2.170052092899988;10.7416443966
+../arp-plugin/performance/test_arp_enc_fast/quantifiers1.sil;1.5466318697000134;5.917513245900023
+../arp-plugin/performance/test_arp_enc_fast/predicates1_enc_nodummy_noprax.sil;1.3460226792498815;0.42021690500002934
+../arp-plugin/performance/test_arp_enc_fast/fields1_enc.sil;8.923606691100009;0.5923694575999889
+../arp-plugin/performance/test_arp_enc_fast/predicates1_enc_nodummy_noprax_nolog.sil;1.3058209086500028;0.35356926115002807
+../arp-plugin/performance/test_arp_enc_fast/predicates2_enc_nodummy_noprax_nolog.sil;2.6560377577999814;1.2497292722000224
+../arp-plugin/performance/test_arp_enc_fast/predicates1_enc.sil;3.693691999450016;0.4768799468999759
+../arp-plugin/performance/test_arp_enc_fast/predicates2_enc_nodummy.sil;3.287351175300023;2.860727867799983
+../arp-plugin/performance/test_arp_enc_fast/fields1_enc_nodummy_nolog_nodomain.sil;11.882611934099941;0.37409674635000556
+../arp-plugin/performance/test_arp_enc_fast/quantifiers1_enc_nodummy_nolog_nodomain_nolabelandrd.sil;1.879600754249998;5.945835492849971
+../arp-plugin/performance/test_arp_enc_fast/predicates2_enc_nodummy_noprax_nolog_nodomain_nolabelandrd.sil;2.2951600487500174;0.7075452596500099

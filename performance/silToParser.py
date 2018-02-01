@@ -12,6 +12,10 @@ def main():
     for infile in os.listdir(sys.argv[1]):
         print(infile)
         os.system("java -Xss64m -jar silicon.jar --plugin PerformanceParserExport {} > {}".format(os.path.join(sys.argv[1], infile), os.path.join(sys.argv[2], infile)))
+        with open(os.path.join(sys.argv[2], infile), 'r') as f:
+            line = f.readline()
+        with open(os.path.join(sys.argv[2], infile), 'w') as f:
+            print(line, file=f)
 
 if __name__ == '__main__':
     main()

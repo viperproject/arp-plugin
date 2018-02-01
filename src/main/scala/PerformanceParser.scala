@@ -19,7 +19,7 @@ class PerformanceParserExport extends SilverPlugin {
       println("Export finished in " + (end - start) / 1000.0 + " seconds.")
     }
 
-    input
+    Program(Seq(), Seq(), Seq(), Seq(), Seq())()
   }
 
   def dumpAll(sb: StringBuilder, things: Any*): Unit = {

@@ -48,6 +48,8 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
       case f@FuncApp(plugin.naming.rdName, _) => Some(rdPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg)) => Some(rdcPerm(arg, FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NodeTrafo(f))))
       case f@FuncApp(plugin.naming.rdEpsilonName, _) => Some(rdcPerm(IntLit(1)(), f))
+      case f@FuncApp(plugin.naming.rdTokenFresh, args) => Some(tokenFreshPerm(IntLit(1)(), FuncApp(plugin.naming.rdToken, args)(f.pos, f.info, f.typ, f.formalArgs, NodeTrafo(f))))
+      case f@FuncApp(plugin.naming.rdToken, _) => Some(tokenPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdWildcardName, _) => Some(wildcardPerm(IntLit(1)(), f))
       case f@FuncApp(plugin.naming.rdGlobalName, _) => Some(globalPerm(IntLit(1)(), f))
       case f: FuncApp => Some(constPerm(f))
@@ -94,6 +96,14 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
 
   def rdPermContext(exp: Exp, f: FuncApp): NormalizedExpression = {
     NormalizedExpression(Seq(NormalizedPart(exp, 4, 4, Some(f))), None, None)
+  }
+
+  def tokenFreshPerm(exp: Exp, f: FuncApp): NormalizedExpression = {
+    NormalizedExpression(Seq(NormalizedPart(exp, 3, 1, Some(f))), None, None)
+  }
+
+  def tokenPerm(exp: Exp, f: FuncApp): NormalizedExpression = {
+    NormalizedExpression(Seq(NormalizedPart(exp, 3, 4, Some(f))), None, None)
   }
 
   def rdcPerm(exp: Exp, f: FuncApp): NormalizedExpression = {

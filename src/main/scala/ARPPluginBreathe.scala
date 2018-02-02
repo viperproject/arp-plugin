@@ -341,7 +341,8 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
           ap.perm.exists({
             case cp: CurrentPerm => true
             case FuncApp(name, _) =>
-              name == plugin.naming.rdName || name == plugin.naming.rdWildcardName || name == plugin.naming.rdCountingName
+              name == plugin.naming.rdName || name == plugin.naming.rdWildcardName || name == plugin.naming.rdCountingName ||
+                name == plugin.naming.rdGlobalName || name == plugin.naming.rdToken || name == plugin.naming.rdTokenFresh
             case _ => false
           })
         case _ => false

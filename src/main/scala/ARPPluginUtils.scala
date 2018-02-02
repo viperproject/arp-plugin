@@ -180,6 +180,8 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           plugin.naming.getNewName(suffix = "not_enough_names")
         }
         LocalVar(wildcardRdName)(Perm, f.pos, f.info, NodeTrafo(f))
+      case f@FuncApp(plugin.naming.rdTokenFresh, args) =>
+        FuncApp(plugin.naming.rdToken, args)(f.pos, f.info, f.typ, f.formalArgs, NodeTrafo(f))
     }).execute[T](node)
   }
 

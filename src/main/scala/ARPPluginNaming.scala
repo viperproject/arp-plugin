@@ -26,6 +26,8 @@ class ARPPluginNaming(plugin: ARPPlugin) {
   val rdName = "rd"
   val rdCountingName = "rdc"
   val rdWildcardName = "rdw"
+  val rdTokenFresh = "rd_token_fresh"
+  val rdToken = "rd_token"
   val rdEpsilonName = "epsilonRd"
   val rdGlobalName = "globalRd"
   val blacklistName = "ARP_IGNORE"

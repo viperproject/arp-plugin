@@ -1,0 +1,25 @@
+field f: Int
+
+method create_token_fresh(x: Ref) returns (tk: Ref)
+    requires acc(x.f, rd)
+    ensures acc(x.f, rd - rd_token(tk))
+{
+    tk := new()
+    exhale acc(x.f, rd_token_fresh(tk))
+}
+
+method create_token(x: Ref) returns (tk: Ref)
+    requires acc(x.f, rd)
+    ensures acc(x.f, rd - rd_token(tk))
+{
+    tk := new()
+    //:: ExpectedOutput(exhale.failed:insufficient_permission
+    exhale acc(x.f, rd_token(tk))
+}
+
+method get_token(x: Ref, tk: Ref)
+    requires acc(x.f, write - rd_token(tk))
+    ensures acc(x.f)
+{
+    inhale acc(x.f, rd_token(tk))
+}

@@ -86,23 +86,28 @@ class ARPPlugin extends SilverPlugin {
 
     val rdFunction = PFunction(PIdnDef(naming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
 
-    val argument = Seq(PFormalArgDecl(PIdnDef("ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264"), TypeHelper.Int))
-    val epsilonFunction = PFunction(PIdnDef(naming.rdCountingName), argument, TypeHelper.Perm, Seq(), Seq(), None, None)
-
+    val intArgument = Seq(PFormalArgDecl(PIdnDef("ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264"), TypeHelper.Int))
+    val refArgument = Seq(PFormalArgDecl(PIdnDef("ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264"), TypeHelper.Ref))
+    val epsilonFunction = PFunction(PIdnDef(naming.rdCountingName), intArgument, TypeHelper.Perm, Seq(), Seq(), None, None)
     val wildcardFunction = PFunction(PIdnDef(naming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
-
     val globalFunction = PFunction(PIdnDef(naming.rdGlobalName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
+    val tokenFunction = PFunction(PIdnDef(naming.rdToken), refArgument, TypeHelper.Perm, Seq(), Seq(), None, None)
+    val tokenFreshFunction = PFunction(PIdnDef(naming.rdTokenFresh), refArgument, TypeHelper.Perm, Seq(), Seq(), None, None)
 
     // If a program already contains a definition for rd we can't use our arp rd
     var alreadyContainsRd = false
     var alreadyContainsRdc = false
     var alreadyContainsRdw = false
     var alreadyContainsGlobalRd = false
+    var alreadyContainsTokenRd = false
+    var alreadyContainsTokenFreshRd = false
     StrategyBuilder.SlimVisitor[PNode]({
       case PIdnDef(naming.rdName) => alreadyContainsRd = true
       case PIdnDef(naming.rdCountingName) => alreadyContainsRdc = true
       case PIdnDef(naming.rdWildcardName) => alreadyContainsRdw = true
       case PIdnDef(naming.rdGlobalName) => alreadyContainsGlobalRd = true
+      case PIdnDef(naming.rdToken) => alreadyContainsTokenRd = true
+      case PIdnDef(naming.rdTokenFresh) => alreadyContainsTokenFreshRd = true
       case _ =>
     }).visit(input)
 
@@ -113,7 +118,13 @@ class ARPPlugin extends SilverPlugin {
       case p@PIdnDef(naming.rdCountingName) if alreadyContainsRdc => PIdnDef("WAS_RDC_BUT_IS_NOT_ARP_RDC").setPos(p)
       case p@PIdnUse(naming.rdWildcardName) if alreadyContainsRdw => PIdnUse("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
       case p@PIdnDef(naming.rdWildcardName) if alreadyContainsRdw => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
+      case p@PIdnUse(naming.rdWildcardName) if alreadyContainsRdw => PIdnUse("WAS_RDW_BUT_IS_NOT_ARP_RDW").setPos(p)
       case p@PIdnDef(naming.rdGlobalName) if alreadyContainsGlobalRd => PIdnDef("WAS_RDW_BUT_IS_NOT_ARP_GLOBALRD").setPos(p)
+      case p@PIdnUse(naming.rdGlobalName) if alreadyContainsGlobalRd => PIdnUse("WAS_RDW_BUT_IS_NOT_ARP_GLOBALRD").setPos(p)
+      case p@PIdnDef(naming.rdToken) if alreadyContainsGlobalRd => PIdnDef("WAS_RDTOKEN_BUT_IS_NOT_ARP_RDTOKEN").setPos(p)
+      case p@PIdnUse(naming.rdToken) if alreadyContainsGlobalRd => PIdnUse("WAS_RDTOKEN_BUT_IS_NOT_ARP_RDTOKEN").setPos(p)
+      case p@PIdnDef(naming.rdTokenFresh) if alreadyContainsGlobalRd => PIdnDef("WAS_RDTOKENFRESH_BUT_IS_NOT_ARP_RDTOKENFRESH").setPos(p)
+      case p@PIdnUse(naming.rdTokenFresh) if alreadyContainsGlobalRd => PIdnUse("WAS_RDTOKENFRESH_BUT_IS_NOT_ARP_RDTOKENFRESH").setPos(p)
     }).execute[PProgram](input)
 
     val blacklistMethod = sanitizedInput.methods.find(p => p.idndef.name == naming.blacklistName)
@@ -130,7 +141,7 @@ class ARPPlugin extends SilverPlugin {
       sanitizedInput.macros,
       sanitizedInput.domains,
       sanitizedInput.fields,
-      sanitizedInput.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction :+ globalFunction,
+      sanitizedInput.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction :+ globalFunction :+ tokenFunction :+ tokenFreshFunction,
       sanitizedInput.predicates,
       sanitizedInput.methods.filterNot(p => p.idndef.name == naming.blacklistName),
       sanitizedInput.errors
@@ -279,6 +290,8 @@ class ARPPlugin extends SilverPlugin {
       case (FuncApp(naming.rdCountingName, _), ctx) => dif(2)
       case (FuncApp(naming.rdWildcardName, _), ctx) => dif(2)
       case (FuncApp(naming.rdGlobalName, _), ctx) => dif(2)
+      case (FuncApp(naming.rdToken, _), ctx) => dif(2)
+      case (FuncApp(naming.rdTokenFresh, _), ctx) => dif(2)
       case (MethodCall(method, _, _), ctx) => dif(methodCallDifficulty(method))
       case (Fold(PredicateAccessPredicate(PredicateAccess(_, predicate), _)), ctx) => dif(predicateBodyDifficulty(predicate))
       case (Unfold(PredicateAccessPredicate(PredicateAccess(_, predicate), _)), ctx) => dif(predicateBodyDifficulty(predicate))
@@ -326,7 +339,9 @@ class ARPPlugin extends SilverPlugin {
         f.name == naming.rdName ||
           f.name == naming.rdCountingName ||
           f.name == naming.rdWildcardName ||
-          f.name == naming.rdGlobalName
+          f.name == naming.rdGlobalName ||
+          f.name == naming.rdToken ||
+          f.name == naming.rdTokenFresh
       ) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
       input.methods ++ arpDomainFile.methods
@@ -619,7 +634,9 @@ class ARPPlugin extends SilverPlugin {
       f.name == naming.rdName ||
         f.name == naming.rdCountingName ||
         f.name == naming.rdWildcardName ||
-        f.name == naming.rdGlobalName
+        f.name == naming.rdGlobalName ||
+        f.name == naming.rdToken ||
+        f.name == naming.rdTokenFresh
     ).filter(f => inputPrime.functions.exists(ff => ff.name == f.name)).foreach(f => {
       reportError(TypecheckerError(s"Duplicate function '${f.name}'", f.pos))
     })

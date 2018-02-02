@@ -1,0 +1,12 @@
+field f: Int
+
+method foo(x: Ref)
+requires acc(x.f, write-rd) && acc(x.f, rd)
+ensures acc(x.f, write-rd) && acc(x.f, rd)
+
+method bar(x: Ref)
+requires acc(x.f)
+ensures acc(x.f)
+{
+    foo(x)
+}

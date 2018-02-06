@@ -13,7 +13,7 @@ method create_token(x: Ref) returns (tk: Ref)
     ensures acc(x.f, rd - rd_token(tk))
 {
     tk := new()
-    //:: ExpectedOutput(exhale.failed:insufficient_permission
+    //:: ExpectedOutput(exhale.failed:insufficient.permission)
     exhale acc(x.f, rd_token(tk))
 }
 

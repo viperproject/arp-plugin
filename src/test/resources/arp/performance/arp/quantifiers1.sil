@@ -12,6 +12,7 @@ ensures forall x: Ref :: x != null ==> x.f == 5
 {
 	foo()
 	exhale forall x: Ref :: x != null ==> acc(x.f, 1/10)
+    //:: UnexpectedOutput(call.precondition:insufficient.permission, /silicon/issue/0/)
 	foo()
 	exhale forall x: Ref :: x != null ==> acc(x.f, 1/10)
 	foo()

@@ -54,6 +54,7 @@ ensures acc(p8(z, x, y), rd)
 ensures acc(p9(z, x, y), rd)
 {
 	foo(z, x, y)
+    //:: UnexpectedOutput(call.precondition:insufficient.permission, /silicon/issue/0/)
 	foo(z, x, y)
 	foo(z, x, y)
 	foo(z, x, y)

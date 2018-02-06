@@ -17,6 +17,8 @@ ensures acc(y.f, 1/4) && acc(y.g, 1/4) && acc(y.r, 1/4) && acc(y.r.h, 1/4)
 ensures acc(z.f, 1/4) && acc(z.g, 1/4) && acc(z.r, 1/4) && acc(z.r.h, 1/4)
 {
 	foo(x, y, z)
+    // Error does not always occur at the same time, probably timeout issue
+    //:: UnexpectedOutput(call.precondition:insufficient.permission, /silicon/issue/0/)
 	foo(x, z, y)
 	foo(y, x, z)
 	foo(y, z, x)

@@ -20,6 +20,8 @@ ensures (forall x: Ref :: x in s ==> acc(x.r) && x.r != null) && acc(a.g) && (fo
     a.g := 6
     inhale a.r.f == 5
     inhale b.r.f == 6
+    //:: UnexpectedOutput(call.precondition:insufficient.permission, /silicon/issue/0/)
+    //:: UnexpectedOutput(call.precondition:insufficient.permission, /carbon/issue/0/)
     foo(s, a, b)
     assert a.g == 11
 }

@@ -9,6 +9,7 @@ requires acc(y.g) && (forall x: Ref :: x in s ==> acc(x.g, rd) && x.g >= 0 && ac
 ensures (forall x: Ref :: x in s ==> acc(x.g, rd) && x.g >= 0 && acc(x.f, write - x.g * rd)) && acc(y.g)
 ensures y.g == a.f + b.f
 {
+    //:: UnexpectedOutput(assignment.failed:insufficient.permission, /silicon/issue/0/)
     y.g := a.f + b.f
 }
 
@@ -22,18 +23,19 @@ ensures acc(y.g) && (forall x: Ref :: x in s ==> acc(x.f, 1/2) && acc(x.g, 1/2) 
     y.g := 6
     inhale a.f == 5
     inhale b.f == 6
+    //:: UnexpectedOutput(call.precondition:negative.permission, /silicon/issue/0/)
     foo(s, y, a, b)
     assert y.g == 11
 }
 
 /*
 Maybe:
- - Silicon
  - Carbon
- - Silicon Simple
  - Carbon Simple
 
 Works with:
 
 Does not work with:
+ - Silicon
+ - Silicon Simple
 */

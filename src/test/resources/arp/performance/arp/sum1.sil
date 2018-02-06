@@ -14,6 +14,8 @@ ensures acc(y.p) && y.p > none && y.p < write && acc(y.f) && y.f == 5
 	foo(x)
 	assert acc(x.f)
 	assert acc(y.f)
+    // Error does not always occur at the same time, probably timeout issue
+    //:: UnexpectedOutput(call.precondition:insufficient.permission, /silicon/issue/0/)
 	foo(y)
 	assert acc(x.f)
 	assert acc(y.f)

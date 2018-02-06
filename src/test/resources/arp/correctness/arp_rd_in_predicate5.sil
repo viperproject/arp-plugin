@@ -16,7 +16,6 @@ ensures acc(pred(x))
 {
     unfold acc(pred(x))
     foo(x)
+    //:: UnexpectedOutput(fold.failed:assertion.false, /silicon/issue/0/)
     fold acc(pred(x))
 }
-
-// does not verify in silicon

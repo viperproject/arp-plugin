@@ -86,7 +86,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
 
     val accRcv = plugin.utils.getAccessRcv(accAccess)(pos, info, errT)
     val permRcv = plugin.utils.getAccessRcv(permAccess)(pos, info, errT)
-    val arpFieldFunctionPerm = plugin.utils.getAccessDomainFuncApp(input, permAccess)(pos, info, errT)
+    val arpFieldFunction = plugin.utils.getAccessDomainFuncApp(input, permAccess)(pos, info, errT)
 
     val quantRefName = plugin.naming.getNewName("whateverdoesntmatter")
     generateLogUpdateQuantified(
@@ -94,7 +94,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
       LocalVar(quantRefName)(Ref, pos, info),
       Seq(),
       quantifiedRef => EqCmp(quantifiedRef, accRcv)(pos, info, errT),
-      (_, level, tmpLog) => changeValue(DomainFuncApp(arpLogSum, Seq(permRcv, arpFieldFunctionPerm, level, tmpLog), Map[TypeVar, Type]())(pos, info, errT)),
+      (_, level, tmpLog) => changeValue(DomainFuncApp(arpLogSum, Seq(permRcv, arpFieldFunction, level, tmpLog), Map[TypeVar, Type]())(pos, info, errT)),
       accAccess,
       minus,
       ctx
@@ -185,7 +185,10 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
         )(pos, info, errT)
       )(pos, info, errT)
     } else {
-      condition(quantifiedRef)
+      And(
+        condition(quantifiedRef),
+        EqCmp(quantifiedField, arpFieldFunctionAcc)(pos, info, errT)
+      )(pos, info, errT)
     }
 
     Seq(

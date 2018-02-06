@@ -25,11 +25,6 @@ class ARPPlugin extends SilverPlugin {
   // TODO: Fix quantified predicates
   // TODO: Check c := perm(x.f) calls (Rewriter thinks assignment was already rewritten)
   // TODO: Handle magic wands correctly
-  // TODO: Make sure rd is only used in valid positions (in acc predicates) (i.e. rewriteRd is only called at valid positions)
-  // TODO: Make sure error transformation works everywhere
-  // TODO: implement globalRd in predicates
-  // TODO: Maybe Conjunct conditions to get rid of duplicate labels
-  // TODO: Maybe reuse previous rd name for while
 
   val utils = new ARPPluginUtils(this)
   val naming = new ARPPluginNaming(this)

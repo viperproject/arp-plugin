@@ -1,0 +1,41 @@
+//:: IgnoreFile(/carbon/issue/0/)
+
+field f: Int
+field g: Int
+
+method foo(s: Seq[Ref], y: Ref, a: Ref, b: Ref)
+requires b != null && a in s && b in s && !(y in s)
+requires y != a && y != b
+requires !(null in s)
+requires acc(y.g) && (forall x: Ref :: x in s ==> acc(x.g, rd) && x.g > 0 && acc(x.f, x.g * rd))
+ensures (forall x: Ref :: x in s ==> acc(x.g, rd) && x.g > 0 && acc(x.f, x.g * rd)) && acc(y.g)
+ensures y.g == a.f + b.f
+{
+    y.g := a.f + b.f
+}
+
+method bar(s: Seq[Ref], y: Ref, a: Ref, b: Ref)
+requires b != null && a in s && b in s && !(y in s)
+requires y != a && y != b
+requires !(null in s)
+requires acc(y.g) && (forall x: Ref :: x in s ==> acc(x.f, 1/2) && acc(x.g, 1/2) && x.g > 0)
+ensures acc(y.g) && (forall x: Ref :: x in s ==> acc(x.f, 1/2) && acc(x.g, 1/2) && x.g > 0)
+{
+    y.g := 6
+    inhale a.f == 5
+    inhale b.f == 6
+    foo(s, y, a, b)
+    assert y.g == 11
+}
+
+/*
+Maybe:
+ - Silicon
+ - Carbon
+ - Silicon Simple
+ - Carbon Simple
+
+Works with:
+
+Does not work with:
+*/

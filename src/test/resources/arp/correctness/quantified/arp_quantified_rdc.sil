@@ -21,6 +21,7 @@ ensures acc(a.g) && (forall x: Ref :: x != null ==> acc(x.f, 1/2))
     //:: UnexpectedOutput(call.precondition:insufficient.permission, /silicon/issue/0/)
     //:: UnexpectedOutput(call.precondition:insufficient.permission, /carbon/issue/0/)
     foo(a, b)
+    //:: UnexpectedOutput(assert.failed:assertion.false, /carbon/issue/0/)
     assert a.g == 11
 }
 

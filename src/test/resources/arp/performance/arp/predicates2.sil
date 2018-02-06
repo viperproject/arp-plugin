@@ -1,3 +1,5 @@
+//:: IgnoreFile(/carbon/issue/0/)
+
 predicate p0 (x: Ref, y: Ref, z: Ref)
 predicate p1 (x: Ref, y: Ref, z: Ref)
 predicate p2 (x: Ref, y: Ref, z: Ref)

@@ -6,6 +6,7 @@ method foo(x: Ref) returns()
   requires acc(x.g, write) && acc(x.h, rd)
   //:: ExpectedOutput(postcondition.violated:assertion.false)
   ensures acc(x.g, write) && acc(x.h, rd) && x.g == x.h + 1
+  //:: ExpectedOutput(postcondition.violated:assertion.false)
   ensures false
 {
     while (x.g <= x.h)

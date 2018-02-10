@@ -180,22 +180,26 @@ class PerformanceParser extends SilverPlugin {
   var parsed: Option[Program] = None
   var printDebug: Boolean = false
 
-  override def beforeParse(input: String): String ={
-    val inp = input.trim
+  override def beforeParse(input: String, isImported: Boolean): String ={
+    if (!isImported) {
+      val inp = input.trim
 
-    printDebug = System.getProperty("DEBUG", "").equals("1")
+      printDebug = System.getProperty("DEBUG", "").equals("1")
 
-    if (inp.startsWith("(") && inp.endsWith(")")){
-      val start = System.currentTimeMillis()
-      parsed = Some(parse[Program](ParsePosition(inp)))
-      val end = System.currentTimeMillis()
-      if (System.getProperty("DEBUGPERF", "").equals("1")) {
-        println("Parse finished in " + (end - start) / 1000.0 + " seconds.")
+      if (inp.startsWith("(") && inp.endsWith(")")) {
+        val start = System.currentTimeMillis()
+        parsed = Some(parse[Program](ParsePosition(inp)))
+        val end = System.currentTimeMillis()
+        if (System.getProperty("DEBUGPERF", "").equals("1")) {
+          println("Parse finished in " + (end - start) / 1000.0 + " seconds.")
+        }
+
+        ""
+      } else {
+        println("Warning: No Performance Parser input found")
+        input
       }
-
-      ""
     } else {
-      println("Warning: No Performance Parser input found")
       input
     }
   }

@@ -48,7 +48,7 @@ class ArpTests extends SilSuite {
 
   lazy val verifiers = List(createSiliconInstance())
 
-  val commandLineArguments: Seq[String] = Seq("--plugin", "ARPPlugin")
+  val commandLineArguments: Seq[String] = Seq("--plugin", "viper.silver.plugin.ARPPlugin")
 
   private def createSiliconInstance() = {
     val args =

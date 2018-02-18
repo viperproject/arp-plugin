@@ -1,11 +1,16 @@
 import sys
 import csv
+import math
 
 DEL_START = 5
 DEL_END = 5
 
 def avg(l):
     return sum(l)/len(l)
+
+def stddev(l):
+    a = avg(l)
+    return math.sqrt(sum((x - a) * (x - a) for x in l)/(len(l) - 1))
 
 def main():
     if len(sys.argv) < 3:
@@ -24,11 +29,11 @@ def main():
             code[key][0].add(int(row['exit code']))
         with open(sys.argv[2], "w", newline="") as csvout:
             wr = csv.writer(csvout, delimiter=';')
-            wr.writerow(["file", "config", "return code", "timeout", "min time", "max time", "avg", "clean avg"])
+            wr.writerow(["file", "config", "return code", "timeout", "min time", "max time", "avg", "std dev", "clean avg"])
             for key in sorted(timings.keys()):
                 lst = timings[key]
                 lst.sort()
-                wr.writerow([key[0], key[1], ", ".join(map(str, code[key][0])), code[key][1], min(lst), max(lst), avg(lst), avg(lst[DEL_START:-DEL_END])])
+                wr.writerow([key[0], key[1], ", ".join(map(str, code[key][0])), code[key][1], min(lst), max(lst), avg(lst), stddev(lst), avg(lst[DEL_START:-DEL_END])])
 
 if __name__ == '__main__':
     main()

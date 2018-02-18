@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-
+/*
 package viper.silicon.tests
 
 import java.nio.file.Path
@@ -18,9 +18,9 @@ class ArpTests extends SilSuite {
   private val arpTestDirectories = Seq("arp")
   private val siliconTestDirectories = Seq("consistency")
   private val silTestDirectories = Seq("all", "quantifiedpermissions", "wands", "examples", "quantifiedpredicates" ,"quantifiedcombinations")
-//  val testDirectories = arpTestDirectories
+  val testDirectories = arpTestDirectories
 //  val testDirectories = siliconTestDirectories ++ silTestDirectories
-  val testDirectories = arpTestDirectories ++ siliconTestDirectories ++ silTestDirectories
+//  val testDirectories = arpTestDirectories ++ siliconTestDirectories ++ silTestDirectories
 
   override def frontend(verifier: Verifier, files: Seq[Path]) = {
     require(files.length == 1, "tests should consist of exactly one file")
@@ -70,3 +70,4 @@ class SiliconFrontendWithUnitTesting extends SiliconFrontend(NoopReporter) {
     _plugins = SilverPluginManager(_config.plugin.toOption)
   }
 }
+*/

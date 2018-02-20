@@ -16,6 +16,6 @@ ensures acc(pred(x))
 {
     unfold acc(pred(x))
     foo(x)
-    //:: UnexpectedOutput(fold.failed:assertion.false, /carbon/issue/0/)
+    //:: UnexpectedOutput(fold.failed:assertion.false, /carbon/issue/227/)
     fold acc(pred(x))
 }

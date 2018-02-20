@@ -48,9 +48,9 @@ class ARPPlugin extends SilverPlugin {
     val removeProvableIf = true
     val noAssumptionForPost = false // this does not work if rd is only present in post condition
     val removeUnnecessaryLabels = true
-    val mixSimpleEncoding = false
-    val useSimpleEncodingIfPossible = false
-    val onlyTransformIfRdUsed = false
+    val mixSimpleEncoding = true
+    val useSimpleEncodingIfPossible = true
+    val onlyTransformIfRdUsed = true
   }
 
   def setIgnoredFields(fields: Seq[String]): Unit = {

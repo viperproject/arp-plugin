@@ -1,22 +1,21 @@
-//:: IgnoreFile(/silicon/issue/320/)
+//:: IgnoreFile(/silicon/issue/253/)
 
 field f: Int
 field g: Int
-field h: Int
-field r: Ref
+field r: Int
 
 method foo(x: Ref, y: Ref, z: Ref)
-requires acc(x.f, rd) && acc(y.g, rd) && acc(z.r, rd) && acc(z.r.h, rd)
-ensures acc(x.f, rd) && acc(y.g, rd) && acc(z.r, rd) && acc(z.r.h, rd)
+requires acc(x.f, rd) && acc(y.g, rd) && acc(z.r, rd)
+ensures acc(x.f, rd) && acc(y.g, rd) && acc(z.r, rd)
 
 method bar(x: Ref, y: Ref, z: Ref)
 requires x != y && x != z && y != z
-requires acc(x.f, 1/4) && acc(x.g, 1/4) && acc(x.r, 1/4) && acc(x.r.h, 1/4)
-requires acc(y.f, 1/4) && acc(y.g, 1/4) && acc(y.r, 1/4) && acc(y.r.h, 1/4)
-requires acc(z.f, 1/4) && acc(z.g, 1/4) && acc(z.r, 1/4) && acc(z.r.h, 1/4)
-ensures acc(x.f, 1/4) && acc(x.g, 1/4) && acc(x.r, 1/4) && acc(x.r.h, 1/4)
-ensures acc(y.f, 1/4) && acc(y.g, 1/4) && acc(y.r, 1/4) && acc(y.r.h, 1/4)
-ensures acc(z.f, 1/4) && acc(z.g, 1/4) && acc(z.r, 1/4) && acc(z.r.h, 1/4)
+requires acc(x.f, 1/4) && acc(x.g, 1/4) && acc(x.r, 1/4)
+requires acc(y.f, 1/4) && acc(y.g, 1/4) && acc(y.r, 1/4)
+requires acc(z.f, 1/4) && acc(z.g, 1/4) && acc(z.r, 1/4)
+ensures acc(x.f, 1/4) && acc(x.g, 1/4) && acc(x.r, 1/4)
+ensures acc(y.f, 1/4) && acc(y.g, 1/4) && acc(y.r, 1/4)
+ensures acc(z.f, 1/4) && acc(z.g, 1/4) && acc(z.r, 1/4)
 {
 	foo(x, y, z)
 	foo(x, z, y)

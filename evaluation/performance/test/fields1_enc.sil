@@ -77,8 +77,6 @@ domain ARP_field_functions {
 
   unique function field_g(): Int
 
-  unique function field_h(): Int
-
   unique function field_r(): Int
 }
 
@@ -86,9 +84,7 @@ field f: Int
 
 field g: Int
 
-field h: Int
-
-field r: Ref
+field r: Int
 
 function rd(): Perm
   requires false
@@ -100,6 +96,10 @@ function rdc(count: Int): Perm
 
 function rdw(): Perm
   requires false
+
+
+function rd_token(tk: Ref): Perm
+  ensures none < result && result < write
 
 
 function globalRd(): Perm
@@ -119,21 +119,18 @@ method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   bar_log := ARPLog_Nil()
   inhale none < bar_rd && bar_rd < write
   inhale x != y && (x != z && y != z)
-  inhale acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(x.r.h, 1 / 4)))
+  inhale acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && acc(x.r, 1 / 4))
   bar_log := ARPLog_Cons(x, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(x, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(x, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(x.r, field_h(), 1 / 4, 6, bar_log)
-  inhale acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(y.r.h, 1 / 4)))
+  inhale acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && acc(y.r, 1 / 4))
   bar_log := ARPLog_Cons(y, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(y, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(y, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(y.r, field_h(), 1 / 4, 6, bar_log)
-  inhale acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
+  inhale acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && acc(z.r, 1 / 4))
   bar_log := ARPLog_Cons(z, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(z, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(z, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(z.r, field_h(), 1 / 4, 6, bar_log)
   var foo_call_rd: Perm
   var arg_x: Ref
   var arg_y: Ref
@@ -147,13 +144,11 @@ method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   bar_log := ARPLog_Cons(arg_x, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_y, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_z, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[foo_call_label](arg_z.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(arg_x.f, 1 / 4) && (acc(arg_y.g, 1 / 4) && (acc(arg_z.r, 1 / 4) && acc(old[foo_call_label](arg_z.r).h, 1 / 4)))
-  inhale acc(arg_x.f, 1 / 4) && (acc(arg_y.g, 1 / 4) && (acc(arg_z.r, 1 / 4) && acc(arg_z.r.h, 1 / 4)))
+  exhale acc(arg_x.f, 1 / 4) && (acc(arg_y.g, 1 / 4) && acc(arg_z.r, 1 / 4))
+  inhale acc(arg_x.f, 1 / 4) && (acc(arg_y.g, 1 / 4) && acc(arg_z.r, 1 / 4))
   bar_log := ARPLog_Cons(arg_x, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_y, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_z, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(arg_z.r, field_h(), 1 / 4, 6, bar_log)
   var foo_0_call_rd: Perm
   var arg_0_x: Ref
   var arg_0_y: Ref
@@ -167,13 +162,11 @@ method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   bar_log := ARPLog_Cons(arg_0_x, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_0_y, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_0_z, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[foo_0_call_label](arg_0_z.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(arg_0_x.f, 1 / 4) && (acc(arg_0_y.g, 1 / 4) && (acc(arg_0_z.r, 1 / 4) && acc(old[foo_0_call_label](arg_0_z.r).h, 1 / 4)))
-  inhale acc(arg_0_x.f, 1 / 4) && (acc(arg_0_y.g, 1 / 4) && (acc(arg_0_z.r, 1 / 4) && acc(arg_0_z.r.h, 1 / 4)))
+  exhale acc(arg_0_x.f, 1 / 4) && (acc(arg_0_y.g, 1 / 4) && acc(arg_0_z.r, 1 / 4))
+  inhale acc(arg_0_x.f, 1 / 4) && (acc(arg_0_y.g, 1 / 4) && acc(arg_0_z.r, 1 / 4))
   bar_log := ARPLog_Cons(arg_0_x, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_0_y, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_0_z, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(arg_0_z.r, field_h(), 1 / 4, 6, bar_log)
   var foo_1_call_rd: Perm
   var arg_1_x: Ref
   var arg_1_y: Ref
@@ -187,13 +180,11 @@ method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   bar_log := ARPLog_Cons(arg_1_x, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_1_y, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_1_z, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[foo_1_call_label](arg_1_z.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(arg_1_x.f, 1 / 4) && (acc(arg_1_y.g, 1 / 4) && (acc(arg_1_z.r, 1 / 4) && acc(old[foo_1_call_label](arg_1_z.r).h, 1 / 4)))
-  inhale acc(arg_1_x.f, 1 / 4) && (acc(arg_1_y.g, 1 / 4) && (acc(arg_1_z.r, 1 / 4) && acc(arg_1_z.r.h, 1 / 4)))
+  exhale acc(arg_1_x.f, 1 / 4) && (acc(arg_1_y.g, 1 / 4) && acc(arg_1_z.r, 1 / 4))
+  inhale acc(arg_1_x.f, 1 / 4) && (acc(arg_1_y.g, 1 / 4) && acc(arg_1_z.r, 1 / 4))
   bar_log := ARPLog_Cons(arg_1_x, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_1_y, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_1_z, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(arg_1_z.r, field_h(), 1 / 4, 6, bar_log)
   var foo_2_call_rd: Perm
   var arg_2_x: Ref
   var arg_2_y: Ref
@@ -207,13 +198,11 @@ method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   bar_log := ARPLog_Cons(arg_2_x, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_2_y, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_2_z, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[foo_2_call_label](arg_2_z.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(arg_2_x.f, 1 / 4) && (acc(arg_2_y.g, 1 / 4) && (acc(arg_2_z.r, 1 / 4) && acc(old[foo_2_call_label](arg_2_z.r).h, 1 / 4)))
-  inhale acc(arg_2_x.f, 1 / 4) && (acc(arg_2_y.g, 1 / 4) && (acc(arg_2_z.r, 1 / 4) && acc(arg_2_z.r.h, 1 / 4)))
+  exhale acc(arg_2_x.f, 1 / 4) && (acc(arg_2_y.g, 1 / 4) && acc(arg_2_z.r, 1 / 4))
+  inhale acc(arg_2_x.f, 1 / 4) && (acc(arg_2_y.g, 1 / 4) && acc(arg_2_z.r, 1 / 4))
   bar_log := ARPLog_Cons(arg_2_x, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_2_y, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_2_z, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(arg_2_z.r, field_h(), 1 / 4, 6, bar_log)
   var foo_3_call_rd: Perm
   var arg_3_x: Ref
   var arg_3_y: Ref
@@ -227,13 +216,11 @@ method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   bar_log := ARPLog_Cons(arg_3_x, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_3_y, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_3_z, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[foo_3_call_label](arg_3_z.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(arg_3_x.f, 1 / 4) && (acc(arg_3_y.g, 1 / 4) && (acc(arg_3_z.r, 1 / 4) && acc(old[foo_3_call_label](arg_3_z.r).h, 1 / 4)))
-  inhale acc(arg_3_x.f, 1 / 4) && (acc(arg_3_y.g, 1 / 4) && (acc(arg_3_z.r, 1 / 4) && acc(arg_3_z.r.h, 1 / 4)))
+  exhale acc(arg_3_x.f, 1 / 4) && (acc(arg_3_y.g, 1 / 4) && acc(arg_3_z.r, 1 / 4))
+  inhale acc(arg_3_x.f, 1 / 4) && (acc(arg_3_y.g, 1 / 4) && acc(arg_3_z.r, 1 / 4))
   bar_log := ARPLog_Cons(arg_3_x, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_3_y, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_3_z, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(arg_3_z.r, field_h(), 1 / 4, 6, bar_log)
   var foo_4_call_rd: Perm
   var arg_4_x: Ref
   var arg_4_y: Ref
@@ -247,49 +234,43 @@ method bar_ARP_TRANSFORMED(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   bar_log := ARPLog_Cons(arg_4_x, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_4_y, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(arg_4_z, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[foo_4_call_label](arg_4_z.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(arg_4_x.f, 1 / 4) && (acc(arg_4_y.g, 1 / 4) && (acc(arg_4_z.r, 1 / 4) && acc(old[foo_4_call_label](arg_4_z.r).h, 1 / 4)))
-  inhale acc(arg_4_x.f, 1 / 4) && (acc(arg_4_y.g, 1 / 4) && (acc(arg_4_z.r, 1 / 4) && acc(arg_4_z.r.h, 1 / 4)))
+  exhale acc(arg_4_x.f, 1 / 4) && (acc(arg_4_y.g, 1 / 4) && acc(arg_4_z.r, 1 / 4))
+  inhale acc(arg_4_x.f, 1 / 4) && (acc(arg_4_y.g, 1 / 4) && acc(arg_4_z.r, 1 / 4))
   bar_log := ARPLog_Cons(arg_4_x, field_f(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_4_y, field_g(), 1 / 4, 6, bar_log)
   bar_log := ARPLog_Cons(arg_4_z, field_r(), 1 / 4, 6, bar_log)
-  bar_log := ARPLog_Cons(arg_4_z.r, field_h(), 1 / 4, 6, bar_log)
-  label bar_end_label
   label ARP_5_exhale_label
   bar_log := ARPLog_Cons(x, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(x, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(x, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[bar_end_label](x.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(old[bar_end_label](x.r).h, 1 / 4)))
+  exhale acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && acc(x.r, 1 / 4))
   label ARP_6_exhale_label
   bar_log := ARPLog_Cons(y, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(y, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(y, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[bar_end_label](y.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(old[bar_end_label](y.r).h, 1 / 4)))
+  exhale acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && acc(y.r, 1 / 4))
   label ARP_7_exhale_label
   bar_log := ARPLog_Cons(z, field_f(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(z, field_g(), -(1 / 4), 6, bar_log)
   bar_log := ARPLog_Cons(z, field_r(), -(1 / 4), 6, bar_log)
-  bar_log := ARPLog_Cons(old[bar_end_label](z.r), field_h(), -(1 / 4), 6, bar_log)
-  exhale acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(old[bar_end_label](z.r).h, 1 / 4)))
+  exhale acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && acc(z.r, 1 / 4))
 }
 
 method foo(x: Ref, y: Ref, z: Ref, foo_0_rd: Perm)
   requires none < foo_0_rd && foo_0_rd < write
-  requires acc(x.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
-  ensures acc(x.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
+  requires acc(x.f, 1 / 4) && (acc(y.g, 1 / 4) && acc(z.r, 1 / 4))
+  ensures acc(x.f, 1 / 4) && (acc(y.g, 1 / 4) && acc(z.r, 1 / 4))
 
 
 method bar(x: Ref, y: Ref, z: Ref, bar_0_rd: Perm)
   requires none < bar_0_rd && bar_0_rd < write
   requires x != y && (x != z && y != z)
-  requires acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(x.r.h, 1 / 4)))
-  requires acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(y.r.h, 1 / 4)))
-  requires acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
-  ensures acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && (acc(x.r, 1 / 4) && acc(x.r.h, 1 / 4)))
-  ensures acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && (acc(y.r, 1 / 4) && acc(y.r.h, 1 / 4)))
-  ensures acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && (acc(z.r, 1 / 4) && acc(z.r.h, 1 / 4)))
+  requires acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && acc(x.r, 1 / 4))
+  requires acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && acc(y.r, 1 / 4))
+  requires acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && acc(z.r, 1 / 4))
+  ensures acc(x.f, 1 / 4) && (acc(x.g, 1 / 4) && acc(x.r, 1 / 4))
+  ensures acc(y.f, 1 / 4) && (acc(y.g, 1 / 4) && acc(y.r, 1 / 4))
+  ensures acc(z.f, 1 / 4) && (acc(z.g, 1 / 4) && acc(z.r, 1 / 4))
 
 
 method HavocPerm() returns (returnval: Perm)

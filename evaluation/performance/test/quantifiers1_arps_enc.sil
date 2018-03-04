@@ -20,109 +20,49 @@ function rd_token_fresh(ARP_LongAndIrrelevantNameToPreventCollisions_31415926535
 
 method foo(s: Seq[Ref], foo_rd: Perm)
   requires none < foo_rd && foo_rd < write
-  requires (forall x: Ref :: (x in s) ==> acc(x.f, foo_rd))
-  ensures (forall x: Ref :: (x in s) ==> acc(x.f, foo_rd))
+  requires (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, foo_rd))
+  ensures (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, foo_rd))
 
 
 method bar(s: Seq[Ref], bar_rd: Perm)
   requires none < bar_rd && bar_rd < write
-  requires (forall x: Ref :: (x in s) ==> acc(x.f, write))
-  requires (forall x: Ref :: (x in s) ==> x.f == 5)
-  ensures (forall x: Ref :: (x in s) ==> acc(x.f, write))
-  ensures (forall x: Ref :: (x in s) ==> x.f == 5)
+  requires (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, write))
+  requires (forall x: Ref :: { (x in s) } (x in s) ==> x.f == 5)
+  ensures (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, write))
+  ensures (forall x: Ref :: { (x in s) } (x in s) ==> x.f == 5)
 {
   var foo_call_rd: Perm
   inhale none < foo_call_rd && foo_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_call_rd < perm(x.f))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> none < perm(x.f) ==> foo_call_rd < perm(x.f))
   foo(s, foo_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
+  exhale (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, 1 / 10))
   var foo_0_call_rd: Perm
   inhale none < foo_0_call_rd && foo_0_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_0_call_rd < perm(x.f))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> none < perm(x.f) ==> foo_0_call_rd < perm(x.f))
   foo(s, foo_0_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
+  exhale (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, 1 / 10))
   var foo_1_call_rd: Perm
   inhale none < foo_1_call_rd && foo_1_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_1_call_rd < perm(x.f))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> none < perm(x.f) ==> foo_1_call_rd < perm(x.f))
   foo(s, foo_1_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
+  exhale (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, 1 / 10))
   var foo_2_call_rd: Perm
   inhale none < foo_2_call_rd && foo_2_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_2_call_rd < perm(x.f))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> none < perm(x.f) ==> foo_2_call_rd < perm(x.f))
   foo(s, foo_2_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, 1 / 10))
   var foo_3_call_rd: Perm
   inhale none < foo_3_call_rd && foo_3_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_3_call_rd < perm(x.f))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> none < perm(x.f) ==> foo_3_call_rd < perm(x.f))
   foo(s, foo_3_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, 1 / 10))
   var foo_4_call_rd: Perm
   inhale none < foo_4_call_rd && foo_4_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_4_call_rd < perm(x.f))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> none < perm(x.f) ==> foo_4_call_rd < perm(x.f))
   foo(s, foo_4_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> acc(x.f, 1 / 10))
   var foo_5_call_rd: Perm
   inhale none < foo_5_call_rd && foo_5_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_5_call_rd < perm(x.f))
+  inhale (forall x: Ref :: { (x in s) } (x in s) ==> none < perm(x.f) ==> foo_5_call_rd < perm(x.f))
   foo(s, foo_5_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_6_call_rd: Perm
-  inhale none < foo_6_call_rd && foo_6_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_6_call_rd < perm(x.f))
-  foo(s, foo_6_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_7_call_rd: Perm
-  inhale none < foo_7_call_rd && foo_7_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_7_call_rd < perm(x.f))
-  foo(s, foo_7_call_rd)
-  exhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_8_call_rd: Perm
-  inhale none < foo_8_call_rd && foo_8_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_8_call_rd < perm(x.f))
-  foo(s, foo_8_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_9_call_rd: Perm
-  inhale none < foo_9_call_rd && foo_9_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_9_call_rd < perm(x.f))
-  foo(s, foo_9_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_10_call_rd: Perm
-  inhale none < foo_10_call_rd && foo_10_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_10_call_rd < perm(x.f))
-  foo(s, foo_10_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_11_call_rd: Perm
-  inhale none < foo_11_call_rd && foo_11_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_11_call_rd < perm(x.f))
-  foo(s, foo_11_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_12_call_rd: Perm
-  inhale none < foo_12_call_rd && foo_12_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_12_call_rd < perm(x.f))
-  foo(s, foo_12_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_13_call_rd: Perm
-  inhale none < foo_13_call_rd && foo_13_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_13_call_rd < perm(x.f))
-  foo(s, foo_13_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_14_call_rd: Perm
-  inhale none < foo_14_call_rd && foo_14_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_14_call_rd < perm(x.f))
-  foo(s, foo_14_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_15_call_rd: Perm
-  inhale none < foo_15_call_rd && foo_15_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_15_call_rd < perm(x.f))
-  foo(s, foo_15_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_16_call_rd: Perm
-  inhale none < foo_16_call_rd && foo_16_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_16_call_rd < perm(x.f))
-  foo(s, foo_16_call_rd)
-  inhale (forall x: Ref :: (x in s) ==> acc(x.f, 1 / 10))
-  var foo_17_call_rd: Perm
-  inhale none < foo_17_call_rd && foo_17_call_rd < write
-  inhale (forall x: Ref :: (x in s) ==> none < perm(x.f) ==> foo_17_call_rd < perm(x.f))
-  foo(s, foo_17_call_rd)
 }

@@ -62,6 +62,7 @@ object ARPBuild extends Build {
                  * You can inspect the settings in effect using via
                  * "show javaOptions" on the Sbt console.
                  */
+              publishArtifact in Test := true,
               libraryDependencies ++= externalDep,
               BrandKeys.dataPackage := "viper.silver.plugin.arp",
               BrandKeys.dataObject := "brandingData",

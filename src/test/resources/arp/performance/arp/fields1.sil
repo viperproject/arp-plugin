@@ -1,5 +1,3 @@
-//:: IgnoreFile(/silicon/issue/253/)
-
 field f: Int
 field g: Int
 field r: Int

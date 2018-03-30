@@ -15,8 +15,8 @@ ensures acc(pred(x, n))
 {
     unfold acc(pred(x, n))
     foo(x)
-    //:: UnexpectedOutput(assert.failed:negative.permission, /carbon/issue/0/)
+    //:: UnexpectedOutput(assert.failed:negative.permission, /carbon/issue/227/)
     assert acc(x.f, write - n * globalRd)
-    //:: UnexpectedOutput(fold.failed:assertion.false, /silicon/issue/0/)
+    //:: UnexpectedOutput(fold.failed:assertion.false, /silicon/issue/319/)
     fold acc(pred(x, n))
 }

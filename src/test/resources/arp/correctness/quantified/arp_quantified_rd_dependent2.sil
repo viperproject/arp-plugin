@@ -1,5 +1,5 @@
-//:: IgnoreFile(/carbon/issue/0/)
-//:: IgnoreFile(/silicon/issue/0/)
+//:: IgnoreFile(/carbon/issue/228/)
+//:: IgnoreFile(/silicon/issue/320/)
 
 field f: Int
 field g: Int

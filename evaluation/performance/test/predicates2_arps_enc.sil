@@ -7,6 +7,15 @@ function rdc(ARP_LongAndIrrelevantNameToPreventCollisions_3141592653589793238462
 function rdw(): Perm
 
 
+function globalRd(): Perm
+
+
+function rd_token(ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264: Ref): Perm
+
+
+function rd_token_fresh(ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264: Ref): Perm
+
+
 predicate p0(x: Ref, y: Ref, z: Ref)
 
 predicate p1(x: Ref, y: Ref, z: Ref)
@@ -17,16 +26,6 @@ predicate p3(x: Ref, y: Ref, z: Ref)
 
 predicate p4(x: Ref, y: Ref, z: Ref)
 
-predicate p5(x: Ref, y: Ref, z: Ref)
-
-predicate p6(x: Ref, y: Ref, z: Ref)
-
-predicate p7(x: Ref, y: Ref, z: Ref)
-
-predicate p8(x: Ref, y: Ref, z: Ref)
-
-predicate p9(x: Ref, y: Ref, z: Ref)
-
 method foo(x: Ref, y: Ref, z: Ref, foo_rd: Perm)
   requires none < foo_rd && foo_rd < write
   requires acc(p0(x, y, z), foo_rd)
@@ -34,21 +33,11 @@ method foo(x: Ref, y: Ref, z: Ref, foo_rd: Perm)
   requires acc(p2(x, y, z), foo_rd)
   requires acc(p3(x, y, z), foo_rd)
   requires acc(p4(x, y, z), foo_rd)
-  requires acc(p5(x, y, z), foo_rd)
-  requires acc(p6(x, y, z), foo_rd)
-  requires acc(p7(x, y, z), foo_rd)
-  requires acc(p8(x, y, z), foo_rd)
-  requires acc(p9(x, y, z), foo_rd)
   ensures acc(p0(x, y, z), foo_rd)
   ensures acc(p1(x, y, z), foo_rd)
   ensures acc(p2(x, y, z), foo_rd)
   ensures acc(p3(x, y, z), foo_rd)
   ensures acc(p4(x, y, z), foo_rd)
-  ensures acc(p5(x, y, z), foo_rd)
-  ensures acc(p6(x, y, z), foo_rd)
-  ensures acc(p7(x, y, z), foo_rd)
-  ensures acc(p8(x, y, z), foo_rd)
-  ensures acc(p9(x, y, z), foo_rd)
 
 
 method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
@@ -58,21 +47,11 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   requires acc(p2(z, x, y), bar_rd)
   requires acc(p3(z, x, y), bar_rd)
   requires acc(p4(z, x, y), bar_rd)
-  requires acc(p5(z, x, y), bar_rd)
-  requires acc(p6(z, x, y), bar_rd)
-  requires acc(p7(z, x, y), bar_rd)
-  requires acc(p8(z, x, y), bar_rd)
-  requires acc(p9(z, x, y), bar_rd)
   ensures acc(p0(z, x, y), bar_rd)
   ensures acc(p1(z, x, y), bar_rd)
   ensures acc(p2(z, x, y), bar_rd)
   ensures acc(p3(z, x, y), bar_rd)
   ensures acc(p4(z, x, y), bar_rd)
-  ensures acc(p5(z, x, y), bar_rd)
-  ensures acc(p6(z, x, y), bar_rd)
-  ensures acc(p7(z, x, y), bar_rd)
-  ensures acc(p8(z, x, y), bar_rd)
-  ensures acc(p9(z, x, y), bar_rd)
 {
   var foo_call_rd: Perm
   inhale none < foo_call_rd && foo_call_rd < write
@@ -81,11 +60,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_call_rd)
   var foo_0_call_rd: Perm
   inhale none < foo_0_call_rd && foo_0_call_rd < write
@@ -94,11 +68,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_0_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_0_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_0_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_0_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_0_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_0_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_0_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_0_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_0_call_rd)
   var foo_1_call_rd: Perm
   inhale none < foo_1_call_rd && foo_1_call_rd < write
@@ -107,11 +76,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_1_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_1_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_1_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_1_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_1_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_1_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_1_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_1_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_1_call_rd)
   var foo_2_call_rd: Perm
   inhale none < foo_2_call_rd && foo_2_call_rd < write
@@ -120,11 +84,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_2_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_2_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_2_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_2_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_2_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_2_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_2_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_2_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_2_call_rd)
   var foo_3_call_rd: Perm
   inhale none < foo_3_call_rd && foo_3_call_rd < write
@@ -133,11 +92,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_3_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_3_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_3_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_3_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_3_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_3_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_3_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_3_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_3_call_rd)
   var foo_4_call_rd: Perm
   inhale none < foo_4_call_rd && foo_4_call_rd < write
@@ -146,11 +100,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_4_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_4_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_4_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_4_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_4_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_4_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_4_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_4_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_4_call_rd)
   var foo_5_call_rd: Perm
   inhale none < foo_5_call_rd && foo_5_call_rd < write
@@ -159,11 +108,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_5_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_5_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_5_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_5_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_5_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_5_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_5_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_5_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_5_call_rd)
   var foo_6_call_rd: Perm
   inhale none < foo_6_call_rd && foo_6_call_rd < write
@@ -172,11 +116,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_6_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_6_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_6_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_6_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_6_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_6_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_6_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_6_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_6_call_rd)
   var foo_7_call_rd: Perm
   inhale none < foo_7_call_rd && foo_7_call_rd < write
@@ -185,11 +124,6 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_7_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_7_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_7_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_7_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_7_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_7_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_7_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_7_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_7_call_rd)
   var foo_8_call_rd: Perm
   inhale none < foo_8_call_rd && foo_8_call_rd < write
@@ -198,140 +132,5 @@ method bar(x: Ref, y: Ref, z: Ref, bar_rd: Perm)
   inhale none < perm(p2(z, x, y)) ==> foo_8_call_rd < perm(p2(z, x, y))
   inhale none < perm(p3(z, x, y)) ==> foo_8_call_rd < perm(p3(z, x, y))
   inhale none < perm(p4(z, x, y)) ==> foo_8_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_8_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_8_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_8_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_8_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_8_call_rd < perm(p9(z, x, y))
   foo(z, x, y, foo_8_call_rd)
-  var foo_9_call_rd: Perm
-  inhale none < foo_9_call_rd && foo_9_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_9_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_9_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_9_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_9_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_9_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_9_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_9_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_9_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_9_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_9_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_9_call_rd)
-  var foo_10_call_rd: Perm
-  inhale none < foo_10_call_rd && foo_10_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_10_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_10_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_10_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_10_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_10_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_10_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_10_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_10_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_10_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_10_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_10_call_rd)
-  var foo_11_call_rd: Perm
-  inhale none < foo_11_call_rd && foo_11_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_11_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_11_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_11_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_11_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_11_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_11_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_11_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_11_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_11_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_11_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_11_call_rd)
-  var foo_12_call_rd: Perm
-  inhale none < foo_12_call_rd && foo_12_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_12_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_12_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_12_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_12_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_12_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_12_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_12_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_12_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_12_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_12_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_12_call_rd)
-  var foo_13_call_rd: Perm
-  inhale none < foo_13_call_rd && foo_13_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_13_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_13_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_13_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_13_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_13_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_13_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_13_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_13_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_13_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_13_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_13_call_rd)
-  var foo_14_call_rd: Perm
-  inhale none < foo_14_call_rd && foo_14_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_14_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_14_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_14_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_14_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_14_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_14_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_14_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_14_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_14_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_14_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_14_call_rd)
-  var foo_15_call_rd: Perm
-  inhale none < foo_15_call_rd && foo_15_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_15_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_15_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_15_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_15_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_15_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_15_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_15_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_15_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_15_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_15_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_15_call_rd)
-  var foo_16_call_rd: Perm
-  inhale none < foo_16_call_rd && foo_16_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_16_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_16_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_16_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_16_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_16_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_16_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_16_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_16_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_16_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_16_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_16_call_rd)
-  var foo_17_call_rd: Perm
-  inhale none < foo_17_call_rd && foo_17_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_17_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_17_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_17_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_17_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_17_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_17_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_17_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_17_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_17_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_17_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_17_call_rd)
-  var foo_18_call_rd: Perm
-  inhale none < foo_18_call_rd && foo_18_call_rd < write
-  inhale none < perm(p0(z, x, y)) ==> foo_18_call_rd < perm(p0(z, x, y))
-  inhale none < perm(p1(z, x, y)) ==> foo_18_call_rd < perm(p1(z, x, y))
-  inhale none < perm(p2(z, x, y)) ==> foo_18_call_rd < perm(p2(z, x, y))
-  inhale none < perm(p3(z, x, y)) ==> foo_18_call_rd < perm(p3(z, x, y))
-  inhale none < perm(p4(z, x, y)) ==> foo_18_call_rd < perm(p4(z, x, y))
-  inhale none < perm(p5(z, x, y)) ==> foo_18_call_rd < perm(p5(z, x, y))
-  inhale none < perm(p6(z, x, y)) ==> foo_18_call_rd < perm(p6(z, x, y))
-  inhale none < perm(p7(z, x, y)) ==> foo_18_call_rd < perm(p7(z, x, y))
-  inhale none < perm(p8(z, x, y)) ==> foo_18_call_rd < perm(p8(z, x, y))
-  inhale none < perm(p9(z, x, y)) ==> foo_18_call_rd < perm(p9(z, x, y))
-  foo(z, x, y, foo_18_call_rd)
 }

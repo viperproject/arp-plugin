@@ -1,0 +1,18 @@
+input file;carbon, average runtime [s];silicon, average runtime [s];silicon_timeout, average runtime [s]
+../arp-plugin/evaluation/performance/test_fast/predicates1_arps_enc.sil;3.824322269050208;0.3763153061500816;0.3584261488998891
+../arp-plugin/evaluation/performance/test_fast/quantifiers1_arps_enc.sil;3.892493678900064;39.157699227899954;38.81991016564998
+../arp-plugin/evaluation/performance/test_fast/quantifiers1.sil;1.6086477979000846;0.7620605067501856;0.7697451274998457
+../arp-plugin/evaluation/performance/test_fast/sum1_arp_enc.sil;27.058231820350283;1.6619719601500946;7.429859431700061
+../arp-plugin/evaluation/performance/test_fast/predicates2_enc.sil;3.355084221049856;0.7694819051500417;0.772594970999944
+../arp-plugin/evaluation/performance/test_fast/predicates2_arps_enc.sil;4.273110661349892;4.554834801349989;4.485633909450098
+../arp-plugin/evaluation/performance/test_fast/fields1_arp_enc.sil;7.192574669950045;4.560732321700016;22.044591875399966
+../arp-plugin/evaluation/performance/test_fast/fields1_enc.sil;3.1891561002000346;0.506638340599784;0.5090836313501313
+../arp-plugin/evaluation/performance/test_fast/predicates1_arp_enc.sil;3.2262877420498626;1.130533284250032;1.7166843279498607
+../arp-plugin/evaluation/performance/test_fast/predicates2_arp_enc.sil;38.19659258079982;2.033101149600134;17.453232660200047
+../arp-plugin/evaluation/performance/test_fast/predicates1.sil;2.5388004921000173;0.2932472946001326;0.30615556365000884
+../arp-plugin/evaluation/performance/test_fast/fields1_arps_enc.sil;3.814057639800012;0.5895776237999598;0.5952092425997761
+../arp-plugin/evaluation/performance/test_fast/fields1.sil;1.5663610636000158;0.3086231984500046;0.31348448130002
+../arp-plugin/evaluation/performance/test_fast/quantifiers1_enc.sil;3.232981773950087;1.7419598081500225;1.7423469711498911
+../arp-plugin/evaluation/performance/test_fast/quantifiers1_arp_enc.sil;3.745193562050099;77.21202276465006;76.97689925544978
+../arp-plugin/evaluation/performance/test_fast/predicates2.sil;1.663838667249911;0.3158047027999601;0.32328082664998875
+../arp-plugin/evaluation/performance/test_fast/predicates1_enc.sil;3.1554200474502068;0.47661594889996195;0.4769792428997789

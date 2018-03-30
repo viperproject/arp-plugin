@@ -9,6 +9,15 @@ function rdc(ARP_LongAndIrrelevantNameToPreventCollisions_3141592653589793238462
 function rdw(): Perm
 
 
+function globalRd(): Perm
+
+
+function rd_token(ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264: Ref): Perm
+
+
+function rd_token_fresh(ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264: Ref): Perm
+
+
 predicate p1()
 
 predicate p2(x: Ref) {

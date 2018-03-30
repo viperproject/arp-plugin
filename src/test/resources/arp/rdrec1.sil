@@ -28,7 +28,7 @@ method eval(self: Ref, s: Ref) returns (res: Int)
         l := eval(self.left, s)
     }
     if (self.right != null) {
-        //:: UnexpectedOutput(call.precondition:insufficient.permission, /silicon/issue/312/)
+        assert true     // Workaround for the Silicon issue 312.
         r := eval(self.right, s)
     }
     res := add(l, r)

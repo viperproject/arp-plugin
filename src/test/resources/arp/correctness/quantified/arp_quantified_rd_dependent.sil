@@ -25,7 +25,6 @@ ensures acc(y.g) && (forall x: Ref :: x in s ==> acc(x.f, 1/2) && acc(x.g, 1/2) 
     y.g := 6
     inhale a.f == 5
     inhale b.f == 6
-    //:: UnexpectedOutput(call.precondition:negative.permission, /silicon/issue/319/)
     foo(s, y, a, b)
     assert y.g == 11
 }

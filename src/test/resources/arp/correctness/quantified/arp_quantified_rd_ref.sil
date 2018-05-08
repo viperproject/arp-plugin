@@ -20,10 +20,7 @@ ensures (forall x: Ref :: x in s ==> acc(x.r) && x.r != null) && acc(a.g) && (fo
     a.g := 6
     inhale a.r.f == 5
     inhale b.r.f == 6
-    //:: UnexpectedOutput(call.precondition:insufficient.permission, /ARP/issue/3/)
     foo(s, a, b)
-    // error corresponds to /ARP/issue/2/ but occurs only in carbon
-    //:: UnexpectedOutput(assert.failed:assertion.false, /carbon/issue/0/)
     assert a.g == 11
 }
 

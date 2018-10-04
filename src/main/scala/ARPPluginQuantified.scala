@@ -81,7 +81,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     }
   }
 
-  def generateLogUpdateCurrentPerm(input: Program, accAccess: LocationAccess, permAccess: LocationAccess, changeValue: Exp => Exp, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def generateLogUpdateCurrentPerm(input: Program, accAccess: LocationAccess, permAccess: ResourceAccess, changeValue: Exp => Exp, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     val arpLogSum = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSum)
 
     val accRcv = plugin.utils.getAccessRcv(accAccess)(pos, info, errT)

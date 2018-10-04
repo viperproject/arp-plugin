@@ -650,22 +650,27 @@ object ARPPlugin {
 
   case class WasMethodCondition() extends Info {
     lazy val comment = Nil
+    lazy val isCached = false
   }
 
   case class WasInvariantOutside() extends Info {
     lazy val comment = Nil
+    lazy val isCached = false
   }
 
   case class WasInvariantInside() extends Info {
     lazy val comment = Nil
+    lazy val isCached = false
   }
 
   case class WasCallCondition() extends Info {
     lazy val comment = Nil
+    lazy val isCached = false
   }
 
   case class TransformedWhile() extends Info {
     lazy val comment = Nil
+    lazy val isCached = false
   }
 
 }

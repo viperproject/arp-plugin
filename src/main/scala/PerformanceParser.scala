@@ -315,7 +315,7 @@ class PerformanceParser extends SilverPlugin {
         case "FalseLit" => FalseLit()()
         case "FieldAccess" => FieldAccess(p[Exp]() /* rcv */, p[Field]() /* field */)()
         case "FieldAccessPredicate" => FieldAccessPredicate(p[FieldAccess]() /* loc */, p[Exp]() /* perm */)()
-        case "ForPerm" => ForPerm(p[LocalVarDecl]() /* variable */, p[Seq[Location]]() /* accessList */, p[Exp]() /* body */)()
+        case "ForPerm" => ForPerm(p[Seq[LocalVarDecl]]() /* variable */, p[ResourceAccess]() /* accessList */, p[Exp]() /* body */)()
         case "Forall" => Forall(p[Seq[LocalVarDecl]]() /* variables */, p[Seq[Trigger]]() /* triggers */, p[Exp]() /* exp */)()
         case "FractionalPerm" => FractionalPerm(p[Exp]() /* left */, p[Exp]() /* right */)()
         case "FullPerm" => FullPerm()()

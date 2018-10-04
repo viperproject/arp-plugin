@@ -21,7 +21,7 @@ class ARPFrontend(plugin: ARPPlugin) extends SilFrontend{
     sys.error("Implementation missing")
 
   def loadFile(name: String, stream: InputStream): Option[Program] ={
-    _plugins = SilverPluginManager(None)
+    _plugins = SilverPluginManager()
     _state = TranslatorState.Initialized
     myReset(name, stream)
     plugin.performance.start()

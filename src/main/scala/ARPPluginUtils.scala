@@ -252,7 +252,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }
   }
 
-  def getAccessDomainFuncApp(input: Program, l: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): DomainFuncApp = {
+  def getAccessDomainFuncApp(input: Program, l: ResourceAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): DomainFuncApp = {
     val arpFieldFunctionDomain = plugin.utils.getDomain(input, plugin.naming.fieldFunctionDomainName).get
 
     def getFieldFun(f: Field) = {
@@ -283,7 +283,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     }
   }
 
-  def getAccessRcv(l: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Exp = {
+  def getAccessRcv(l: ResourceAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Exp = {
     l match {
       case f: FieldAccess => f.rcv
       case p: PredicateAccess => NullLit()(pos, info, errT)

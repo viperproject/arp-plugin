@@ -1,3 +1,5 @@
+//:: IgnoreFile(/silicon/issue/320/)
+
 field f: Int
 
 predicate pred(x: Ref, n: Int){

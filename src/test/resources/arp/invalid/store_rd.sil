@@ -9,6 +9,7 @@ requires acc(r.f, 1/2)
     c1 := perm(r.f)
     inhale acc(r.f, rd)
     //:: ExpectedOutput(internal:feature.unsupported)
+    //:: MissingOutput(internal:feature.unsupported, /silver/issue/231/)
     d1 := perm(r.f)
 }
 

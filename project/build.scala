@@ -38,6 +38,7 @@ object ARPBuild extends Build {
               mainClass in Compile := None,
               mainClass in assembly := None,
               jarName in assembly := "arp-plugin.jar",
+              artifactName := ((n, v, a) => "arp-plugin.jar"),
               test in assembly := {},
                 /* Skip tests before assembling fat jar. Assembling stops if tests fails. */
               // scalacOptions ++= Seq("-Xelide-below", "1000"),

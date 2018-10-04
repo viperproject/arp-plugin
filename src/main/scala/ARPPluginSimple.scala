@@ -41,7 +41,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
                   case a: AccessPredicate if isRdCall(a.perm) =>
                     Seq(constrainRdInhale(rdName, transformLoc(method, m, a.loc))(m.pos, m.info))
                   case f@Forall(vars, triggers, Implies(exp, a: AccessPredicate)) =>
-                    Seq(Inhale(Forall(vars, triggers, Implies(transformLoc(method, m, exp), constrainRdExp(rdName, transformLoc(method, m, a.loc))(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))
+                    Seq(Inhale(Forall(vars, triggers.map{case Trigger(exps) => Trigger(exps.map(texp => transformLoc(method, m, texp)))()}, Implies(transformLoc(method, m, exp), constrainRdExp(rdName, transformLoc(method, m, a.loc))(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))(f.pos, f.info))
                   case _ => Seq()
                 })
               ) ++

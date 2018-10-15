@@ -85,11 +85,11 @@ class ARPPluginSimple(plugin: ARPPlugin) {
     methodPrime
   }
 
-  def constrainRdInhale(rdName: String, loc: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Stmt = {
+  def constrainRdInhale(rdName: String, loc: ResourceAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Stmt = {
     Inhale(constrainRdExp(rdName, loc)(pos, info))(pos, info)
   }
 
-  def constrainRdExp(rdName: String, loc: LocationAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Exp = {
+  def constrainRdExp(rdName: String, loc: ResourceAccess)(pos: Position, info: Info, errT: ErrorTrafo = NoTrafos): Exp = {
     Implies(
       PermLtCmp(
         NoPerm()(pos, info),

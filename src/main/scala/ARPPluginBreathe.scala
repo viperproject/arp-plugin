@@ -393,11 +393,11 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateAssumptionInhale(input: Program, acc: LocationAccess, normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def generateAssumptionInhale(input: Program, acc: ResourceAccess, normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     generateAssumption(input, acc, normalized, logName, negativeOnly, wildcardName)(pos, info, errT).map(Inhale(_)(pos, info, errT)).toSeq
   }
 
-  def generateAssumption(input: Program, acc: LocationAccess, normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+  def generateAssumption(input: Program, acc: ResourceAccess, normalized: NormalizedExpression, logName: String, negativeOnly: Boolean = false, wildcardName: String = "")(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     val arpFieldFunction = plugin.utils.getAccessDomainFuncApp(input, acc)(pos, info, errT)
     val rcv = plugin.utils.getAccessRcv(acc)(pos, info, errT)
 
@@ -559,7 +559,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateAssumptionWorker(fieldAccess: LocationAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], onlyPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+  def generateAssumptionWorker(fieldAccess: ResourceAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], onlyPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     def addAssumption(exp: Exp) = if (assumption.isDefined) Some(PermAdd(exp, assumption.get)(pos, info, errT)) else Some(exp)
 
     def recursive(n: NormalizedExpression = normalized, a: Option[Exp] = assumption, p: Boolean = onlyPositive) =
@@ -614,7 +614,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateAssumptionWorkerNegative(fieldAccess: LocationAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], foundPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
+  def generateAssumptionWorkerNegative(fieldAccess: ResourceAccess, getSumCall: Int => DomainFuncApp, normalized: NormalizedExpression, assumption: Option[Exp], foundPositive: Boolean)(pos: Position, info: Info, errT: ErrorTrafo): Option[Exp] = {
     def addAssumption(exp: Exp) = if (assumption.isDefined) Some(PermAdd(exp, assumption.get)(pos, info, errT)) else Some(exp)
 
     def recursive(n: NormalizedExpression = normalized, a: Option[Exp] = assumption, f: Boolean = foundPositive) =
@@ -689,7 +689,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
     }
   }
 
-  def generateLogUpdate(input: Program, acc: LocationAccess, normalized: NormalizedExpression, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
+  def generateLogUpdate(input: Program, acc: ResourceAccess, normalized: NormalizedExpression, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     val arpLogType = plugin.utils.getARPLogType(input)
     val arpLog = LocalVar(ctx.c.logName)(arpLogType, pos, info)
     val arpLogCons = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainCons)

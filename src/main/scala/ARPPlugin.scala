@@ -57,7 +57,7 @@ class ARPPlugin extends SilverPlugin {
     ignoredFields = fields
   }
 
-  def isAccIgnored(acc: LocationAccess): Boolean ={
+  def isAccIgnored(acc: ResourceAccess): Boolean ={
     acc match {
       case f: FieldAccess => isFieldIgnored(f.field)
       case p: PredicateAccess => isPredicateIgnored(p.predicateName)

@@ -325,7 +325,8 @@ class ARPPlugin extends SilverPlugin {
 
   def addARPDomain(input: Program): Program = {
     performance.start()
-    val arpDomainFile = loadSilFile(naming.arpDomainFile)
+    var arpDomainFile = loadSilFile(naming.arpDomainFile)
+    arpDomainFile = arpDomainFile.copy(domains = arpDomainFile.domains.filter(d => d.name != "Assume"))(arpDomainFile.pos, arpDomainFile.info, arpDomainFile.errT)
 
     val newProgram = Program(
       input.domains ++ arpDomainFile.domains,

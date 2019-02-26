@@ -1,3 +1,6 @@
+// Any copyright is dedicated to the Public Domain.
+// http://creativecommons.org/publicdomain/zero/1.0/
+
 predicate p0 (x: Ref, y: Ref, z: Ref)
 predicate p1 (x: Ref, y: Ref, z: Ref)
 predicate p2 (x: Ref, y: Ref, z: Ref)

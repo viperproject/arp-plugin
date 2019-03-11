@@ -7,9 +7,9 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder}
+import viper.silver.ast.utility.Rewriter.ContextC
 import viper.silver.plugin.ARPPlugin.ARPContext
-import viper.silver.verifier.errors.{AssertFailed, Internal}
+import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported
 
 class ARPPluginWands(plugin: ARPPlugin) {

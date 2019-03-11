@@ -10,7 +10,6 @@ import viper.silver.ast._
 import viper.silver.ast.utility.Rewriter.{ContextC, SimpleContext, Strategy, StrategyBuilder}
 import viper.silver.plugin.ARPPlugin.ARPContext
 import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
-import viper.silver.verifier.AbstractVerificationError
 import viper.silver.verifier.errors.{ExhaleFailed, InhaleFailed, Internal}
 import viper.silver.verifier.reasons.FeatureUnsupported
 

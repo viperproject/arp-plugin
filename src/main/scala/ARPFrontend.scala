@@ -26,11 +26,14 @@ class ARPFrontend(plugin: ARPPlugin) extends SilFrontend{
   override def configureVerifier(args: Seq[String]): SilFrontendConfig =
     sys.error("Implementation missing")
 
-  def loadFile(name: String, stream: InputStream): Option[Program] ={
+  def loadFile(name: String, stream: InputStream): Option[Program] = {
+    val oldState = _state
     _plugins = SilverPluginManager()
     _state = DefaultStates.Initialized
     myReset(name, stream)
     plugin.performance.start()
+    parsing()
+    semanticAnalysis()
     translation()
     plugin.performance.stop("loadFile translate")
 
@@ -38,6 +41,7 @@ class ARPFrontend(plugin: ARPPlugin) extends SilFrontend{
       logger.info(s"Could not load $name:")
       _errors.foreach(e => logger.info(s"  ${e.readableMessage}"))
     }
+    _state = oldState
     _program
   }
 

@@ -105,7 +105,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
     StrategyBuilder.SlimVisitor[Node]{
       case Domain(name, _, _, _) => names += name
       case Field(name, _) => names += name
-      case Function(name, _, _, _, _, _, _) => names += name
+      case Function(name, _, _, _, _, _) => names += name
       case Predicate(name, _, _) => names += name
       case Method(name, _, _, _, _, _) => names += name
       case LocalVar(name) => names += name

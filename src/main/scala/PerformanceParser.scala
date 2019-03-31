@@ -48,13 +48,11 @@ class PerformanceParserExport extends SilverPlugin {
       case Some(x) => dumpAll(sb, "Some", x)
       case None => dumpAll(sb, "None")
 
-      case DecStar() => d()
-      case DecTuple(e) => d(e)
       case Domain(name, functions, axioms, typVars) => d(name, functions, axioms, typVars)
       case a@DomainAxiom(name, exp) => d(name, exp, a.domainName)
       case f@DomainFunc(name, formalArgs, typ, unique) => d(name, formalArgs, typ, unique, f.domainName)
       case Field(name, typ) => d(name, typ)
-      case Function(name, formalArgs, typ, pres, posts, decs, body) => d(name, formalArgs, typ, pres, posts, decs, body)
+      case Function(name, formalArgs, typ, pres, posts, body) => d(name, formalArgs, typ, pres, posts, body)
       case LocalVarDecl(name, typ) => d(name, typ)
       case Method(name, formalArgs, formalReturns, pres, posts, body) => d(name, formalArgs, formalReturns, pres, posts, body)
       case Predicate(name, formalArgs, body) => d(name, formalArgs, body)
@@ -250,13 +248,11 @@ class PerformanceParser extends SilverPlugin {
         case "None" =>
           None
 
-        case "DecStar" => DecStar()()
-        case "DecTuple" => DecTuple(p[Seq[Exp]]() /* e */)()
         case "Domain" => Domain(p[String]() /* name */, p[Seq[DomainFunc]]() /* functions */, p[Seq[DomainAxiom]]() /* axioms */, p[Seq[TypeVar]]() /* typVars */)()
         case "DomainAxiom" => DomainAxiom(p[String]() /* name */, p[Exp]() /* exp */)(domainName = p[String]())
         case "DomainFunc" => DomainFunc(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Type]() /* typ */, p[Boolean]() /* unique */)(domainName = p[String]())
         case "Field" => Field(p[String]() /* name */, p[Type]() /* typ */)()
-        case "Function" => Function(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Type]() /* typ */, p[Seq[Exp]]() /* pres */, p[Seq[Exp]]() /* posts */, p[Option[DecClause]]() /* decs */, p[Option[Exp]]() /* body */)()
+        case "Function" => Function(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Type]() /* typ */, p[Seq[Exp]]() /* pres */, p[Seq[Exp]]() /* posts */, p[Option[Exp]]() /* body */)()
         case "LocalVarDecl" => LocalVarDecl(p[String]() /* name */, p[Type]() /* typ */)()
         case "Method" => Method(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Seq[LocalVarDecl]]() /* formalReturns */, p[Seq[Exp]]() /* pres */, p[Seq[Exp]]() /* posts */, p[Option[Seqn]]() /* body */)()
         case "Predicate" => Predicate(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Option[Exp]]() /* body */)()

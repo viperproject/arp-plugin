@@ -33,7 +33,6 @@ class RdToyPlugin extends SilverPlugin {
           TypeHelper.Perm,
           Seq(),
           Seq(),
-          None,
           None
         )
           :+ PFunction(
@@ -42,7 +41,6 @@ class RdToyPlugin extends SilverPlugin {
           TypeHelper.Perm,
           Seq(PBinExp(PIdnUse("x"), ">", PIntLit(0))),
           Seq(),
-          None,
           Some(PBinExp(PIdnUse("x"), "*", PBinExp(PIntLit(1), "/", PIntLit(1000000))))
         ),
         input.predicates,

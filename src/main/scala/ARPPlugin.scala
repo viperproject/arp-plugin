@@ -79,15 +79,15 @@ class ARPPlugin extends SilverPlugin {
   override def beforeResolve(input: PProgram): PProgram = {
     performance.start()
 
-    val rdFunction = PFunction(PIdnDef(naming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
+    val rdFunction = PFunction(PIdnDef(naming.rdName), Seq(), TypeHelper.Perm, Seq(), Seq(), None)
 
     val intArgument = Seq(PFormalArgDecl(PIdnDef("ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264"), TypeHelper.Int))
     val refArgument = Seq(PFormalArgDecl(PIdnDef("ARP_LongAndIrrelevantNameToPreventCollisions_314159265358979323846264"), TypeHelper.Ref))
-    val epsilonFunction = PFunction(PIdnDef(naming.rdCountingName), intArgument, TypeHelper.Perm, Seq(), Seq(), None, None)
-    val wildcardFunction = PFunction(PIdnDef(naming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
-    val globalFunction = PFunction(PIdnDef(naming.rdGlobalName), Seq(), TypeHelper.Perm, Seq(), Seq(), None, None)
-    val tokenFunction = PFunction(PIdnDef(naming.rdToken), refArgument, TypeHelper.Perm, Seq(), Seq(), None, None)
-    val tokenFreshFunction = PFunction(PIdnDef(naming.rdTokenFresh), refArgument, TypeHelper.Perm, Seq(), Seq(), None, None)
+    val epsilonFunction = PFunction(PIdnDef(naming.rdCountingName), intArgument, TypeHelper.Perm, Seq(), Seq(), None)
+    val wildcardFunction = PFunction(PIdnDef(naming.rdWildcardName), Seq(), TypeHelper.Perm, Seq(), Seq(), None)
+    val globalFunction = PFunction(PIdnDef(naming.rdGlobalName), Seq(), TypeHelper.Perm, Seq(), Seq(), None)
+    val tokenFunction = PFunction(PIdnDef(naming.rdToken), refArgument, TypeHelper.Perm, Seq(), Seq(), None)
+    val tokenFreshFunction = PFunction(PIdnDef(naming.rdTokenFresh), refArgument, TypeHelper.Perm, Seq(), Seq(), None)
 
     // If a program already contains a definition for rd we can't use our arp rd
     var alreadyContainsRd = false

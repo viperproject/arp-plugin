@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.ContextC
+import viper.silver.ast.utility.rewriter.ContextC
 import viper.silver.plugin.ARPPlugin.ARPContext
 import viper.silver.verifier.errors.Internal
 import viper.silver.verifier.reasons.FeatureUnsupported

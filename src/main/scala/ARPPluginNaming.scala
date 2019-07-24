@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.StrategyBuilder
+import viper.silver.ast.utility.rewriter.StrategyBuilder
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -108,7 +108,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
       case Function(name, _, _, _, _, _) => names += name
       case Predicate(name, _, _) => names += name
       case Method(name, _, _, _, _, _) => names += name
-      case LocalVar(name) => names += name
+      case LocalVar(name, _) => names += name
       case LocalVarDecl(name, _) => names += name
       case Label(name, _) => names += name
       case DomainFunc(name, _, _, _) => names += name

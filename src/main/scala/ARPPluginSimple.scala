@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.StrategyBuilder
+import viper.silver.ast.utility.rewriter.StrategyBuilder
 import viper.silver.plugin.ARPPlugin.TransformedWhile
 
 class ARPPluginSimple(plugin: ARPPlugin) {
@@ -29,7 +29,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
           m.posts,
           m.body
         )(m.pos, m.info, NodeTrafo(m))
-      case (f@FuncApp(plugin.naming.rdName, _), ctx) => LocalVar(ctx.c.rdName)(Perm, f.pos, f.info, NodeTrafo(f))
+      case (f@FuncApp(plugin.naming.rdName, _), ctx) => LocalVar(ctx.c.rdName, Perm)(f.pos, f.info, NodeTrafo(f))
       case (m: MethodCall, ctx) =>
         val rdName = plugin.naming.getNewNameFor(m, m.methodName, "call_rd")
         val method = plugin.utils.getMethod(input, m.methodName).get
@@ -46,7 +46,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
                 })
               ) ++
               Seq(
-                MethodCall(m.methodName, m.args :+ LocalVar(rdName)(Perm, m.pos, m.info), m.targets)(m.pos, m.info, NodeTrafo(m))
+                MethodCall(m.methodName, m.args :+ LocalVar(rdName, Perm)(m.pos, m.info), m.targets)(m.pos, m.info, NodeTrafo(m))
               ),
             Seq(
               LocalVarDecl(rdName, Perm)(m.pos, m.info)
@@ -96,7 +96,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
         CurrentPerm(loc)(pos, info)
       )(pos, info),
       PermLtCmp(
-        LocalVar(rdName)(Perm, pos, info),
+        LocalVar(rdName, Perm)(pos, info),
         CurrentPerm(loc)(pos, info)
       )(pos, info)
     )(pos, info)
@@ -105,7 +105,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
   def transformLoc[T <: Node](m: Method, mc: MethodCall, loc: T): T = {
     val mapping = m.formalArgs.map(_.name).zip(mc.args).toMap
     StrategyBuilder.Slim[Node]({
-      case l@LocalVar(name) => mapping.getOrElse(name, l) // might not be in mapping if quantifier
+      case l@LocalVar(name, _) => mapping.getOrElse(name, l) // might not be in mapping if quantifier
     }).execute[T](loc)
   }
 

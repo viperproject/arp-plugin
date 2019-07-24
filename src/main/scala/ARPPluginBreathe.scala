@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder}
+import viper.silver.ast.utility.rewriter.{ContextC, StrategyBuilder}
 import viper.silver.plugin.ARPPlugin._
 import viper.silver.plugin.ARPPluginNormalize.NormalizedExpression
 
@@ -403,7 +403,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     val arpLogType = plugin.utils.getARPLogType(input)
     val arpLogSum = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSumGt)
-    val arpLog = LocalVar(logName)(arpLogType, acc.pos, acc.info)
+    val arpLog = LocalVar(logName, arpLogType)(acc.pos, acc.info)
 
     def getSumCall(level: Int): DomainFuncApp = DomainFuncApp(
       arpLogSum,
@@ -421,7 +421,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
         And(
           PermLtCmp(
             NoPerm()(pos, info, errT),
-            LocalVar(wildcardName)(Perm, pos, info, errT)
+            LocalVar(wildcardName, Perm)(pos, info, errT)
           )(pos, info, errT),
           Implies(
             And(
@@ -429,7 +429,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
               PermLtCmp(NoPerm()(pos, info, errT), CurrentPerm(acc)(pos, info, errT))(pos, info, errT)
             )(pos, info, errT),
             PermLtCmp(
-              LocalVar(wildcardName)(Perm, pos, info, errT),
+              LocalVar(wildcardName, Perm)(pos, info, errT),
               CurrentPerm(acc)(pos, info, errT)
             )(pos, info, errT)
           )(pos, info, errT)
@@ -691,7 +691,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
   def generateLogUpdate(input: Program, acc: ResourceAccess, normalized: NormalizedExpression, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     val arpLogType = plugin.utils.getARPLogType(input)
-    val arpLog = LocalVar(ctx.c.logName)(arpLogType, pos, info)
+    val arpLog = LocalVar(ctx.c.logName, arpLogType)(pos, info)
     val arpLogCons = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainCons)
 
     val rcv = plugin.utils.getAccessRcv(acc)(pos, info, errT)

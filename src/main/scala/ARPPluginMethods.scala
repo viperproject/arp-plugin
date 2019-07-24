@@ -6,8 +6,8 @@
 
 package viper.silver.plugin
 
-import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder, Traverse}
 import viper.silver.ast._
+import viper.silver.ast.utility.rewriter.{ContextC, StrategyBuilder, Traverse}
 import viper.silver.plugin.ARPPlugin.{ARPContext, WasCallCondition, WasMethodCondition}
 import viper.silver.verifier.AbstractVerificationError
 import viper.silver.verifier.errors._
@@ -41,7 +41,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
           Seq(
             // init arp perm log
             LocalVarAssign(
-              LocalVar(logName)(arpLogType, b.pos, b.info, NodeTrafo(b)),
+              LocalVar(logName, arpLogType)(b.pos, b.info, NodeTrafo(b)),
               DomainFuncApp(arpLogNil, Seq(), Map[TypeVar, Type]())(b.pos, b.info, NodeTrafo(b))
             )(b.pos, b.info, NodeTrafo(b)),
             // inhale rd constraints for rd argument
@@ -84,7 +84,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
         val labelName = plugin.naming.getNewName(method.name, "call_label")
         val methodRdName = plugin.naming.getNewNameFor(m, method.name, "call_rd")
         val argumentNames = method.formalArgs.map(v => plugin.naming.getNewName("arg", v.localVar.name))
-        val localVars = method.formalArgs.zip(m.args).zip(argumentNames).map(z => LocalVar(z._2)(z._1._1.localVar.typ, m.pos, m.info, NodeTrafo(z._1._2)))
+        val localVars = method.formalArgs.zip(m.args).zip(argumentNames).map(z => LocalVar(z._2, z._1._1.localVar.typ)(m.pos, m.info, NodeTrafo(z._1._2)))
 
         def argRenamer = renameArguments(m, method, localVars)
 
@@ -134,7 +134,7 @@ class ARPPluginMethods(plugin: ARPPlugin) {
     )
 
     val strategy = StrategyBuilder.Slim[Node]({
-      case l@LocalVar(name) => allMapping.getOrElse(name, l)
+      case l@LocalVar(name, _) => allMapping.getOrElse(name, l)
     }, Traverse.BottomUp)
 
     def renamer(exp: Exp): Exp = {

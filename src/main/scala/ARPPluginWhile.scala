@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast.{ErrTrafo, _}
-import viper.silver.ast.utility.Rewriter.ContextC
+import viper.silver.ast.utility.rewriter.ContextC
 import viper.silver.plugin.ARPPlugin.{ARPContext, TransformedWhile, WasInvariantInside, WasInvariantOutside}
 import viper.silver.verifier.AbstractVerificationError
 import viper.silver.verifier.errors.{WhileFailed, _}
@@ -20,7 +20,7 @@ class ARPPluginWhile(plugin: ARPPlugin) {
     } else {
       val whileRdName = plugin.naming.getNewNameFor(w, suffix = "while_rd")
       val condName = plugin.naming.getNewName(suffix = "while_cond")
-      val condVar = LocalVar(condName)(Bool, w.cond.pos, w.cond.info, NodeTrafo(w.cond))
+      val condVar = LocalVar(condName, Bool)(w.cond.pos, w.cond.info, NodeTrafo(w.cond))
       val whileStartLabelName = plugin.naming.getNewName("while", "start_label")
       val whileEndLabelName = plugin.naming.getNewName("while", "end_label")
       val newLogName = plugin.naming.getNewNameFor(w, suffix = "while_log")
@@ -32,7 +32,7 @@ class ARPPluginWhile(plugin: ARPPlugin) {
         Seqn(
           Seq(
             LocalVarAssign(
-              LocalVar(newLogName)(arpLogType, w.pos, w.info, NodeTrafo(w)),
+              LocalVar(newLogName, arpLogType)(w.pos, w.info, NodeTrafo(w)),
               DomainFuncApp(arpLogNil, Seq(), Map[TypeVar, Type]())(w.pos, w.info, NodeTrafo(w))
             )(w.cond.pos, w.cond.info)
           ) ++

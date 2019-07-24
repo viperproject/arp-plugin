@@ -6,7 +6,7 @@
 
 package viper.silver.plugin
 
-import viper.silver.ast.utility.Rewriter.StrategyBuilder
+import viper.silver.ast.utility.rewriter.StrategyBuilder
 import viper.silver.ast.{Add, CondExp, Div, DomainBinExp, DomainFuncApp, EpsilonPerm, ErrorTrafo, Exp, FieldAccess, FractionalPerm, FullPerm, FuncApp, Info, IntLit, IntPermMul, LabelledOld, LocalVar, LtCmp, Minus, Mul, NoPerm, NoTrafos, Node, NodeTrafo, Perm, PermAdd, PermDiv, PermExp, PermLtCmp, PermMinus, PermMul, PermSub, Position, Sub, WildcardPerm}
 import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
 import viper.silver.verifier.errors.Internal
@@ -41,7 +41,7 @@ class ARPPluginNormalize(plugin: ARPPlugin) {
         Some(wildcardPerm(IntLit(1)(), FuncApp(plugin.naming.rdWildcardName, Seq())(p.pos, p.info, Perm, Seq(), NoTrafos)))
       case p: EpsilonPerm =>
         Some(rdcPerm(IntLit(1)(), FuncApp(plugin.naming.rdCountingName, Seq())(p.pos, p.info, Perm, Seq(), NoTrafos)))
-      case l@LocalVar(name) => Some(constPerm(l))
+      case l@LocalVar(name, _) => Some(constPerm(l))
       case f: FieldAccess => Some(constPerm(f))
       case LabelledOld(l: LocalVar, _) => Some(constPerm(l))
       case l@LabelledOld(fa: FieldAccess, _) => Some(constPerm(l))

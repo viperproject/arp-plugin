@@ -9,7 +9,7 @@ package viper.silver.plugin
 import java.nio.file.Paths
 
 import viper.silver.ast.{Inhale, _}
-import viper.silver.ast.utility.Rewriter.{StrategyBuilder, Traverse}
+import viper.silver.ast.utility.rewriter.{StrategyBuilder, Traverse}
 import viper.silver.parser._
 import viper.silver.plugin.ARPPlugin.{ARPContext, TransformedWhile}
 import viper.silver.verifier._
@@ -388,10 +388,10 @@ class ARPPlugin extends SilverPlugin {
           p.formalArgs, Int, unique = p.formalArgs.isEmpty
         )(input.pos, input.info, domainName)),
       predicates.flatMap(p => if (p.formalArgs.nonEmpty) {
-        val localArgs1 = p.formalArgs.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
+        val localArgs1 = p.formalArgs.map(v => LocalVar(v.name, v.typ)(input.pos, input.info))
         val app1 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs1, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
         val args2 = p.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
-        val localArgs2 = args2.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
+        val localArgs2 = args2.map(v => LocalVar(v.name, v.typ)(input.pos, input.info))
         val app2 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs2, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
         fields.map(f =>
           DomainAxiom(
@@ -405,7 +405,7 @@ class ARPPlugin extends SilverPlugin {
         ) ++
           predicates.filterNot(_ == p).map(pp => {
             val args3 = pp.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
-            val localArgs3 = args3.map(v => LocalVar(v.name)(v.typ, input.pos, input.info))
+            val localArgs3 = args3.map(v => LocalVar(v.name, v.typ)(input.pos, input.info))
             val app3 = DomainFuncApp(naming.getPredicateFunctionName(pp), localArgs3, Map[TypeVar, Type]())(input.pos, input.info, Int, pp.formalArgs, domainName, NoTrafos)
             val triggers = Seq(app1) ++ (if (args3.nonEmpty) Seq(app3) else Seq())
             DomainAxiom(

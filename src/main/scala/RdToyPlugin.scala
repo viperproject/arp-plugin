@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.{StrategyBuilder, Traverse}
+import viper.silver.ast.utility.rewriter.{StrategyBuilder, Traverse}
 import viper.silver.parser._
 import viper.silver.verifier._
 
@@ -66,10 +66,10 @@ class RdToyPlugin extends SilverPlugin {
             And(
               PermLtCmp(
                 NoPerm()(m.pos, m.info),
-                LocalVar("rd")(Perm, m.pos, m.info)
+                LocalVar("rd", Perm)(m.pos, m.info)
               )(m.pos, m.info),
               PermLeCmp(
-                LocalVar("rd")(Perm, m.pos, m.info),
+                LocalVar("rd", Perm)(m.pos, m.info),
                 FullPerm()(m.pos, m.info)
               )(m.pos, m.info)
             )(m.pos, m.info)
@@ -81,11 +81,11 @@ class RdToyPlugin extends SilverPlugin {
           MethodCall(
             methodName,
             args
-              :+ PermDiv(FuncApp("rd", Seq())(m.pos, m.info, Perm, Seq(), NoTrafos), IntLit(2)(m.pos, m.info, m.errT))(m.pos, m.info),
+              :+ PermDiv(FuncApp("rd", Seq())(m.pos, m.info, Perm, NoTrafos), IntLit(2)(m.pos, m.info, m.errT))(m.pos, m.info),
             targets
           )(m.pos, m.info, NoTrafos)
         case f@FuncApp("rd", Seq()) =>
-          LocalVar("rd")(Perm, f.pos, f.info)
+          LocalVar("rd", Perm)(f.pos, f.info)
       })
 
       val programPrime = rdRewriter.execute[Program](input)

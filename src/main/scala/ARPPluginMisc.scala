@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.{ContextC, StrategyBuilder}
+import viper.silver.ast.utility.rewriter.{ContextC, StrategyBuilder}
 import viper.silver.plugin.ARPPlugin.ARPContext
 import viper.silver.verifier.errors.{AssertFailed, Internal}
 import viper.silver.verifier.reasons.FeatureUnsupported
@@ -20,7 +20,7 @@ class ARPPluginMisc(plugin: ARPPlugin) {
       var perms = Seq[Stmt]()
 
       val arpLogType = plugin.utils.getARPLogType(input)
-      val arpLog = LocalVar(ctx.c.logName)(arpLogType, a.pos, a.info)
+      val arpLog = LocalVar(ctx.c.logName, arpLogType)(a.pos, a.info)
       val arpLogSumGt = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSumGt)
       val arpLogSum = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSum)
       val maxLevelFunction = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainMaxLevel)

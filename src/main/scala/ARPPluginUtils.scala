@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter._
+import viper.silver.ast.utility.rewriter._
 import viper.silver.plugin.ARPPlugin.ARPContext
 
 class ARPPluginUtils(plugin: ARPPlugin) {
@@ -44,10 +44,10 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     And(
       PermLtCmp(
         NoPerm()(pos, info, errT),
-        LocalVar(methodRdName)(Perm, pos, info, errT)
+        LocalVar(methodRdName, Perm)(pos, info, errT)
       )(pos, info, errT),
       PermLtCmp(
-        LocalVar(methodRdName)(Perm, pos, info, errT),
+        LocalVar(methodRdName, Perm)(pos, info, errT),
         FullPerm()(pos, info, errT)
       )(pos, info, errT)
     )(pos, info, errT)
@@ -140,7 +140,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           ctx.noRec(DomainFuncApp(name, args.map({
             case fa: FieldAccess => LabelledOld(fa, labelName)(fa.pos, fa.info, NodeTrafo(fa))
             case default => default
-          }), typVarMap)(f.pos, f.info, f.typ, f.formalArgs, f.domainName, f.errT))
+          }), typVarMap)(f.pos, f.info, f.typ, f.domainName, f.errT))
         case (l: LocalVar, ctx) => ctx.noRec(l)
         case (n: Exp, ctx) if isPure(n) && n.isHeapDependent(program) => ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n)))
         case (f: FieldAccess, ctx) =>
@@ -160,15 +160,15 @@ class ARPPluginUtils(plugin: ARPPlugin) {
   def rewriteRd[T <: Node](contextRdName: String, wildcardRdNames: Seq[String] = Seq())(node: T): T = {
     var remainingWildcardRdNames = wildcardRdNames
     StrategyBuilder.Slim[Node]({
-      case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(contextRdName)(Perm, f.pos, f.info, NodeTrafo(f))
+      case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(contextRdName, Perm)(f.pos, f.info, NodeTrafo(f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg: Exp)) =>
         arg match {
           case IntLit(x) if x == 1 =>
-            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
+            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, NoTrafos)
           case default =>
             IntPermMul(
               default,
-              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
+              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, NoTrafos)
             )(f.pos, f.info, NodeTrafo(f))
         }
       case f@FuncApp(plugin.naming.rdWildcardName, Seq()) =>
@@ -179,23 +179,23 @@ class ARPPluginUtils(plugin: ARPPlugin) {
         } else {
           plugin.naming.getNewName(suffix = "not_enough_names")
         }
-        LocalVar(wildcardRdName)(Perm, f.pos, f.info, NodeTrafo(f))
+        LocalVar(wildcardRdName, Perm)(f.pos, f.info, NodeTrafo(f))
       case f@FuncApp(plugin.naming.rdTokenFresh, args) =>
-        FuncApp(plugin.naming.rdToken, args)(f.pos, f.info, f.typ, f.formalArgs, NodeTrafo(f))
+        FuncApp(plugin.naming.rdToken, args)(f.pos, f.info, f.typ, NodeTrafo(f))
     }).execute[T](node)
   }
 
   def rewriteRdPredicate[T <: Node](node: T): T = {
     StrategyBuilder.Slim[Node]({
-      case f@FuncApp(plugin.naming.rdName, Seq()) => FuncApp(plugin.naming.rdGlobalName, Seq())(f.pos, f.info, Perm, Seq(), NodeTrafo(f))
+      case f@FuncApp(plugin.naming.rdName, Seq()) => FuncApp(plugin.naming.rdGlobalName, Seq())(f.pos, f.info, Perm, NodeTrafo(f))
       case f@FuncApp(plugin.naming.rdCountingName, Seq(arg: Exp)) =>
         arg match {
           case IntLit(x) if x == 1 =>
-            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
+            FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, NoTrafos)
           case default =>
             IntPermMul(
               default,
-              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, Seq(), NoTrafos)
+              FuncApp(plugin.naming.rdEpsilonName, Seq())(f.pos, f.info, f.typ, NoTrafos)
             )(f.pos, f.info, NodeTrafo(f))
         }
     }).execute[T](node)
@@ -203,7 +203,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
 
   def rewriteRdSimple[T <: Node](rdName: String)(node: T): T = {
     StrategyBuilder.Slim[Node]({
-      case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(rdName)(Perm, f.pos, f.info, NodeTrafo(f))
+      case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(rdName, Perm)(f.pos, f.info, NodeTrafo(f))
     }).execute[T](node)
   }
 
@@ -227,7 +227,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
         case _ => false
       }) =>
         val perm = ap.perm match {
-          case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(rdName)(Perm, f.pos, f.info, NodeTrafo(f))
+          case f@FuncApp(plugin.naming.rdName, Seq()) => LocalVar(rdName, Perm)(f.pos, f.info, NodeTrafo(f))
           case _ => FractionalPerm(IntLit(1)(ap.pos, ap.info), IntLit(2)(ap.pos, ap.info))(ap.pos, ap.info)
         }
         ap match {
@@ -245,7 +245,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
       val tmpName = plugin.naming.getNewName(suffix = "havoc")
       Seqn(
         Seq(
-          LocalVarAssign(lvar, LocalVar(tmpName)(lvar.typ, lvar.pos, lvar.info))(lvar.pos, lvar.info)
+          LocalVarAssign(lvar, LocalVar(tmpName, lvar.typ)(lvar.pos, lvar.info))(lvar.pos, lvar.info)
         ),
         Seq(LocalVarDecl(tmpName, lvar.typ)(lvar.pos, lvar.info))
       )(lvar.pos, lvar.info)

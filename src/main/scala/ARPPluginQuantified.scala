@@ -7,7 +7,7 @@
 package viper.silver.plugin
 
 import viper.silver.ast._
-import viper.silver.ast.utility.Rewriter.{ContextC, SimpleContext, Strategy, StrategyBuilder}
+import viper.silver.ast.utility.rewriter.{ContextC, SimpleContext, Strategy, StrategyBuilder}
 import viper.silver.plugin.ARPPlugin.ARPContext
 import viper.silver.plugin.ARPPluginNormalize.{NormalizedExpression, NormalizedPart}
 import viper.silver.verifier.errors.{ExhaleFailed, InhaleFailed, Internal}
@@ -90,7 +90,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     val quantRefName = plugin.naming.getNewName("whateverdoesntmatter")
     generateLogUpdateQuantified(
       input,
-      LocalVar(quantRefName)(Ref, pos, info),
+      LocalVar(quantRefName, Ref)(pos, info),
       Seq(),
       quantifiedRef => EqCmp(quantifiedRef, accRcv)(pos, info, errT),
       (_, level, tmpLog) => changeValue(DomainFuncApp(arpLogSum, Seq(permRcv, arpFieldFunction, level, tmpLog), Map[TypeVar, Type]())(pos, info, errT)),
@@ -104,7 +104,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     def getRewriter(quantVar: LocalVar): LocalVar => Strategy[Node, SimpleContext[Node]] = {
       def rewriter(quantifiedRef: LocalVar): Strategy[Node, SimpleContext[Node]] = {
         StrategyBuilder.Slim[Node]({
-          case LocalVar(quantVar.name) => quantifiedRef
+          case LocalVar(quantVar.name, _) => quantifiedRef
         })
       }
 
@@ -154,17 +154,17 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
 
   def generateLogUpdateQuantified(input: Program, quantifiedRefVal: Exp, additionalQuantified: Seq[LocalVarDecl], condition: LocalVar => Exp, addval: (LocalVar, LocalVar, LocalVar) => Exp, accAccess: LocationAccess, minus: Boolean, ctx: ContextC[Node, ARPContext])(pos: Position, info: Info, errT: ErrorTrafo): Seq[Stmt] = {
     val arpLogType = plugin.utils.getARPLogType(input)
-    val arpLog = LocalVar(ctx.c.logName)(arpLogType, pos, info)
+    val arpLog = LocalVar(ctx.c.logName, arpLogType)(pos, info)
     val arpLogSum = plugin.utils.getARPLogFunction(input, plugin.naming.logDomainSum)
 
     val tmpLogName = plugin.naming.getNewName(suffix = "tmpLog")
-    val tmpLog = LocalVar(tmpLogName)(arpLogType, pos, info)
+    val tmpLog = LocalVar(tmpLogName, arpLogType)(pos, info)
     val quantifiedRefName = plugin.naming.getNewName("quantRef")
-    val quantifiedRef = LocalVar(quantifiedRefName)(Ref, pos, info)
+    val quantifiedRef = LocalVar(quantifiedRefName, Ref)(pos, info)
     val quantifiedFieldName = plugin.naming.getNewName("quantField")
-    val quantifiedField = LocalVar(quantifiedFieldName)(Int, pos, info)
+    val quantifiedField = LocalVar(quantifiedFieldName, Int)(pos, info)
     val quantifiedLevelName = plugin.naming.getNewName("quantLevel")
-    val quantifiedLevel = LocalVar(quantifiedLevelName)(Int, pos, info)
+    val quantifiedLevel = LocalVar(quantifiedLevelName, Int)(pos, info)
 
     val arpFieldFunctionAcc = plugin.utils.getAccessDomainFuncApp(input, accAccess)(pos, info, errT)
 
@@ -175,6 +175,7 @@ class ARPPluginQuantified(plugin: ARPPlugin) {
     val conditionExp = if (additionalQuantified.nonEmpty) {
       Exists(
         additionalQuantified,
+        Seq(),
         And(
           condition(quantifiedRef),
           And(

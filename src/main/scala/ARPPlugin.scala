@@ -389,24 +389,24 @@ class ARPPlugin extends SilverPlugin {
         )(input.pos, input.info, domainName)),
       predicates.flatMap(p => if (p.formalArgs.nonEmpty) {
         val localArgs1 = p.formalArgs.map(v => LocalVar(v.name, v.typ)(input.pos, input.info))
-        val app1 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs1, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
+        val app1 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs1, Map[TypeVar, Type]())(input.pos, input.info, Int, domainName, NoTrafos)
         val args2 = p.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
         val localArgs2 = args2.map(v => LocalVar(v.name, v.typ)(input.pos, input.info))
-        val app2 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs2, Map[TypeVar, Type]())(input.pos, input.info, Int, p.formalArgs, domainName, NoTrafos)
+        val app2 = DomainFuncApp(naming.getPredicateFunctionName(p), localArgs2, Map[TypeVar, Type]())(input.pos, input.info, Int, domainName, NoTrafos)
         fields.map(f =>
           DomainAxiom(
             naming.getNewName(suffix = p.name + "_" + f.name),
             Forall(
               p.formalArgs,
               Seq(Trigger(Seq(app1))(input.pos, input.info)),
-              NeCmp(app1, DomainFuncApp(naming.getFieldFunctionName(f), Seq(), Map[TypeVar, Type]())(input.pos, input.info, Int, Seq(), domainName, NoTrafos))(input.pos, input.info)
+              NeCmp(app1, DomainFuncApp(naming.getFieldFunctionName(f), Seq(), Map[TypeVar, Type]())(input.pos, input.info, Int, domainName, NoTrafos))(input.pos, input.info)
             )(input.pos, input.info)
           )(input.pos, input.info, domainName)
         ) ++
           predicates.filterNot(_ == p).map(pp => {
             val args3 = pp.formalArgs.map(a => LocalVarDecl(naming.getNewName(prefix = a.name), a.typ)(input.pos, input.info))
             val localArgs3 = args3.map(v => LocalVar(v.name, v.typ)(input.pos, input.info))
-            val app3 = DomainFuncApp(naming.getPredicateFunctionName(pp), localArgs3, Map[TypeVar, Type]())(input.pos, input.info, Int, pp.formalArgs, domainName, NoTrafos)
+            val app3 = DomainFuncApp(naming.getPredicateFunctionName(pp), localArgs3, Map[TypeVar, Type]())(input.pos, input.info, Int, domainName, NoTrafos)
             val triggers = Seq(app1) ++ (if (args3.nonEmpty) Seq(app3) else Seq())
             DomainAxiom(
               naming.getNewName(suffix = p.name + "_" + pp.name),

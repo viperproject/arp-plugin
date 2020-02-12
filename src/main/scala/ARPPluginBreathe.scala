@@ -188,7 +188,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
       StrategyBuilder.Ancestor[Node]({
         case (ap@AccessPredicate(_, perm), innerCtx) if plugin.utils.containsRd(perm) =>
           val maybeExp = generatePredicateAssumption(input, perm)(ap.pos, ap.info, NoTrafos)
-          innerCtx.noRec(maybeExp.map(assumption => And(assumption, ap)(ap.pos, ap.info, NodeTrafo(ap))).getOrElse(ap))
+          (innerCtx.noRec(maybeExp.map(assumption => And(assumption, ap)(ap.pos, ap.info, NodeTrafo(ap))).getOrElse(ap)), innerCtx)
       }).execute[Predicate](predicate)
     } else {
       predicate

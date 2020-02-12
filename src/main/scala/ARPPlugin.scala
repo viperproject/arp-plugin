@@ -228,7 +228,7 @@ class ARPPlugin extends SilverPlugin {
         case (a: AbstractAssign, ctx) =>
           (misc.handleAssignment(enhancedInput, a, ctx), ctx)
         case (a: Apply, ctx) => (wands.handleApply(enhancedInput, a, ctx), ctx)
-        case (p: Package, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, wands.handlePackage(enhancedInput, p, ctx)))
+        case (p: Package, ctx) => (ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, wands.handlePackage(enhancedInput, p, ctx))), ctx)
       },
       ARPContext("", "", "") // default context
 

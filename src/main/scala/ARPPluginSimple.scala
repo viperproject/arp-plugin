@@ -33,7 +33,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
       case (m: MethodCall, ctx) =>
         val rdName = plugin.naming.getNewNameFor(m, m.methodName, "call_rd")
         val method = plugin.utils.getMethod(input, m.methodName).get
-        ctx.noRec(
+        (ctx.noRec(
           Seqn(
             Seq(Inhale(plugin.utils.constrainRdExp(rdName)(m.pos, m.info))(m.pos, m.info)) ++
               method.pres.flatMap(p =>
@@ -52,7 +52,7 @@ class ARPPluginSimple(plugin: ARPPlugin) {
               LocalVarDecl(rdName, Perm)(m.pos, m.info)
             )
           )(m.pos, m.info, NodeTrafo(m))
-        )
+        ), ctx)
       case (w: While, ctx) =>
         val rdName = plugin.naming.getNewNameFor(w, suffix = "while_rd")
         if (w.info.getUniqueInfo[TransformedWhile].isDefined) {

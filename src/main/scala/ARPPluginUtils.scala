@@ -78,11 +78,11 @@ class ARPPluginUtils(plugin: ARPPlugin) {
 
     def rewritePerm(perm: Exp): Exp = {
       StrategyBuilder.Ancestor[Node]({
-        case (l: LabelledOld, ctx) => ctx.noRec(l)
-        case (c: CurrentPerm, ctx) => ctx.noRec(c)
-        case (fa: FieldAccess, ctx) => ctx.noRec(LabelledOld(fa, labelName)(fa.pos, fa.info, NodeTrafo(fa)))
+        case (l: LabelledOld, ctx) => (ctx.noRec(l), ctx)
+        case (c: CurrentPerm, ctx) => (ctx.noRec(c), ctx)
+        case (fa: FieldAccess, ctx) => (ctx.noRec(LabelledOld(fa, labelName)(fa.pos, fa.info, NodeTrafo(fa))), ctx)
         case (u: Unfolding, ctx) =>
-          ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u)))
+          (ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u))), ctx)
       }).execute[Exp](perm)
     }
 
@@ -98,7 +98,7 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           (Forall(
             f.variables, f.triggers.map(removeOld).map(ctx.noRec[Trigger]), f.exp
           )(f.pos, f.info, NodeTrafo(f)), ctx)
-        case (l: LabelledOld, ctx) => ctx.noRec(l)
+        case (l: LabelledOld, ctx) => (ctx.noRec(l), ctx)
         case (o@Old(exp), ctx) => (LabelledOld(exp, labelName)(o.pos, o.info, NodeTrafo(o)), ctx)
       }).execute[T](node)
     } else {
@@ -118,18 +118,18 @@ class ARPPluginUtils(plugin: ARPPlugin) {
 
     val nodePrimePrime = if (fieldAccess) {
       StrategyBuilder.Ancestor[Node]({
-        case (l: LabelledOld, ctx) => ctx.noRec(l)
+        case (l: LabelledOld, ctx) => (ctx.noRec(l), ctx)
         case (f@FieldAccessPredicate(fa: FieldAccess, perm), ctx) =>
-          ctx.noRec(FieldAccessPredicate(rewriteFieldAccess(fa), rewritePerm(perm))(f.pos, f.info, NodeTrafo(f)))
+          (ctx.noRec(FieldAccessPredicate(rewriteFieldAccess(fa), rewritePerm(perm))(f.pos, f.info, NodeTrafo(f))), ctx)
         case (p@PredicateAccessPredicate(loc, perm), ctx) =>
-          ctx.noRec(PredicateAccessPredicate(rewritePredicateAccess(loc), rewritePerm(perm))(p.pos, p.info, NodeTrafo(p)))
+          (ctx.noRec(PredicateAccessPredicate(rewritePredicateAccess(loc), rewritePerm(perm))(p.pos, p.info, NodeTrafo(p))), ctx)
         case (c@CurrentPerm(fa: FieldAccess), ctx) =>
-          ctx.noRec(CurrentPerm(rewriteFieldAccess(fa))(c.pos, c.info, NodeTrafo(c)))
+          (ctx.noRec(CurrentPerm(rewriteFieldAccess(fa))(c.pos, c.info, NodeTrafo(c))), ctx)
         case (c: CurrentPerm, ctx) => ctx.noRec(c)
         case (f: ForPerm, ctx) => ctx.noRec(f)
         case (m: MagicWand, ctx) => ctx.noRec(m)
         case (u: Unfolding, ctx) =>
-          ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u)))
+          (ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u))), ctx)
         case (f: Forall, ctx) =>
           f.triggers.foreach(ctx.noRec[Trigger])
           (f, ctx)
@@ -137,18 +137,18 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           ctx.noRec(a.lhs)
           (a, ctx)
         case (f@DomainFuncApp(name, args, typVarMap), ctx) if f.domainName == plugin.naming.logDomainName && f.funcname == plugin.naming.logDomainCons =>
-          ctx.noRec(DomainFuncApp(name, args.map({
+          (ctx.noRec(DomainFuncApp(name, args.map({
             case fa: FieldAccess => LabelledOld(fa, labelName)(fa.pos, fa.info, NodeTrafo(fa))
             case default => default
-          }), typVarMap)(f.pos, f.info, f.typ, f.domainName, f.errT))
-        case (l: LocalVar, ctx) => ctx.noRec(l)
-        case (n: Exp, ctx) if isPure(n) && n.isHeapDependent(program) => ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n)))
+          }), typVarMap)(f.pos, f.info, f.typ, f.domainName, f.errT)), ctx)
+        case (l: LocalVar, ctx) => (ctx.noRec(l), ctx)
+        case (n: Exp, ctx) if isPure(n) && n.isHeapDependent(program) => (ctx.noRec(LabelledOld(n, labelName)(n.pos, n.info, NodeTrafo(n))), ctx)
         case (f: FieldAccess, ctx) =>
-          ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
+          (ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f))), ctx)
         case (f: FuncApp, ctx) =>
-          ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
+          (ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f))), ctx)
         case (f: DomainFuncApp, ctx) =>
-          ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f)))
+          (ctx.noRec(LabelledOld(f, labelName)(f.pos, f.info, f.errT + NodeTrafo(f))), ctx)
       }).execute[T](nodePrime)
     } else {
       nodePrime

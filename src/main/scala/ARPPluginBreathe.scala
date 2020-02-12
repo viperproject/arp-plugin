@@ -218,7 +218,7 @@ class ARPPluginBreathe(plugin: ARPPlugin) {
 
     def newPerm(exp: Exp) = plugin.utils.simplify(PermMul(acc.perm, exp)(exp.pos, exp.info))
 
-    acc.loc.predicateBody(input) match {
+    acc.loc.predicateBody(input, Set()) match {
       case Some(body) =>
         val bodyWildcardNames = getWildcardNames(body)
         val wildcardNamesAll = wildcardNames ++ bodyWildcardNames

@@ -95,11 +95,11 @@ class ARPPluginUtils(plugin: ARPPlugin) {
     val nodePrime = if (oldLabel) {
       StrategyBuilder.Ancestor[Node]({
         case (f: Forall, ctx) =>
-          Forall(
+          (Forall(
             f.variables, f.triggers.map(removeOld).map(ctx.noRec[Trigger]), f.exp
-          )(f.pos, f.info, NodeTrafo(f))
+          )(f.pos, f.info, NodeTrafo(f)), ctx)
         case (l: LabelledOld, ctx) => ctx.noRec(l)
-        case (o@Old(exp), ctx) => LabelledOld(exp, labelName)(o.pos, o.info, NodeTrafo(o))
+        case (o@Old(exp), ctx) => (LabelledOld(exp, labelName)(o.pos, o.info, NodeTrafo(o)), ctx)
       }).execute[T](node)
     } else {
       node
@@ -132,10 +132,10 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u)))
         case (f: Forall, ctx) =>
           f.triggers.foreach(ctx.noRec[Trigger])
-          f
+          (f, ctx)
         case (a: AbstractAssign, ctx) =>
           ctx.noRec(a.lhs)
-          a
+          (a, ctx)
         case (f@DomainFuncApp(name, args, typVarMap), ctx) if f.domainName == plugin.naming.logDomainName && f.funcname == plugin.naming.logDomainCons =>
           ctx.noRec(DomainFuncApp(name, args.map({
             case fa: FieldAccess => LabelledOld(fa, labelName)(fa.pos, fa.info, NodeTrafo(fa))

@@ -139,14 +139,15 @@ class ARPPlugin extends SilverPlugin {
       sanitizedInput.functions :+ rdFunction :+ epsilonFunction :+ wildcardFunction :+ globalFunction :+ tokenFunction :+ tokenFreshFunction,
       sanitizedInput.predicates,
       sanitizedInput.methods.filterNot(p => p.idndef.name == naming.blacklistName),
+      Seq(),
       sanitizedInput.errors
     )
 
     // replace all rd with rd()
     val rdRewriter = StrategyBuilder.Ancestor[PNode]({
-      case (p@PIdnUse(naming.rdName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
-      case (p@PIdnUse(naming.rdWildcardName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
-      case (p@PIdnUse(naming.rdGlobalName), ctx) if !ctx.parent.isInstanceOf[PCall] => PCall(p, Seq(), None).setPos(p)
+      case (p@PIdnUse(naming.rdName), ctx) if !ctx.parent.isInstanceOf[PCall] => (PCall(p, Seq(), None).setPos(p), ctx)
+      case (p@PIdnUse(naming.rdWildcardName), ctx) if !ctx.parent.isInstanceOf[PCall] => (PCall(p, Seq(), None).setPos(p), ctx)
+      case (p@PIdnUse(naming.rdGlobalName), ctx) if !ctx.parent.isInstanceOf[PCall] => (PCall(p, Seq(), None).setPos(p), ctx)
     }, Traverse.BottomUp)
 
     val inputPrime = rdRewriter.execute[PProgram](inputWithFunctions)
@@ -199,46 +200,38 @@ class ARPPlugin extends SilverPlugin {
     val arpRewriter = StrategyBuilder.Context[Node, ARPContext](
       {
         case (p: Predicate, ctx) =>
-          breathe.handlePredicate(enhancedInput, p, ctx)
+          (breathe.handlePredicate(enhancedInput, p, ctx), ctx)
         case (m: Method, ctx) =>
-          if (Optimize.mixSimpleEncoding && methodBodyDifficulty(m.name) <= 1){
+          (if (Optimize.mixSimpleEncoding && methodBodyDifficulty(m.name) <= 1){
             ctx.noRec(simple.transformNode(enhancedInput, m))
           } else {
             methods.handleMethod(enhancedInput, m, ctx)
-          }
-        case (m: MethodCall, ctx) =>
-          methods.handleMethodCall(enhancedInput, m, ctx)
-        case (w: While, ctx) =>
-          loops.handleWhile(enhancedInput, w, ctx)
+          }, ctx.updateContext(ARPContext(naming.getNameFor(m, m.name, "rd"), naming.getNameFor(m, m.name, "log"), naming.getNameFor(m, m.name, "start_label"))))
+        case (m@MethodCall(name, _, _), ctx) =>
+          (methods.handleMethodCall(enhancedInput, m, ctx), ctx.updateContext(ARPContext(naming.getNameFor(m, name, "call_rd"), ctx.c.logName, ctx.c.oldLabelName)))
+        case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isEmpty =>
+          (loops.handleWhile(enhancedInput, w, ctx), ctx.updateContext(ARPContext(naming.getNameFor(w, suffix = "while_rd"), ctx.c.logName, ctx.c.oldLabelName)))
+        case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isDefined =>
+          (loops.handleWhile(enhancedInput, w, ctx), ctx.updateContext(ARPContext(ctx.c.rdName, naming.getNameFor(w, suffix = "while_log"), ctx.c.oldLabelName)))
         case (a: Assert, ctx) =>
-          breathe.handleAssert(enhancedInput, a, ctx)
+          (breathe.handleAssert(enhancedInput, a, ctx), ctx)
         case (e: Exhale, ctx) =>
-          breathe.handleExhale(enhancedInput, e, ctx)
+          (breathe.handleExhale(enhancedInput, e, ctx), ctx)
         case (i: Inhale, ctx) =>
-          breathe.handleInhale(enhancedInput, i, ctx)
+          (breathe.handleInhale(enhancedInput, i, ctx), ctx)
         case (f: Fold, ctx) =>
-          breathe.handleFold(enhancedInput, f, ctx)
+          (breathe.handleFold(enhancedInput, f, ctx), ctx)
         case (f: Unfold, ctx) =>
-          breathe.handleUnfold(enhancedInput, f, ctx)
+          (breathe.handleUnfold(enhancedInput, f, ctx), ctx)
         case (f: Unfolding, ctx) =>
-          breathe.handleUnfolding(enhancedInput, f, ctx)
+          (breathe.handleUnfolding(enhancedInput, f, ctx), ctx)
         case (a: AbstractAssign, ctx) =>
-          misc.handleAssignment(enhancedInput, a, ctx)
-        case (c: Constraining, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, c))
-        case (a: Apply, ctx) => wands.handleApply(enhancedInput, a, ctx)
+          (misc.handleAssignment(enhancedInput, a, ctx), ctx)
+        case (a: Apply, ctx) => (wands.handleApply(enhancedInput, a, ctx), ctx)
         case (p: Package, ctx) => ctx.noRec(rewriteMethodCallsToDummyMethods(enhancedInput, wands.handlePackage(enhancedInput, p, ctx)))
       },
-      ARPContext("", "", ""), // default context
-      {
-        case (m@Method(name, _, _, _, _, _), _) =>
-          ARPContext(naming.getNameFor(m, m.name, "rd"), naming.getNameFor(m, m.name, "log"), naming.getNameFor(m, m.name, "start_label"))
-        case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isEmpty =>
-          ARPContext(naming.getNameFor(w, suffix = "while_rd"), ctx.logName, ctx.oldLabelName)
-        case (w@While(_, _, _), ctx) if w.info.getUniqueInfo[TransformedWhile].isDefined =>
-          ARPContext(ctx.rdName, naming.getNameFor(w, suffix = "while_log"), ctx.oldLabelName)
-        case (m@MethodCall(name, _, _), ctx) =>
-          ARPContext(naming.getNameFor(m, name, "call_rd"), ctx.logName, ctx.oldLabelName)
-      }
+      ARPContext("", "", "") // default context
+
     )
 
     val rewrittenInput = performance.measure("arpRewriter")(arpRewriter.execute[Program](enhancedInput))
@@ -317,7 +310,7 @@ class ARPPlugin extends SilverPlugin {
     performance.measure("loadSilFile " + file)(arpFrontend.loadFile(file, path) match {
       case Some(program) => program
       case None =>
-        val empty = Program(Seq(), Seq(), Seq(), Seq(), Seq())()
+        val empty = Program(Seq(), Seq(), Seq(), Seq(), Seq(), Seq())()
         reportError(Internal(FeatureUnsupported(empty, "Could not load ARP Domain")))
         empty
     })
@@ -340,7 +333,8 @@ class ARPPlugin extends SilverPlugin {
           f.name == naming.rdTokenFresh
       ) ++ arpDomainFile.functions,
       input.predicates ++ arpDomainFile.predicates,
-      input.methods ++ arpDomainFile.methods
+      input.methods ++ arpDomainFile.methods,
+      Seq()
     )(input.pos, input.info, NodeTrafo(input))
 
     checkUniqueNames(input, arpDomainFile)
@@ -348,7 +342,7 @@ class ARPPlugin extends SilverPlugin {
     performance.stop("addARPDomain")
 
     // if there was an error, give back an empty program
-    if (_errors.isEmpty) newProgram else Program(Seq(), Seq(), Seq(), Seq(), Seq())()
+    if (_errors.isEmpty) newProgram else Program(Seq(), Seq(), Seq(), Seq(), Seq(), Seq())()
   }
 
   def rewriteRdPredicate(input: Program): Program = {
@@ -357,7 +351,8 @@ class ARPPlugin extends SilverPlugin {
       input.fields,
       input.functions,
       input.predicates.map(utils.rewriteRdPredicate),
-      input.methods
+      input.methods,
+      Seq()
     )(input.pos, input.info, NodeTrafo(input))
   }
 
@@ -441,7 +436,8 @@ class ARPPlugin extends SilverPlugin {
       input.fields,
       input.functions,
       input.predicates,
-      input.methods
+      input.methods,
+      Seq()
     )(input.pos, input.info, NodeTrafo(input))
 
     performance.stop("addFieldFunctions")
@@ -458,7 +454,8 @@ class ARPPlugin extends SilverPlugin {
       input.fields,
       input.functions,
       input.predicates,
-      input.methods ++ newMethods
+      input.methods ++ newMethods,
+      Seq()
     )(input.pos, input.info, input.errT)
   }
 
@@ -525,7 +522,8 @@ class ARPPlugin extends SilverPlugin {
       input.fields,
       input.functions,
       input.predicates,
-      input.methods ++ /*whileMethods ++*/ methodMethods
+      input.methods ++ /*whileMethods ++*/ methodMethods,
+      Seq()
     )(input.pos, input.info, NodeTrafo(input))
 
     performance.stop("addDummyMethods")
@@ -588,7 +586,8 @@ class ARPPlugin extends SilverPlugin {
           // TODO figure out why this is necessary
           val mPrime = removeLabelStrategy.execute[Method](removeLabelStrategy.execute[Method](m))
           mPrime
-        })
+        }),
+        Seq()
       )(input.pos, input.info, NodeTrafo(input)))
     } else {
       input
@@ -647,7 +646,7 @@ class ARPPlugin extends SilverPlugin {
 
 object ARPPlugin {
 
-  case class ARPContext(rdName: String, logName: String, oldLabelName: String)
+  case class ARPContext(val rdName: String, val logName: String, val oldLabelName: String)
 
   case class WasMethodCondition() extends Info {
     lazy val comment = Nil

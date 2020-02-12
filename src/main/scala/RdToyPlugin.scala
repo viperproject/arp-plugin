@@ -45,6 +45,7 @@ class RdToyPlugin extends SilverPlugin {
         ),
         input.predicates,
         input.methods,
+        Seq(),
         input.errors
       ))
 
@@ -94,13 +95,13 @@ class RdToyPlugin extends SilverPlugin {
     } else {
       val inputPrime = StrategyBuilder.Ancestor[Node]({
         case (l@LocalVarAssign(lhs, rhs), ctx) =>
-          Seqn(
+          (Seqn(
             Seq(
               Assert(NeCmp(lhs, rhs)())(),
               ctx.noRec[LocalVarAssign](l)
             ),
             Seq()
-          )()
+          )(), ctx)
       }).execute[Program](input)
 
       println(inputPrime)

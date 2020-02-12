@@ -21,15 +21,15 @@ class ARPPluginSimple(plugin: ARPPlugin) {
     val methodPrime = StrategyBuilder.Context[Node, ARPContextSimple]({
       case (m: Method, ctx) =>
         val rdName = plugin.naming.getNewNameFor(m, m.name, "rd")
-        Method(
+        (Method(
           m.name,
           m.formalArgs :+ LocalVarDecl(rdName, Perm)(m.pos, m.info),
           m.formalReturns,
           plugin.utils.constrainRdExp(rdName)(m.pos, m.info) +: m.pres,
           m.posts,
           m.body
-        )(m.pos, m.info, NodeTrafo(m))
-      case (f@FuncApp(plugin.naming.rdName, _), ctx) => LocalVar(ctx.c.rdName, Perm)(f.pos, f.info, NodeTrafo(f))
+        )(m.pos, m.info, NodeTrafo(m)), ctx.updateContext(ARPContextSimple(plugin.naming.getNameFor(m, m.name, "rd"))))
+      case (f@FuncApp(plugin.naming.rdName, _), ctx) => (LocalVar(ctx.c.rdName, Perm)(f.pos, f.info, NodeTrafo(f)), ctx)
       case (m: MethodCall, ctx) =>
         val rdName = plugin.naming.getNewNameFor(m, m.methodName, "call_rd")
         val method = plugin.utils.getMethod(input, m.methodName).get
@@ -56,9 +56,9 @@ class ARPPluginSimple(plugin: ARPPlugin) {
       case (w: While, ctx) =>
         val rdName = plugin.naming.getNewNameFor(w, suffix = "while_rd")
         if (w.info.getUniqueInfo[TransformedWhile].isDefined) {
-          w
+          (w, ctx)
         } else {
-          Seqn(
+          (Seqn(
             Seq(Inhale(plugin.utils.constrainRdExp(rdName)(w.pos, w.info))(w.pos, w.info)) ++
               w.invs.flatMap(inv =>
                 plugin.breathe.splitBreathing(inv, complete = true, None, {
@@ -72,14 +72,10 @@ class ARPPluginSimple(plugin: ARPPlugin) {
             Seq(
               LocalVarDecl(rdName, Perm)(w.pos, w.info)
             )
-          )(w.pos, w.info, NodeTrafo(w))
+          )(w.pos, w.info, NodeTrafo(w)), ctx.updateContext(ARPContextSimple(plugin.naming.getNameFor(w, suffix = "while_rd"))))
         }
     },
-      ARPContextSimple(""),
-      {
-        case (m: Method, ctx) => ARPContextSimple(plugin.naming.getNameFor(m, m.name, "rd"))
-        case (w: While, ctx) if w.info.getUniqueInfo[TransformedWhile].isEmpty => ARPContextSimple(plugin.naming.getNameFor(w, suffix = "while_rd"))
-      }
+      ARPContextSimple("")
     ).execute[T](toTransform)
 
     methodPrime

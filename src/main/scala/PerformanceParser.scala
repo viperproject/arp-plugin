@@ -19,7 +19,7 @@ class PerformanceParserExport extends SilverPlugin {
       println("Export finished in " + (end - start) / 1000.0 + " seconds.")
     }
 
-    Program(Seq(), Seq(), Seq(), Seq(), Seq())()
+    Program(Seq(), Seq(), Seq(), Seq(), Seq(), Seq())()
   }
 
   def dumpAll(sb: StringBuilder, things: Any*): Unit = {
@@ -56,15 +56,13 @@ class PerformanceParserExport extends SilverPlugin {
       case LocalVarDecl(name, typ) => d(name, typ)
       case Method(name, formalArgs, formalReturns, pres, posts, body) => d(name, formalArgs, formalReturns, pres, posts, body)
       case Predicate(name, formalArgs, body) => d(name, formalArgs, body)
-      case Program(domains, fields, functions, predicates, methods) => d(domains, fields, functions, predicates, methods)
+      case Program(domains, fields, functions, predicates, methods, exts) => d(domains, fields, functions, predicates, methods, exts)
 
       case Apply(exp) => d(exp)
       case Assert(exp) => d(exp)
-      case Constraining(vars, body) => d(vars, body)
       case Exhale(exp) => d(exp)
       case FieldAssign(lhs, rhs) => d(lhs, rhs)
       case Fold(acc) => d(acc)
-      case Fresh(vars) => d(vars)
       case Goto(target) => d(target)
       case If(cond, thn, els) => d(cond, thn, els)
       case Inhale(exp) => d(exp)
@@ -256,15 +254,13 @@ class PerformanceParser extends SilverPlugin {
         case "LocalVarDecl" => LocalVarDecl(p[String]() /* name */, p[Type]() /* typ */)()
         case "Method" => Method(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Seq[LocalVarDecl]]() /* formalReturns */, p[Seq[Exp]]() /* pres */, p[Seq[Exp]]() /* posts */, p[Option[Seqn]]() /* body */)()
         case "Predicate" => Predicate(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Option[Exp]]() /* body */)()
-        case "Program" => Program(p[Seq[Domain]]() /* domains */, p[Seq[Field]]() /* fields */, p[Seq[Function]]() /* functions */, p[Seq[Predicate]]() /* predicates */, p[Seq[Method]]() /* methods */)()
+        case "Program" => Program(p[Seq[Domain]]() /* domains */, p[Seq[Field]]() /* fields */, p[Seq[Function]]() /* functions */, p[Seq[Predicate]]() /* predicates */, p[Seq[Method]]() /* methods */, Seq())()
 
         case "Apply" => Apply(p[MagicWand]() /* exp */)()
         case "Assert" => Assert(p[Exp]() /* exp */)()
-        case "Constraining" => Constraining(p[Seq[LocalVar]]() /* vars */, p[Seqn]() /* body */)()
         case "Exhale" => Exhale(p[Exp]() /* exp */)()
         case "FieldAssign" => FieldAssign(p[FieldAccess]() /* lhs */, p[Exp]() /* rhs */)()
         case "Fold" => Fold(p[PredicateAccessPredicate]() /* acc */)()
-        case "Fresh" => Fresh(p[Seq[LocalVar]]() /* vars */)()
         case "Goto" => Goto(p[String]() /* target */)()
         case "If" => If(p[Exp]() /* cond */, p[Seqn]() /* thn */, p[Seqn]() /* els */)()
         case "Inhale" => Inhale(p[Exp]() /* exp */)()

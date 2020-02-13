@@ -125,9 +125,9 @@ class ARPPluginUtils(plugin: ARPPlugin) {
           (ctx.noRec(PredicateAccessPredicate(rewritePredicateAccess(loc), rewritePerm(perm))(p.pos, p.info, NodeTrafo(p))), ctx)
         case (c@CurrentPerm(fa: FieldAccess), ctx) =>
           (ctx.noRec(CurrentPerm(rewriteFieldAccess(fa))(c.pos, c.info, NodeTrafo(c))), ctx)
-        case (c: CurrentPerm, ctx) => ctx.noRec(c)
-        case (f: ForPerm, ctx) => ctx.noRec(f)
-        case (m: MagicWand, ctx) => ctx.noRec(m)
+        case (c: CurrentPerm, ctx) => (ctx.noRec(c), ctx)
+        case (f: ForPerm, ctx) => (ctx.noRec(f), ctx)
+        case (m: MagicWand, ctx) => (ctx.noRec(m), ctx)
         case (u: Unfolding, ctx) =>
           (ctx.noRec(LabelledOld(u, labelName)(u.pos, u.info, u.errT + NodeTrafo(u))), ctx)
         case (f: Forall, ctx) =>

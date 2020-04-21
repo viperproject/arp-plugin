@@ -49,7 +49,7 @@ class PerformanceParserExport extends SilverPlugin {
       case None => dumpAll(sb, "None")
 
       case Domain(name, functions, axioms, typVars) => d(name, functions, axioms, typVars)
-      case a@DomainAxiom(name, exp) => d(name, exp, a.domainName)
+      case a@NamedDomainAxiom(name, exp) => d(name, exp, a.domainName)
       case f@DomainFunc(name, formalArgs, typ, unique) => d(name, formalArgs, typ, unique, f.domainName)
       case Field(name, typ) => d(name, typ)
       case Function(name, formalArgs, typ, pres, posts, body) => d(name, formalArgs, typ, pres, posts, body)
@@ -247,7 +247,7 @@ class PerformanceParser extends SilverPlugin {
           None
 
         case "Domain" => Domain(p[String]() /* name */, p[Seq[DomainFunc]]() /* functions */, p[Seq[DomainAxiom]]() /* axioms */, p[Seq[TypeVar]]() /* typVars */)()
-        case "DomainAxiom" => DomainAxiom(p[String]() /* name */, p[Exp]() /* exp */)(domainName = p[String]())
+        case "NamedDomainAxiom" => NamedDomainAxiom(p[String]() /* name */, p[Exp]() /* exp */)(domainName = p[String]())
         case "DomainFunc" => DomainFunc(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Type]() /* typ */, p[Boolean]() /* unique */)(domainName = p[String]())
         case "Field" => Field(p[String]() /* name */, p[Type]() /* typ */)()
         case "Function" => Function(p[String]() /* name */, p[Seq[LocalVarDecl]]() /* formalArgs */, p[Type]() /* typ */, p[Seq[Exp]]() /* pres */, p[Seq[Exp]]() /* posts */, p[Option[Exp]]() /* body */)()

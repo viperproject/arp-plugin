@@ -112,7 +112,7 @@ class ARPPluginNaming(plugin: ARPPlugin) {
       case LocalVarDecl(name, _) => names += name
       case Label(name, _) => names += name
       case DomainFunc(name, _, _, _) => names += name
-      case DomainAxiom(name, _) => names += name
+      case NamedDomainAxiom(name, _) => names += name
       case _ =>
     }.visit(node)
 
